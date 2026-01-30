@@ -1,14 +1,19 @@
 /**
  * Login Page Component
  *
- * Modern glass-morphism login page matching the EasySale design mockup.
+ * Modern glass-morphism login page with theme-aware styling.
  * Features:
- * - Dark teal gradient background with subtle noise texture
+ * - Dark gradient background using CSS variables
  * - Transparent header with logo from branding config
  * - Centered glass-morphism login card with favicon badge
  * - Password/PIN toggle tabs
  * - Side-by-side status panel with real system status
  * - Transparent footer with real version/build info
+ * 
+ * Theme Integration:
+ * - Uses --login-* CSS variables for pre-auth theming
+ * - All colors reference semantic tokens or login-specific vars
+ * - Supports dark mode via LoginThemeProvider
  */
 
 import { useState, useEffect } from 'react';
@@ -18,6 +23,7 @@ import { useConfig } from '../../config/ConfigProvider';
 import { useAppInfo } from '@common/hooks/useAppInfo';
 import { useSystemStatus } from '@common/hooks/useSystemStatus';
 import { ErrorBoundary } from '@common/components/ErrorBoundary';
+import { ThemeToggle } from '@common/components/atoms/ThemeToggle';
 
 // ============================================================================
 // Constants
@@ -268,8 +274,8 @@ function LoginPageContent({
 
   return (
     <div className="login-page-v2">
-      {/* Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0a1929] via-[#0d2137] to-[#0f2942]" />
+      {/* Background - uses CSS variables for theming */}
+      <div className="fixed inset-0 login-gradient" />
       <div className="fixed inset-0 bg-noise opacity-[0.03]" />
 
       {/* Header */}
@@ -458,15 +464,39 @@ function LoginPageContent({
       {/* Footer - uses real version/build info */}
       <footer className="relative z-10 flex items-center justify-between px-6 py-4 text-slate-500 text-xs">
         <div>v{appInfo.version} • {appInfo.buildDate}-{appInfo.buildHash}</div>
-        <div>{appInfo.copyright}</div>
+        <div className="flex items-center gap-4">
+          <ThemeToggle simple />
+          <span>{appInfo.copyright}</span>
+        </div>
       </footer>
 
-      {/* Styles */}
+      {/* Styles - using CSS variables for theming */}
       <style>{`
         .login-page-v2 {
           min-height: 100vh;
           display: flex;
           flex-direction: column;
+          /* Use global theme variables with dark fallbacks */
+          --login-bg-from: var(--color-background, #0f172a);
+          --login-bg-via: var(--color-surface, #1e293b);
+          --login-bg-to: var(--color-background, #0f172a);
+          --login-text-primary: var(--color-text-primary, #f1f5f9);
+          --login-text-secondary: var(--color-text-secondary, #cbd5e1);
+          --login-text-muted: var(--color-text-muted, #94a3b8);
+          --login-text-tertiary: var(--color-text-tertiary, #64748b);
+          --login-surface: var(--color-surface, rgba(30, 41, 59, 0.8));
+          --login-surface-elevated: var(--color-surface-elevated, rgba(51, 65, 85, 0.5));
+          --login-border: var(--color-border, rgba(71, 85, 105, 0.3));
+          --login-border-subtle: var(--color-border-subtle, rgba(71, 85, 105, 0.2));
+        }
+
+        .login-gradient {
+          background: linear-gradient(
+            to bottom right,
+            var(--login-bg-from),
+            var(--login-bg-via),
+            var(--login-bg-to)
+          );
         }
 
         .bg-noise {
@@ -474,25 +504,25 @@ function LoginPageContent({
         }
 
         .glass-panel {
-          background: rgba(15, 30, 50, 0.8);
+          background: var(--login-surface);
           backdrop-filter: blur(16px);
-          border: 1px solid rgba(100, 150, 200, 0.15);
+          border: 1px solid var(--login-border);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
         .login-input {
           width: 100%;
           padding: 0.875rem 1rem;
-          background: rgba(30, 50, 70, 0.5);
-          border: 1px solid rgba(100, 150, 200, 0.2);
+          background: var(--login-surface-elevated);
+          border: 1px solid var(--login-border-subtle);
           border-radius: 0.5rem;
-          color: #e2e8f0;
+          color: var(--login-text-primary);
           font-size: 0.9375rem;
           transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .login-input::placeholder {
-          color: #64748b;
+          color: var(--login-text-tertiary);
         }
 
         .login-input:focus {
@@ -502,8 +532,33 @@ function LoginPageContent({
         }
 
         .login-input:hover:not(:focus) {
-          border-color: rgba(100, 150, 200, 0.3);
+          border-color: var(--login-border);
         }
+
+        /* Text color classes for login page */
+        .login-page-v2 .text-slate-100 { color: var(--login-text-primary); }
+        .login-page-v2 .text-slate-200 { color: var(--login-text-primary); }
+        .login-page-v2 .text-slate-300 { color: var(--login-text-secondary); }
+        .login-page-v2 .text-slate-400 { color: var(--login-text-muted); }
+        .login-page-v2 .text-slate-500 { color: var(--login-text-tertiary); }
+        
+        /* Status indicator colors */
+        .login-page-v2 .bg-green-400 { background-color: var(--color-success-500, #22c55e); }
+        .login-page-v2 .bg-yellow-400 { background-color: var(--color-warning-500, #eab308); }
+        .login-page-v2 .bg-red-400 { background-color: var(--color-error-500, #ef4444); }
+        
+        /* Error message styling */
+        .login-page-v2 .bg-red-500\\/10 { background-color: color-mix(in srgb, var(--color-error-500, #ef4444) 10%, transparent); }
+        .login-page-v2 .border-red-500\\/20 { border-color: color-mix(in srgb, var(--color-error-500, #ef4444) 20%, transparent); }
+        .login-page-v2 .text-red-400 { color: var(--color-error-500, #f87171); }
+        
+        /* Checkbox styling */
+        .login-page-v2 .text-blue-500 { color: var(--color-primary-500, #3b82f6); }
+        .login-page-v2 .focus\\:ring-blue-500:focus { --tw-ring-color: var(--color-primary-500, #3b82f6); }
+        .login-page-v2 .border-slate-600 { border-color: var(--login-border); }
+        .login-page-v2 .bg-slate-700\\/50 { background-color: var(--login-surface-elevated); }
+        .login-page-v2 .bg-slate-800\\/50 { background-color: var(--login-surface); }
+        .login-page-v2 .border-slate-700\\/50 { border-color: var(--login-border-subtle); }
       `}</style>
     </div>
   );
@@ -517,20 +572,20 @@ export function LoginPage(props: LoginPageProps) {
   return (
     <ErrorBoundary
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#0a1929] px-4">
-          <div className="max-w-md w-full bg-slate-800/80 rounded-2xl p-6 border border-slate-700/50">
+        <div className="min-h-screen flex items-center justify-center bg-background px-4 dark:bg-slate-900">
+          <div className="max-w-md w-full bg-surface rounded-2xl p-6 border border-border dark:bg-slate-800/80 dark:border-slate-700/50">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-                <span className="text-red-400 text-2xl">⚠</span>
+              <div className="w-12 h-12 bg-error-500/20 rounded-full flex items-center justify-center">
+                <span className="text-error-500 text-2xl">⚠</span>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-slate-100">Login Error</h1>
-                <p className="text-sm text-slate-400">Unable to load the login page</p>
+                <h1 className="text-xl font-semibold text-text-primary dark:text-slate-100">Login Error</h1>
+                <p className="text-sm text-text-secondary dark:text-slate-400">Unable to load the login page</p>
               </div>
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="w-full px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
             >
               Reload Page
             </button>

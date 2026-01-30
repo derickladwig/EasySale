@@ -32,12 +32,12 @@ export const defaultBrandConfig: BrandConfig = {
   // Logo paths for light and dark themes
   // PNG/JPG preferred for compatibility
   logo: {
-    light: '/assets/logos/easysale-logo-light.png',
-    dark: '/assets/logos/easysale-logo-dark.png',
+    light: '/assets/logos/logo-light.png',
+    dark: '/assets/logos/logo-dark.png',
   },
   
   // Favicon path (optional, falls back to default)
-  favicon: '/assets/icons/easysale-favicon.png',
+  favicon: '/assets/icons/icon-64.png',
   
   // Theme configuration
   theme: {
@@ -57,19 +57,19 @@ export const defaultBrandConfig: BrandConfig = {
  * This helps distinguish dev environments from production.
  */
 export const devBrandConfig: BrandConfig = {
-  appName: 'EasySale (Dev)',
+  appName: 'EasySale',
   
   company: {
-    name: 'Demo Store',
-    shortName: 'DS',
+    name: 'EasySale',
+    shortName: 'ES',
   },
   
   logo: {
-    light: '/assets/logos/easysale-logo-light.png',
-    dark: '/assets/logos/easysale-logo-dark.png',
+    light: '/assets/logos/logo-light.png',
+    dark: '/assets/logos/logo-dark.png',
   },
   
-  favicon: '/assets/icons/easysale-favicon.png',
+  favicon: '/assets/icons/icon-64.png',
   
   theme: {
     preset: 'default',
@@ -92,16 +92,16 @@ export const firstRunBrandConfig: BrandConfig = {
   appName: 'EasySale',
   
   company: {
-    name: 'Untitled Store',
-    shortName: 'US',
+    name: 'EasySale',
+    shortName: 'ES',
   },
   
   logo: {
-    light: '/assets/logos/easysale-logo-light.png',
-    dark: '/assets/logos/easysale-logo-dark.png',
+    light: '/assets/logos/logo-light.png',
+    dark: '/assets/logos/logo-dark.png',
   },
   
-  favicon: '/assets/icons/easysale-favicon.png',
+  favicon: '/assets/icons/icon-64.png',
   
   theme: {
     preset: 'default',
