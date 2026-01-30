@@ -167,20 +167,24 @@ docker-data/
 volumes/
 
 # ====================
-# INTERNAL DEVELOPMENT FILES (Exclude from production repo)
+# INTERNAL DEVELOPMENT FILES
 # ====================
+# NOTE: archive/, blog/, memory-bank/ are INCLUDED for hackathon submission
+# to show the development process and journey
 
-# Internal folders
-archive/
+# Internal folders (excluded)
 audit/
 sync/
 backup/
-blog/
-memory-bank/
 .kiro/
 .agents/
 runtime/
 mcps/
+
+# Hackathon folders (INCLUDED - do not ignore)
+# archive/    <- INCLUDED for hackathon
+# blog/       <- INCLUDED for hackathon  
+# memory-bank/ <- INCLUDED for hackathon
 
 # Internal status/summary markdown files at root
 BACKEND_SETTINGS_API_INVENTORY.md

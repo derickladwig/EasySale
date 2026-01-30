@@ -1,0 +1,402 @@
+{
+  "version": "1.0.0",
+  "tenant": {
+    "id": "caps-automotive",
+    "name": "CAPS Automotive & Paint Supply",
+    "slug": "caps-automotive",
+    "domain": "EasySale.local",
+    "description": "Retail store selling caps, automotive parts, paint, and autobody supplies"
+  },
+  "branding": {
+    "company": {
+      "name": "EasySale",
+      "shortName": "FP",
+      "tagline": "Your Flexible Point of Sale Solution",
+      "logo": "/assets/logos/logo.png",
+      "logoLight": "/assets/logos/logo.png",
+      "logoDark": "/assets/logos/logo.png",
+      "favicon": "/assets/icons/favicon.png",
+      "icon": "FP"
+    },
+    "login": {
+      "background": "",
+      "message": "Welcome to EasySale",
+      "showLogo": true,
+      "layout": "centered"
+    },
+    "receipts": {
+      "header": "CAPS Automotive & Paint Supply\n123 Auto Parts Drive\nYour City, State 12345\nPhone: (555) 123-4567",
+      "footer": "Thank you for shopping at CAPS!\nReturns accepted within 30 days with receipt.",
+      "showLogo": true
+    },
+    "store": {
+      "name": "CAPS Development Store",
+      "station": "POS-001"
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "colors": {
+      "primary": {
+        "50": "#f0fdfa",
+        "100": "#ccfbf1",
+        "200": "#99f6e4",
+        "300": "#5eead4",
+        "400": "#2dd4bf",
+        "500": "#14b8a6",
+        "600": "#0d9488",
+        "700": "#0f766e",
+        "800": "#115e59",
+        "900": "#134e4a"
+      },
+      "secondary": {
+        "500": "#64748b",
+        "600": "#475569"
+      },
+      "accent": {
+        "500": "#14b8a6",
+        "600": "#0d9488"
+      },
+      "background": "#0f172a",
+      "surface": "#1e293b",
+      "text": "#f1f5f9",
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    },
+    "fonts": {
+      "heading": "Inter",
+      "body": "Inter",
+      "mono": "JetBrains Mono"
+    }
+  },
+  "categories": [
+    {
+      "id": "caps",
+      "name": "Caps",
+      "icon": "Tag",
+      "color": "#f97316",
+      "description": "Baseball caps, trucker hats, and headwear",
+      "order": 1,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true, "min": 0 },
+        { "name": "cost", "label": "Cost", "type": "number", "min": 0 },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "style", "label": "Style", "type": "dropdown", "values": ["Baseball Cap", "Trucker Hat", "Snapback", "Fitted", "Beanie", "Visor"] },
+        { "name": "size", "label": "Size", "type": "dropdown", "values": ["One Size", "S/M", "L/XL", "Youth", "Fitted 6 7/8", "Fitted 7", "Fitted 7 1/8", "Fitted 7 1/4", "Fitted 7 3/8", "Fitted 7 1/2", "Fitted 7 5/8", "Fitted 7 3/4", "Fitted 8"] },
+        { "name": "color", "label": "Color", "type": "dropdown", "values": ["Black", "Navy", "Red", "White", "Gray", "Green", "Brown", "Camo", "Multi"] },
+        { "name": "material", "label": "Material", "type": "dropdown", "values": ["Cotton", "Polyester", "Wool", "Mesh", "Blend"] }
+      ],
+      "searchFields": ["name", "sku", "brand", "style", "color"],
+      "displayTemplate": "{name} - {color} ({size})",
+      "filters": [
+        { "field": "style", "label": "Style", "type": "dropdown" },
+        { "field": "size", "label": "Size", "type": "dropdown" },
+        { "field": "color", "label": "Color", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ]
+    },
+    {
+      "id": "auto-parts",
+      "name": "Auto Parts",
+      "icon": "Car",
+      "color": "#3b82f6",
+      "description": "Automotive parts and accessories",
+      "order": 2,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "partNumber", "label": "Part Number", "type": "text" },
+        { "name": "oemNumber", "label": "OEM Number", "type": "text" },
+        { "name": "price", "label": "Price", "type": "number", "required": true, "min": 0 },
+        { "name": "cost", "label": "Cost", "type": "number", "min": 0 },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "vehicleFitment", "label": "Vehicle Fitment", "type": "hierarchy", "hierarchySource": "vehicle-hierarchy" },
+        { "name": "partType", "label": "Part Type", "type": "dropdown", "values": ["Engine", "Brakes", "Suspension", "Electrical", "Filters", "Fluids", "Body", "Interior", "Exhaust", "Transmission", "Cooling", "Steering"] },
+        { "name": "condition", "label": "Condition", "type": "dropdown", "values": ["New", "Remanufactured", "Used"] }
+      ],
+      "searchFields": ["name", "sku", "partNumber", "oemNumber", "brand"],
+      "displayTemplate": "{name} ({partNumber})",
+      "filters": [
+        { "field": "vehicleFitment", "label": "Vehicle", "type": "hierarchy" },
+        { "field": "partType", "label": "Part Type", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "condition", "label": "Condition", "type": "dropdown" },
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ],
+      "wizard": {
+        "enabled": true,
+        "steps": [
+          { "id": "make", "title": "Select Make", "fields": ["vehicleFitment.make"], "description": "Choose the vehicle manufacturer" },
+          { "id": "model", "title": "Select Model", "fields": ["vehicleFitment.model"], "dependsOn": "make", "filterBy": "make" },
+          { "id": "year", "title": "Select Year", "fields": ["vehicleFitment.year"], "dependsOn": "model", "filterBy": "model" },
+          { "id": "part-type", "title": "Part Type", "fields": ["partType"], "description": "What type of part are you looking for?" }
+        ]
+      }
+    },
+    {
+      "id": "paint",
+      "name": "Paint",
+      "icon": "Palette",
+      "color": "#8b5cf6",
+      "description": "Automotive paint, primers, and clear coats",
+      "order": 3,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true, "min": 0 },
+        { "name": "cost", "label": "Cost", "type": "number", "min": 0 },
+        { "name": "brand", "label": "Brand", "type": "dropdown", "values": ["PPG", "Sherwin-Williams", "Axalta", "BASF", "3M", "House Brand"] },
+        { "name": "paintType", "label": "Paint Type", "type": "dropdown", "values": ["Base Coat", "Clear Coat", "Primer", "Single Stage", "Touch-Up", "Spray Can"] },
+        { "name": "colorCode", "label": "Color Code", "type": "text" },
+        { "name": "colorName", "label": "Color Name", "type": "text" },
+        { "name": "vehicleMatch", "label": "Vehicle Match", "type": "hierarchy", "hierarchySource": "vehicle-hierarchy" },
+        { "name": "size", "label": "Size", "type": "dropdown", "values": ["12oz Spray", "Pint", "Quart", "Gallon", "5 Gallon"] },
+        { "name": "finish", "label": "Finish", "type": "dropdown", "values": ["Gloss", "Semi-Gloss", "Matte", "Satin", "Metallic", "Pearl"] }
+      ],
+      "searchFields": ["name", "sku", "colorCode", "colorName", "brand"],
+      "displayTemplate": "{colorName} - {paintType} ({size})",
+      "filters": [
+        { "field": "paintType", "label": "Type", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "finish", "label": "Finish", "type": "dropdown" },
+        { "field": "size", "label": "Size", "type": "dropdown" },
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ],
+      "wizard": {
+        "enabled": true,
+        "steps": [
+          { "id": "lookup-type", "title": "Lookup Method", "description": "How would you like to find your paint?" },
+          { "id": "vehicle", "title": "Vehicle Info", "fields": ["vehicleMatch"], "description": "Select vehicle for color match" },
+          { "id": "color", "title": "Color Selection", "fields": ["colorCode", "colorName"], "description": "Enter color code or name" },
+          { "id": "product", "title": "Product Type", "fields": ["paintType", "size"], "description": "Select paint type and size" }
+        ]
+      }
+    },
+    {
+      "id": "supplies",
+      "name": "Supplies",
+      "icon": "Package",
+      "color": "#22c55e",
+      "description": "Autobody supplies and consumables",
+      "order": 4,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true, "min": 0 },
+        { "name": "cost", "label": "Cost", "type": "number", "min": 0 },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "supplyType", "label": "Supply Type", "type": "dropdown", "values": ["Abrasives", "Masking", "Adhesives", "Cleaners", "Fillers", "Safety", "Tools", "Other"] },
+        { "name": "unitOfMeasure", "label": "Unit", "type": "dropdown", "values": ["Each", "Pack", "Box", "Roll", "Gallon", "Case"] }
+      ],
+      "searchFields": ["name", "sku", "brand", "supplyType"],
+      "displayTemplate": "{name}",
+      "filters": [
+        { "field": "supplyType", "label": "Type", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ]
+    },
+    {
+      "id": "equipment",
+      "name": "Equipment",
+      "icon": "Wrench",
+      "color": "#f59e0b",
+      "description": "Tools and equipment for autobody work",
+      "order": 5,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "serialNumber", "label": "Serial Number", "type": "text", "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true, "min": 0 },
+        { "name": "cost", "label": "Cost", "type": "number", "min": 0 },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "equipmentType", "label": "Equipment Type", "type": "dropdown", "values": ["Spray Guns", "Sanders", "Polishers", "Compressors", "Welders", "Lifts", "Hand Tools", "Power Tools", "Safety Equipment"] },
+        { "name": "warranty", "label": "Warranty", "type": "dropdown", "values": ["None", "90 Days", "1 Year", "2 Years", "Lifetime"] }
+      ],
+      "searchFields": ["name", "sku", "serialNumber", "brand"],
+      "displayTemplate": "{name} ({brand})",
+      "filters": [
+        { "field": "equipmentType", "label": "Type", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ]
+    }
+  ],
+  "navigation": {
+    "main": [
+      { "id": "home", "label": "Home", "icon": "Home", "route": "/", "order": 0 },
+      { "id": "sell", "label": "Sell", "icon": "ShoppingCart", "route": "/sell", "permission": "access_sell", "order": 1 },
+      { "id": "lookup", "label": "Lookup", "icon": "Search", "route": "/lookup", "permission": "access_sell", "order": 2 },
+      { "id": "warehouse", "label": "Warehouse", "icon": "Package", "route": "/warehouse", "permission": "access_warehouse", "order": 3 },
+      { "id": "customers", "label": "Customers", "icon": "Users", "route": "/customers", "permission": "access_sell", "order": 4 },
+      { "id": "reporting", "label": "Reports", "icon": "BarChart3", "route": "/reporting", "permission": "access_admin", "order": 5 },
+      { "id": "admin", "label": "Admin", "icon": "Settings", "route": "/admin", "permission": "access_admin", "order": 6 }
+    ],
+    "quickActions": [
+      { "label": "New Sale", "icon": "Plus", "action": "navigate:/sell" },
+      { "label": "Quick Lookup", "icon": "Search", "action": "modal:product-search" },
+      { "label": "Vehicle Search", "icon": "Car", "action": "modal:vehicle-search" },
+      { "label": "Paint Match", "icon": "Palette", "action": "modal:paint-match" }
+    ],
+    "sidebar": {
+      "width": "medium",
+      "collapsible": true,
+      "showLabels": true
+    },
+    "header": {
+      "showSearch": true,
+      "showNotifications": true,
+      "showSync": true,
+      "showUser": true
+    }
+  },
+  "widgets": {
+    "dashboard": [
+      { "id": "daily-sales", "type": "stat-card", "title": "Today's Sales", "endpoint": "/api/stats/daily-sales", "format": "currency", "size": "1x1", "position": { "x": 0, "y": 0 }, "refreshInterval": 60 },
+      { "id": "transactions", "type": "stat-card", "title": "Transactions", "endpoint": "/api/stats/transactions", "format": "number", "size": "1x1", "position": { "x": 1, "y": 0 }, "refreshInterval": 60 },
+      { "id": "avg-ticket", "type": "stat-card", "title": "Avg Ticket", "endpoint": "/api/stats/avg-ticket", "format": "currency", "size": "1x1", "position": { "x": 2, "y": 0 }, "refreshInterval": 60 },
+      { "id": "items-sold", "type": "stat-card", "title": "Items Sold", "endpoint": "/api/stats/items-sold", "format": "number", "size": "1x1", "position": { "x": 3, "y": 0 }, "refreshInterval": 60 },
+      { "id": "sales-by-category", "type": "pie-chart", "title": "Sales by Category", "endpoint": "/api/stats/sales-by-category", "size": "2x2", "position": { "x": 0, "y": 1 }, "refreshInterval": 300 },
+      { "id": "weekly-sales", "type": "line-chart", "title": "Weekly Sales Trend", "endpoint": "/api/stats/weekly-sales", "size": "2x2", "position": { "x": 2, "y": 1 }, "refreshInterval": 300 },
+      { "id": "low-stock", "type": "table", "title": "Low Stock Alerts", "endpoint": "/api/inventory/low-stock", "size": "2x2", "position": { "x": 0, "y": 3 }, "refreshInterval": 300 },
+      { "id": "recent-sales", "type": "list", "title": "Recent Sales", "endpoint": "/api/sales/recent", "size": "2x2", "position": { "x": 2, "y": 3 }, "refreshInterval": 60 }
+    ]
+  },
+  "modules": {
+    "inventory": { "enabled": true, "settings": { "trackSerialNumbers": true, "trackBatchNumbers": true, "lowStockThreshold": 10 } },
+    "layaway": { "enabled": true, "settings": { "minDeposit": 20, "maxDays": 90 } },
+    "workOrders": { "enabled": true, "settings": { "laborRates": { "standard": 75, "premium": 95 } } },
+    "commissions": { "enabled": true, "settings": { "defaultRate": 5 } },
+    "loyalty": { "enabled": true, "settings": { "pointsPerDollar": 1, "redemptionRate": 100 } },
+    "creditAccounts": { "enabled": true, "settings": { "defaultCreditLimit": 1000 } },
+    "giftCards": { "enabled": true },
+    "promotions": { "enabled": true },
+    "appointments": { "enabled": false },
+    "reservations": { "enabled": false },
+    "vehicleLookup": { "enabled": true, "settings": { "catalogProvider": "ACES" } },
+    "paintMatching": { "enabled": true, "settings": { "providers": ["PPG", "Sherwin-Williams", "Axalta"] } }
+  },
+  "localization": {
+    "language": "en-US",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h",
+    "numberFormat": { "decimal": ".", "thousands": "," },
+    "currency": { "code": "USD", "symbol": "$", "position": "before" },
+    "timezone": "America/New_York",
+    "firstDayOfWeek": 0,
+    "measurementUnits": "imperial"
+  },
+  "layouts": {
+    "sell": {
+      "type": "split",
+      "panels": [
+        { "id": "catalog", "type": "product-grid", "width": "flex-1", "minWidth": "400px" },
+        { "id": "cart", "type": "cart", "width": "420px", "collapsible": false }
+      ],
+      "responsive": { "mobile": "stack", "tablet": "split", "desktop": "split" }
+    },
+    "lookup": {
+      "type": "split",
+      "panels": [
+        { "id": "search", "type": "search-results", "width": "flex-1" },
+        { "id": "details", "type": "product-details", "width": "400px", "collapsible": true }
+      ]
+    },
+    "dashboard": { "type": "grid", "panels": [] },
+    "settings": {
+      "type": "sidebar",
+      "panels": [
+        { "id": "nav", "type": "settings-nav", "width": "280px" },
+        { "id": "content", "type": "settings-content", "width": "flex-1" }
+      ]
+    }
+  },
+  "wizards": {
+    "hierarchies": [
+      {
+        "id": "vehicle-hierarchy",
+        "name": "Vehicle Selection",
+        "description": "Select vehicle by Make, Model, and Year",
+        "levels": [
+          { "id": "make", "name": "Make", "placeholder": "Select Make" },
+          { "id": "model", "name": "Model", "placeholder": "Select Model" },
+          { "id": "year", "name": "Year", "placeholder": "Select Year" }
+        ],
+        "data": [
+          { "make": "Toyota", "model": "Camry", "years": ["2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Toyota", "model": "Corolla", "years": ["2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Toyota", "model": "RAV4", "years": ["2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Honda", "model": "Civic", "years": ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"] },
+          { "make": "Honda", "model": "Accord", "years": ["2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Honda", "model": "CR-V", "years": ["2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Ford", "model": "F-150", "years": ["2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Ford", "model": "Mustang", "years": ["2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Ford", "model": "Explorer", "years": ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Chevrolet", "model": "Silverado", "years": ["2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Chevrolet", "model": "Camaro", "years": ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"] },
+          { "make": "Chevrolet", "model": "Equinox", "years": ["2018", "2019", "2020", "2021", "2022", "2023", "2024"] }
+        ]
+      }
+    ],
+    "importMappings": [
+      {
+        "id": "caps-import",
+        "name": "Caps Import",
+        "description": "Import caps/headwear products",
+        "supportedFormats": ["csv", "xlsx"],
+        "fields": [
+          { "target": "name", "label": "Product Name", "required": true },
+          { "target": "sku", "label": "SKU", "required": true },
+          { "target": "price", "label": "Price", "required": true },
+          { "target": "cost", "label": "Cost", "required": false },
+          { "target": "brand", "label": "Brand", "required": false },
+          { "target": "style", "label": "Style", "required": false },
+          { "target": "size", "label": "Size", "required": false },
+          { "target": "color", "label": "Color", "required": false },
+          { "target": "quantity", "label": "Quantity", "required": false }
+        ]
+      },
+      {
+        "id": "parts-import",
+        "name": "Auto Parts Import",
+        "description": "Import automotive parts with fitment data",
+        "supportedFormats": ["csv", "xlsx", "json"],
+        "fields": [
+          { "target": "name", "label": "Product Name", "required": true },
+          { "target": "sku", "label": "SKU", "required": true },
+          { "target": "partNumber", "label": "Part Number", "required": false },
+          { "target": "oemNumber", "label": "OEM Number", "required": false },
+          { "target": "price", "label": "Price", "required": true },
+          { "target": "cost", "label": "Cost", "required": false },
+          { "target": "brand", "label": "Brand", "required": false },
+          { "target": "partType", "label": "Part Type", "required": false },
+          { "target": "fitment", "label": "Vehicle Fitment", "required": false, "transform": "parseVehicleFitment" },
+          { "target": "quantity", "label": "Quantity", "required": false }
+        ]
+      },
+      {
+        "id": "paint-import",
+        "name": "Paint Products Import",
+        "description": "Import paint products with color codes",
+        "supportedFormats": ["csv", "xlsx"],
+        "fields": [
+          { "target": "name", "label": "Product Name", "required": true },
+          { "target": "sku", "label": "SKU", "required": true },
+          { "target": "colorCode", "label": "Color Code", "required": false },
+          { "target": "colorName", "label": "Color Name", "required": false },
+          { "target": "paintType", "label": "Paint Type", "required": false },
+          { "target": "brand", "label": "Brand", "required": false },
+          { "target": "size", "label": "Size", "required": false },
+          { "target": "price", "label": "Price", "required": true },
+          { "target": "cost", "label": "Cost", "required": false },
+          { "target": "quantity", "label": "Quantity", "required": false }
+        ]
+      }
+    ]
+  }
+}

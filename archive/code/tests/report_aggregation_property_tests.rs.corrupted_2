@@ -1,0 +1,855 @@
+//! Property-Based Tests for Report Aggregation Accuracy
+//! Feature: sales-customer-management, Property 30: Report aggregation accuracy
+//!
+//! These tests validate that for any report with aggregated metrics (totals, averages, counts),
+//! the aggregated values equal the sum/average/count of the underlying individual records.
+//!
+//! **Validates: Requirements 3.3, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.10**
+
+use proptest::prelude::*;
+
+// ============================================================================
+// Test Data Structures
+// ============================================================================
+
+/// Represents a sales transaction record
+#[derive(Debug, Clone)]
+struct SalesTransaction {
+    id: String,
+    total_amount: f64,
+    items_count: i64,
+    employee_id: String,
+    category: String,
+}
+
+/// Represents a commission record
+#[derive(Debug, Clone)]
+struct Commission {
+    id: String,
+    employee_id: String,
+    amount: f64,
+}
+
+/// Represents a layaway record
+#[derive(Debug, Clone)]
+struct Layaway {
+    id: String,
+    status: LayawayStatus,
+    balance_remaining: f64,
+    created_at: String,
+    updated_at: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum LayawayStatus {
+    Active,
+    Completed,
+    Cancelled,
+}
+
+/// Represents a work order record
+#[derive(Debug, Clone)]
+struct WorkOrder {
+    id: String,
+    status: WorkOrderStatus,
+    labor_total: f64,
+    parts_total: f64,
+    actual_total: f64,
+    created_at: String,
+    updated_at: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum WorkOrderStatus {
+    Created,
+    InProgress,
+    Completed,
+}
+
+/// Represents a promotion usage record
+#[derive(Debug, Clone)]
+struct PromotionUsage {
+    id: String,
+    promotion_id: String,
+    discount_amount: f64,
+    items_affected: i64,
+}
+
+// ============================================================================
+// Report Aggregation Functions
+// ============================================================================
+
+/// Calculate sales report aggregations from individual transactions
+fn calculate_sales_aggregations(transactions: &[SalesTransaction]) -> (f64, i64, f64, i64) {
+    let total_sales: f64 = transactions.iter().map(|t| t.total_amount).sum();
+    let total_transactions = transactions.len() as i64;
+    let average_transaction = if total_transactions > 0 {
+        total_sales / total_transactions as f64
+    } else {
+        0.0
+    };
+    let total_items_sold: i64 = transactions.iter().map(|t| t.items_count).sum();
+    
+    (total_sales, total_transactions, average_transaction, total_items_sold)
+}
+
+/// Calculate commission aggregations by employee
+fn calculate_commission_aggregations(commissions: &[Commission]) -> Vec<(String, i64, f64, f64)> {
+    use std::collections::HashMap;
+    
+    let mut by_employee: HashMap<String, Vec<f64>> = HashMap::new();
+    
+    for commission in commissions {
+        by_employee
+            .entry(commission.employee_id.clone())
+            .or_insert_with(Vec::new)
+            .push(commission.amount);
+    }
+    
+    by_employee
+        .into_iter()
+        .map(|(employee_id, amounts)| {
+            let count = amounts.len() as i64;
+            let total: f64 = amounts.iter().sum();
+            let average = if count > 0 { total / count as f64 } else { 0.0 };
+            (employee_id, count, total, average)
+        })
+        .collect()
+}
+
+/// Calculate layaway report aggregations
+fn calculate_layaway_aggregations(layaways: &[Layaway]) -> (i64, i64, i64, f64) {
+    let active_count = layaways.iter().filter(|l| l.status == LayawayStatus::Active).count() as i64;
+    let completed_count = layaways.iter().filter(|l| l.status == LayawayStatus::Completed).count() as i64;
+    let cancelled_count = layaways.iter().filter(|l| l.status == LayawayStatus::Cancelled).count() as i64;
+    let total_outstanding: f64 = layaways
+        .iter()
+        .filter(|l| l.status == LayawayStatus::Active)
+        .map(|l| l.balance_remaining)
+        .sum();
+    
+    (active_count, completed_count, cancelled_count, total_outstanding)
+}
+
+/// Calculate work order report aggregations
+fn calculate_work_order_aggregations(work_orders: &[WorkOrder]) -> (i64, i64, i64, f64, f64, f64) {
+    let total_orders = work_orders.len() as i64;
+    let completed_count = work_orders.iter().filter(|wo| wo.status == WorkOrderStatus::Completed).count() as i64;
+    let in_progress_count = work_orders.iter().filter(|wo| wo.status == WorkOrderStatus::InProgress).count() as i64;
+    let total_labor_revenue: f64 = work_orders.iter().map(|wo| wo.labor_total).sum();
+    let total_parts_revenue: f64 = work_orders.iter().map(|wo| wo.parts_total).sum();
+    let total_revenue: f64 = work_orders.iter().map(|wo| wo.actual_total).sum();
+    
+    (total_orders, completed_count, in_progress_count, total_labor_revenue, total_parts_revenue, total_revenue)
+}
+
+/// Calculate promotion report aggregations
+fn calculate_promotion_aggregations(usages: &[PromotionUsage]) -> Vec<(String, i64, f64, i64)> {
+    use std::collections::HashMap;
+    
+    let mut by_promotion: HashMap<String, (Vec<f64>, Vec<i64>)> = HashMap::new();
+    
+    for usage in usages {
+        let entry = by_promotion
+            .entry(usage.promotion_id.clone())
+            .or_insert_with(|| (Vec::new(), Vec::new()));
+        entry.0.push(usage.discount_amount);
+        entry.1.push(usage.items_affected);
+    }
+    
+    by_promotion
+        .into_iter()
+        .map(|(promotion_id, (discounts, items))| {
+            let usage_count = discounts.len() as i64;
+            let total_discount: f64 = discounts.iter().sum();
+            let total_items: i64 = items.iter().sum();
+            (promotion_id, usage_count, total_discount, total_items)
+        })
+        .collect()
+}
+
+/// Calculate sales by category aggregations
+fn calculate_sales_by_category(transactions: &[SalesTransaction]) -> Vec<(String, i64, i64, f64)> {
+    use std::collections::HashMap;
+    
+    let mut by_category: HashMap<String, (i64, i64, f64)> = HashMap::new();
+    
+    for transaction in transactions {
+        let entry = by_category
+            .entry(transaction.category.clone())
+            .or_insert((0, 0, 0.0));
+        entry.0 += 1; // transaction count
+        entry.1 += transaction.items_count; // items sold
+        entry.2 += transaction.total_amount; // total revenue
+    }
+    
+    by_category
+        .into_iter()
+        .map(|(category, (tx_count, items, revenue))| (category, tx_count, items, revenue))
+        .collect()
+}
+
+/// Calculate sales by employee aggregations
+fn calculate_sales_by_employee(transactions: &[SalesTransaction]) -> Vec<(String, i64, f64, f64)> {
+    use std::collections::HashMap;
+    
+    let mut by_employee: HashMap<String, Vec<f64>> = HashMap::new();
+    
+    for transaction in transactions {
+        by_employee
+            .entry(transaction.employee_id.clone())
+            .or_insert_with(Vec::new)
+            .push(transaction.total_amount);
+    }
+    
+    by_employee
+        .into_iter()
+        .map(|(employee_id, amounts)| {
+            let count = amounts.len() as i64;
+            let total: f64 = amounts.iter().sum();
+            let average = if count > 0 { total / count as f64 } else { 0.0 };
+            (employee_id, count, total, average)
+        })
+        .collect()
+}
+
+// ============================================================================
+// Property Test Generators
+// ============================================================================
+
+/// Generate a random sales transaction
+fn arb_sales_transaction() -> impl Strategy<Value = SalesTransaction> {
+    (
+        "[a-z0-9]{8}",
+        1.0..10000.0_f64,
+        1..100i64,
+        "emp-[0-9]{1,3}",
+        prop_oneof![
+            Just("Electronics".to_string()),
+            Just("Automotive".to_string()),
+            Just("Hardware".to_string()),
+            Just("Paint".to_string()),
+        ],
+    )
+        .prop_map(|(id, amount, items, emp_id, category)| SalesTransaction {
+            id,
+            total_amount: (amount * 100.0).round() / 100.0,
+            items_count: items,
+            employee_id: emp_id,
+            category,
+        })
+}
+
+/// Generate a random commission
+fn arb_commission() -> impl Strategy<Value = Commission> {
+    (
+        "[a-z0-9]{8}",
+        "emp-[0-9]{1,3}",
+        1.0..1000.0_f64,
+    )
+        .prop_map(|(id, emp_id, amount)| Commission {
+            id,
+            employee_id: emp_id,
+            amount: (amount * 100.0).round() / 100.0,
+        })
+}
+
+/// Generate a random layaway
+fn arb_layaway() -> impl Strategy<Value = Layaway> {
+    (
+        "[a-z0-9]{8}",
+        prop_oneof![
+            Just(LayawayStatus::Active),
+            Just(LayawayStatus::Completed),
+            Just(LayawayStatus::Cancelled),
+        ],
+        0.0..5000.0_f64,
+        "2024-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z",
+        "2024-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z",
+    )
+        .prop_map(|(id, status, balance, created, updated)| Layaway {
+            id,
+            status,
+            balance_remaining: (balance * 100.0).round() / 100.0,
+            created_at: created,
+            updated_at: updated,
+        })
+}
+
+/// Generate a random work order
+fn arb_work_order() -> impl Strategy<Value = WorkOrder> {
+    (
+        "[a-z0-9]{8}",
+        prop_oneof![
+            Just(WorkOrderStatus::Created),
+            Just(WorkOrderStatus::InProgress),
+            Just(WorkOrderStatus::Completed),
+        ],
+        0.0..2000.0_f64,
+        0.0..3000.0_f64,
+        "2024-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z",
+        "2024-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z",
+    )
+        .prop_map(|(id, status, labor, parts, created, updated)| {
+            let labor_total = (labor * 100.0).round() / 100.0;
+            let parts_total = (parts * 100.0).round() / 100.0;
+            WorkOrder {
+                id,
+                status,
+                labor_total,
+                parts_total,
+                actual_total: labor_total + parts_total,
+                created_at: created,
+                updated_at: updated,
+            }
+        })
+}
+
+/// Generate a random promotion usage
+fn arb_promotion_usage() -> impl Strategy<Value = PromotionUsage> {
+    (
+        "[a-z0-9]{8}",
+        "promo-[0-9]{1,3}",
+        1.0..500.0_f64,
+        1..50i64,
+    )
+        .prop_map(|(id, promo_id, discount, items)| PromotionUsage {
+            id,
+            promotion_id: promo_id,
+            discount_amount: (discount * 100.0).round() / 100.0,
+            items_affected: items,
+        })
+}
+
+// ============================================================================
+// Property 30: Report Aggregation Accuracy
+// ============================================================================
+// For any report with aggregated metrics (totals, averages, counts),
+// the aggregated values should equal the sum/average/count of the
+// underlying individual records.
+//
+// **Validates: Requirements 3.3, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.10**
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(100))]
+
+    #[test]
+    fn sales_report_aggregations_are_accurate(
+        transactions in prop::collection::vec(arb_sales_transaction(), 1..50),
+    ) {
+        // Calculate aggregations
+        let (total_sales, total_transactions, average_transaction, total_items_sold) =
+            calculate_sales_aggregations(&transactions);
+
+        // Verify total sales equals sum of individual amounts
+        let expected_total: f64 = transactions.iter().map(|t| t.total_amount).sum();
+        let diff = (total_sales - expected_total).abs();
+        prop_assert!(
+            diff < 0.01,
+            "Total sales should equal sum of individual transactions: expected {}, got {}",
+            expected_total,
+            total_sales
+        );
+
+        // Verify transaction count
+        prop_assert_eq!(
+            total_transactions,
+            transactions.len() as i64,
+            "Transaction count should equal number of records"
+        );
+
+        // Verify average transaction
+        let expected_avg = if transactions.is_empty() {
+            0.0
+        } else {
+            expected_total / transactions.len() as f64
+        };
+        let avg_diff = (average_transaction - expected_avg).abs();
+        prop_assert!(
+            avg_diff < 0.01,
+            "Average transaction should equal total / count: expected {}, got {}",
+            expected_avg,
+            average_transaction
+        );
+
+        // Verify total items sold
+        let expected_items: i64 = transactions.iter().map(|t| t.items_count).sum();
+        prop_assert_eq!(
+            total_items_sold,
+            expected_items,
+            "Total items sold should equal sum of individual item counts"
+        );
+    }
+
+
+    #[test]
+    fn commission_report_aggregations_are_accurate(
+        commissions in prop::collection::vec(arb_commission(), 1..50)
+    ) {
+        // Calculate aggregations
+        let aggregations = calculate_commission_aggregations(&commissions);
+
+        // Verify each employee's aggregations
+        for (employee_id, count, total, average) in aggregations {
+            // Get all commissions for this employee
+            let employee_commissions: Vec<f64> = commissions
+                .iter()
+                .filter(|c| c.employee_id == employee_id)
+                .map(|c| c.amount)
+                .collect();
+
+            // Verify count
+            prop_assert_eq!(
+                count,
+                employee_commissions.len() as i64,
+                "Commission count for {} should match number of records",
+                employee_id
+            );
+
+            // Verify total
+            let expected_total: f64 = employee_commissions.iter().sum();
+            let diff = (total - expected_total).abs();
+            prop_assert!(
+                diff < 0.01,
+                "Total commission for {} should equal sum: expected {}, got {}",
+                employee_id,
+                expected_total,
+                total
+            );
+
+            // Verify average
+            let expected_avg = if employee_commissions.is_empty() {
+                0.0
+            } else {
+                expected_total / employee_commissions.len() as f64
+            };
+            let avg_diff = (average - expected_avg).abs();
+            prop_assert!(
+                avg_diff < 0.01,
+                "Average commission for {} should equal total / count: expected {}, got {}",
+                employee_id,
+                expected_avg,
+                average
+            );
+        }
+    }
+
+
+    #[test]
+    fn layaway_report_aggregations_are_accurate(
+        layaways in prop::collection::vec(arb_layaway(), 1..50)
+    ) {
+        // Calculate aggregations
+        let (active_count, completed_count, cancelled_count, total_outstanding) =
+            calculate_layaway_aggregations(&layaways);
+
+        // Verify active count
+        let expected_active = layaways.iter().filter(|l| l.status == LayawayStatus::Active).count() as i64;
+        prop_assert_eq!(
+            active_count,
+            expected_active,
+            "Active layaway count should match filtered records"
+        );
+
+        // Verify completed count
+        let expected_completed = layaways.iter().filter(|l| l.status == LayawayStatus::Completed).count() as i64;
+        prop_assert_eq!(
+            completed_count,
+            expected_completed,
+            "Completed layaway count should match filtered records"
+        );
+
+        // Verify cancelled count
+        let expected_cancelled = layaways.iter().filter(|l| l.status == LayawayStatus::Cancelled).count() as i64;
+        prop_assert_eq!(
+            cancelled_count,
+            expected_cancelled,
+            "Cancelled layaway count should match filtered records"
+        );
+
+        // Verify total outstanding
+        let expected_outstanding: f64 = layaways
+            .iter()
+            .filter(|l| l.status == LayawayStatus::Active)
+            .map(|l| l.balance_remaining)
+            .sum();
+        let diff = (total_outstanding - expected_outstanding).abs();
+        prop_assert!(
+            diff < 0.01,
+            "Total outstanding should equal sum of active balances: expected {}, got {}",
+            expected_outstanding,
+            total_outstanding
+        );
+
+        // Verify counts sum to total
+        prop_assert_eq!(
+            active_count + completed_count + cancelled_count,
+            layaways.len() as i64,
+            "Sum of status counts should equal total layaways"
+        );
+    }
+
+
+    #[test]
+    fn work_order_report_aggregations_are_accurate(
+        work_orders in prop::collection::vec(arb_work_order(), 1..50)
+    ) {
+        // Calculate aggregations
+        let (total_orders, completed_count, in_progress_count, total_labor, total_parts, total_revenue) =
+            calculate_work_order_aggregations(&work_orders);
+
+        // Verify total orders
+        prop_assert_eq!(
+            total_orders,
+            work_orders.len() as i64,
+            "Total orders should equal number of records"
+        );
+
+        // Verify completed count
+        let expected_completed = work_orders.iter().filter(|wo| wo.status == WorkOrderStatus::Completed).count() as i64;
+        prop_assert_eq!(
+            completed_count,
+            expected_completed,
+            "Completed count should match filtered records"
+        );
+
+        // Verify in-progress count
+        let expected_in_progress = work_orders.iter().filter(|wo| wo.status == WorkOrderStatus::InProgress).count() as i64;
+        prop_assert_eq!(
+            in_progress_count,
+            expected_in_progress,
+            "In-progress count should match filtered records"
+        );
+
+        // Verify total labor revenue
+        let expected_labor: f64 = work_orders.iter().map(|wo| wo.labor_total).sum();
+        let labor_diff = (total_labor - expected_labor).abs();
+        prop_assert!(
+            labor_diff < 0.01,
+            "Total labor revenue should equal sum: expected {}, got {}",
+            expected_labor,
+            total_labor
+        );
+
+        // Verify total parts revenue
+        let expected_parts: f64 = work_orders.iter().map(|wo| wo.parts_total).sum();
+        let parts_diff = (total_parts - expected_parts).abs();
+        prop_assert!(
+            parts_diff < 0.01,
+            "Total parts revenue should equal sum: expected {}, got {}",
+            expected_parts,
+            total_parts
+        );
+
+        // Verify total revenue
+        let expected_revenue: f64 = work_orders.iter().map(|wo| wo.actual_total).sum();
+        let revenue_diff = (total_revenue - expected_revenue).abs();
+        prop_assert!(
+            revenue_diff < 0.01,
+            "Total revenue should equal sum: expected {}, got {}",
+            expected_revenue,
+            total_revenue
+        );
+
+        // Verify labor + parts = total (within rounding)
+        let combined = total_labor + total_parts;
+        let combined_diff = (combined - total_revenue).abs();
+        prop_assert!(
+            combined_diff < 0.02, // Allow slightly larger tolerance for accumulated rounding
+            "Labor + parts should equal total revenue: {} + {} = {}, but total is {}",
+            total_labor,
+            total_parts,
+            combined,
+            total_revenue
+        );
+    }
+
+
+    #[test]
+    fn promotion_report_aggregations_are_accurate(
+        usages in prop::collection::vec(arb_promotion_usage(), 1..50)
+    ) {
+        // Calculate aggregations
+        let aggregations = calculate_promotion_aggregations(&usages);
+
+        // Verify each promotion's aggregations
+        for (promotion_id, usage_count, total_discount, total_items) in aggregations {
+            // Get all usages for this promotion
+            let promotion_usages: Vec<&PromotionUsage> = usages
+                .iter()
+                .filter(|u| u.promotion_id == promotion_id)
+                .collect();
+
+            // Verify usage count
+            prop_assert_eq!(
+                usage_count,
+                promotion_usages.len() as i64,
+                "Usage count for {} should match number of records",
+                promotion_id
+            );
+
+            // Verify total discount
+            let expected_discount: f64 = promotion_usages.iter().map(|u| u.discount_amount).sum();
+            let diff = (total_discount - expected_discount).abs();
+            prop_assert!(
+                diff < 0.01,
+                "Total discount for {} should equal sum: expected {}, got {}",
+                promotion_id,
+                expected_discount,
+                total_discount
+            );
+
+            // Verify total items affected
+            let expected_items: i64 = promotion_usages.iter().map(|u| u.items_affected).sum();
+            prop_assert_eq!(
+                total_items,
+                expected_items,
+                "Total items for {} should equal sum",
+                promotion_id
+            );
+        }
+    }
+
+
+    #[test]
+    fn sales_by_category_aggregations_are_accurate(
+        transactions in prop::collection::vec(arb_sales_transaction(), 1..50)
+    ) {
+        // Calculate aggregations
+        let aggregations = calculate_sales_by_category(&transactions);
+
+        // Verify each category's aggregations
+        for (category, tx_count, items_sold, total_revenue) in aggregations {
+            // Get all transactions for this category
+            let category_transactions: Vec<&SalesTransaction> = transactions
+                .iter()
+                .filter(|t| t.category == category)
+                .collect();
+
+            // Verify transaction count
+            prop_assert_eq!(
+                tx_count,
+                category_transactions.len() as i64,
+                "Transaction count for {} should match number of records",
+                category
+            );
+
+            // Verify items sold
+            let expected_items: i64 = category_transactions.iter().map(|t| t.items_count).sum();
+            prop_assert_eq!(
+                items_sold,
+                expected_items,
+                "Items sold for {} should equal sum",
+                category
+            );
+
+            // Verify total revenue
+            let expected_revenue: f64 = category_transactions.iter().map(|t| t.total_amount).sum();
+            let diff = (total_revenue - expected_revenue).abs();
+            prop_assert!(
+                diff < 0.01,
+                "Total revenue for {} should equal sum: expected {}, got {}",
+                category,
+                expected_revenue,
+                total_revenue
+            );
+        }
+    }
+
+
+    #[test]
+    fn sales_by_employee_aggregations_are_accurate(
+        transactions in prop::collection::vec(arb_sales_transaction(), 1..50)
+    ) {
+        // Calculate aggregations
+        let aggregations = calculate_sales_by_employee(&transactions);
+
+        // Verify each employee's aggregations
+        for (employee_id, tx_count, total_sales, average_transaction) in aggregations {
+            // Get all transactions for this employee
+            let employee_transactions: Vec<&SalesTransaction> = transactions
+                .iter()
+                .filter(|t| t.employee_id == employee_id)
+                .collect();
+
+            // Verify transaction count
+            prop_assert_eq!(
+                tx_count,
+                employee_transactions.len() as i64,
+                "Transaction count for {} should match number of records",
+                employee_id
+            );
+
+            // Verify total sales
+            let expected_total: f64 = employee_transactions.iter().map(|t| t.total_amount).sum();
+            let diff = (total_sales - expected_total).abs();
+            prop_assert!(
+                diff < 0.01,
+                "Total sales for {} should equal sum: expected {}, got {}",
+                employee_id,
+                expected_total,
+                total_sales
+            );
+
+            // Verify average transaction
+            let expected_avg = if employee_transactions.is_empty() {
+                0.0
+            } else {
+                expected_total / employee_transactions.len() as f64
+            };
+            let avg_diff = (average_transaction - expected_avg).abs();
+            prop_assert!(
+                avg_diff < 0.01,
+                "Average transaction for {} should equal total / count: expected {}, got {}",
+                employee_id,
+                expected_avg,
+                average_transaction
+            );
+        }
+    }
+
+
+    #[test]
+    fn empty_datasets_produce_zero_aggregations() {
+        // Empty sales transactions
+        let (total_sales, total_tx, avg_tx, total_items) = calculate_sales_aggregations(&[]);
+        prop_assert!(total_sales.abs() < 0.000001, "Empty sales should have zero total");
+        prop_assert_eq!(total_tx, 0, "Empty sales should have zero count");
+        prop_assert!(avg_tx.abs() < 0.000001, "Empty sales should have zero average");
+        prop_assert_eq!(total_items, 0, "Empty sales should have zero items");
+
+        // Empty commissions
+        let comm_agg = calculate_commission_aggregations(&[]);
+        prop_assert!(comm_agg.is_empty(), "Empty commissions should produce empty aggregations");
+
+        // Empty layaways
+        let (active, completed, cancelled, outstanding) = calculate_layaway_aggregations(&[]);
+        prop_assert_eq!(active, 0, "Empty layaways should have zero active");
+        prop_assert_eq!(completed, 0, "Empty layaways should have zero completed");
+        prop_assert_eq!(cancelled, 0, "Empty layaways should have zero cancelled");
+        prop_assert!(outstanding.abs() < 0.000001, "Empty layaways should have zero outstanding");
+
+        // Empty work orders
+        let (total, completed, in_prog, labor, parts, revenue) = calculate_work_order_aggregations(&[]);
+        prop_assert_eq!(total, 0, "Empty work orders should have zero total");
+        prop_assert_eq!(completed, 0, "Empty work orders should have zero completed");
+        prop_assert_eq!(in_prog, 0, "Empty work orders should have zero in-progress");
+        prop_assert!(labor.abs() < 0.000001, "Empty work orders should have zero labor");
+        prop_assert!(parts.abs() < 0.000001, "Empty work orders should have zero parts");
+        prop_assert!(revenue.abs() < 0.000001, "Empty work orders should have zero revenue");
+
+        // Empty promotions
+        let promo_agg = calculate_promotion_aggregations(&[]);
+        prop_assert!(promo_agg.is_empty(), "Empty promotions should produce empty aggregations");
+    }
+
+
+    #[test]
+    fn aggregations_are_deterministic(
+        transactions in prop::collection::vec(arb_sales_transaction(), 1..20),
+        iterations in 2..5usize
+    ) {
+        // Calculate aggregations multiple times
+        let results: Vec<_> = (0..iterations)
+            .map(|_| calculate_sales_aggregations(&transactions))
+            .collect();
+
+        // All results should be identical
+        let first = results[0];
+        for (i, &result) in results.iter().enumerate() {
+            prop_assert_eq!(
+                result.0, first.0,
+                "Iteration {} total_sales should match iteration 0", i
+            );
+            prop_assert_eq!(
+                result.1, first.1,
+                "Iteration {} total_transactions should match iteration 0", i
+            );
+            prop_assert_eq!(
+                result.2, first.2,
+                "Iteration {} average_transaction should match iteration 0", i
+            );
+            prop_assert_eq!(
+                result.3, first.3,
+                "Iteration {} total_items_sold should match iteration 0", i
+            );
+        }
+    }
+
+
+    #[test]
+    fn aggregations_handle_large_datasets(
+        transactions in prop::collection::vec(arb_sales_transaction(), 100..200)
+    ) {
+        // Calculate aggregations
+        let (total_sales, total_transactions, average_transaction, total_items_sold) =
+            calculate_sales_aggregations(&transactions);
+
+        // Verify basic properties hold even with large datasets
+        prop_assert!(total_sales >= 0.0, "Total sales should be non-negative");
+        prop_assert_eq!(total_transactions, transactions.len() as i64, "Count should match");
+        prop_assert!(average_transaction >= 0.0, "Average should be non-negative");
+        prop_assert!(total_items_sold >= 0, "Total items should be non-negative");
+
+        // Verify average is within reasonable bounds
+        if total_transactions > 0 {
+            let expected_avg = total_sales / total_transactions as f64;
+            let diff = (average_transaction - expected_avg).abs();
+            prop_assert!(
+                diff < 0.01,
+                "Average should be accurate even for large datasets"
+            );
+        }
+    }
+
+
+    #[test]
+    fn aggregations_handle_edge_case_values(
+        count in 1..10usize
+    ) {
+        // Create transactions with edge case values
+        let mut transactions = Vec::new();
+        
+        // Very small amounts
+        transactions.push(SalesTransaction {
+            id: "small".to_string(),
+            total_amount: 0.01,
+            items_count: 1,
+            employee_id: "emp-1".to_string(),
+            category: "Test".to_string(),
+        });
+        
+        // Very large amounts
+        transactions.push(SalesTransaction {
+            id: "large".to_string(),
+            total_amount: 99999.99,
+            items_count: 1000,
+            employee_id: "emp-1".to_string(),
+            category: "Test".to_string(),
+        });
+        
+        // Zero items (edge case)
+        transactions.push(SalesTransaction {
+            id: "zero-items".to_string(),
+            total_amount: 100.00,
+            items_count: 0,
+            employee_id: "emp-1".to_string(),
+            category: "Test".to_string(),
+        });
+
+        // Calculate aggregations
+        let (total_sales, total_transactions, average_transaction, total_items_sold) =
+            calculate_sales_aggregations(&transactions);
+
+        // Verify aggregations are correct
+        let expected_total = 0.01 + 99999.99 + 100.00;
+        let diff = (total_sales - expected_total).abs();
+        prop_assert!(
+            diff < 0.01,
+            "Should handle edge case values correctly"
+        );
+
+        prop_assert_eq!(total_transactions, 3, "Should count all transactions");
+        prop_assert_eq!(total_items_sold, 1001, "Should sum all items including zero");
+    }
+}

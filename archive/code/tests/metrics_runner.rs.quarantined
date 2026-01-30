@@ -1,0 +1,324 @@
+// QUARANTINED: 2026-01-25
+// REASON: Integration tests cannot use `crate::` imports - they must use the library name.
+// This file uses `crate::tests::golden_set` which is invalid because:
+// 1. Integration tests (in tests/ folder) cannot import from each other via crate::
+// 2. The golden_set module is another test file, not part of the library
+// 
+// To fix this properly would require:
+// 1. Moving golden_set types into the main library (src/models/ or similar)
+// 2. Updating all imports to use EasySale_server::
+// 3. Restructuring the test to work as an integration test
+//
+// Original location: backend/crates/server/tests/metrics_runner.rs
+
+use crate::models::review::InvoiceExtraction;
+use crate::tests::golden_set::{GoldenCase, GroundTruth};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+/// Metrics runner for golden set evaluation
+pub struct MetricsRunner {
+    golden_set: Vec<GoldenCase>,
+}
+
+/// Evaluation metrics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Metrics {
+    pub field_accuracy: HashMap<String, f64>,
+    pub overall_accuracy: f64,
+    pub auto_approve_rate: f64,
+    pub avg_processing_time_ms: u64,
+    pub avg_review_time_ms: u64,
+    pub total_cases: usize,
+    pub cases_processed: usize,
+    pub cases_failed: usize,
+}
+
+/// Field comparison result
+#[derive(Debug, Clone)]
+pub struct FieldComparison {
+    pub field_name: String,
+    pub expected: String,
+    pub actual: String,
+    pub matches: bool,
+}
+
+/// Case result
+#[derive(Debug, Clone)]
+pub struct CaseResult {
+    pub case_id: String,
+    pub field_comparisons: Vec<FieldComparison>,
+    pub processing_time_ms: u64,
+    pub auto_approved: bool,
+    pub accuracy: f64,
+}
+
+impl MetricsRunner {
+    /// Create new metrics runner
+    pub fn new(golden_set: Vec<GoldenCase>) -> Self {
+        Self { golden_set }
+    }
+    
+    /// Run metrics evaluation
+    pub async fn run(&self) -> Result<Metrics, MetricsError> {
+        let mut case_results = Vec::new();
+        let mut total_processing_time = 0u64;
+        let mut auto_approve_count = 0usize;
+        let mut cases_failed = 0usize;
+        
+        for case in &self.golden_set {
+            match self.process_case(case).await {
+                Ok(result) => {
+                    total_processing_time += result.processing_time_ms;
+                    if result.auto_approved {
+                        auto_approve_count += 1;
+                    }
+                    case_results.push(result);
+                }
+                Err(e) => {
+                    eprintln!("Failed to process case {}: {}", case.id, e);
+                    cases_failed += 1;
+                }
+            }
+        }
+        
+        // Calculate field accuracy
+        let field_accuracy = self.calculate_field_accuracy(&case_results);
+        
+        // Calculate overall accuracy
+        let overall_accuracy = if !case_results.is_empty() {
+            case_results.iter().map(|r| r.accuracy).sum::<f64>() / case_results.len() as f64
+        } else {
+            0.0
+        };
+        
+        // Calculate auto-approve rate
+        let auto_approve_rate = if !case_results.is_empty() {
+            auto_approve_count as f64 / case_results.len() as f64
+        } else {
+            0.0
+        };
+        
+        // Calculate average processing time
+        let avg_processing_time_ms = if !case_results.is_empty() {
+            total_processing_time / case_results.len() as u64
+        } else {
+            0
+        };
+        
+        Ok(Metrics {
+            field_accuracy,
+            overall_accuracy,
+            auto_approve_rate,
+            avg_processing_time_ms,
+            avg_review_time_ms: 0, // TODO: Implement review time tracking
+            total_cases: self.golden_set.len(),
+            cases_processed: case_results.len(),
+            cases_failed,
+        })
+    }
+    
+    /// Process single case
+    async fn process_case(&self, case: &GoldenCase) -> Result<CaseResult, MetricsError> {
+        let start = std::time::Instant::now();
+        
+        // TODO: Implement actual OCR pipeline
+        // For now, create mock extraction
+        let extraction = self.mock_extraction(&case.ground_truth);
+        
+        let processing_time_ms = start.elapsed().as_millis() as u64;
+        
+        // Compare extraction to ground truth
+        let field_comparisons = self.compare_extraction(&extraction, &case.ground_truth);
+        
+        // Calculate accuracy for this case
+        let matches = field_comparisons.iter().filter(|c| c.matches).count();
+        let accuracy = matches as f64 / field_comparisons.len() as f64;
+        
+        // Determine if would auto-approve (mock: accuracy > 0.9)
+        let auto_approved = accuracy > 0.9;
+        
+        Ok(CaseResult {
+            case_id: case.id.clone(),
+            field_comparisons,
+            processing_time_ms,
+            auto_approved,
+            accuracy,
+        })
+    }
+    
+    /// Mock extraction (placeholder for actual OCR)
+    fn mock_extraction(&self, ground_truth: &GroundTruth) -> InvoiceExtraction {
+        InvoiceExtraction {
+            invoice_number: Some(ground_truth.invoice_number.clone()),
+            invoice_date: Some(ground_truth.invoice_date.clone()),
+            vendor_name: Some(ground_truth.vendor_name.clone()),
+            subtotal: Some(ground_truth.subtotal),
+            tax: Some(ground_truth.tax),
+            total: Some(ground_truth.total),
+            line_items: vec![],
+        }
+    }
+    
+    /// Compare extraction to ground truth
+    fn compare_extraction(
+        &self,
+        extraction: &InvoiceExtraction,
+        ground_truth: &GroundTruth,
+    ) -> Vec<FieldComparison> {
+        let mut comparisons = Vec::new();
+        
+        // Invoice number
+        comparisons.push(FieldComparison {
+            field_name: "invoice_number".to_string(),
+            expected: ground_truth.invoice_number.clone(),
+            actual: extraction.invoice_number.clone().unwrap_or_default(),
+            matches: extraction.invoice_number.as_ref() == Some(&ground_truth.invoice_number),
+        });
+        
+        // Invoice date
+        comparisons.push(FieldComparison {
+            field_name: "invoice_date".to_string(),
+            expected: ground_truth.invoice_date.clone(),
+            actual: extraction.invoice_date.clone().unwrap_or_default(),
+            matches: extraction.invoice_date.as_ref() == Some(&ground_truth.invoice_date),
+        });
+        
+        // Vendor name
+        comparisons.push(FieldComparison {
+            field_name: "vendor_name".to_string(),
+            expected: ground_truth.vendor_name.clone(),
+            actual: extraction.vendor_name.clone().unwrap_or_default(),
+            matches: extraction.vendor_name.as_ref() == Some(&ground_truth.vendor_name),
+        });
+        
+        // Subtotal
+        comparisons.push(FieldComparison {
+            field_name: "subtotal".to_string(),
+            expected: ground_truth.subtotal.to_string(),
+            actual: extraction.subtotal.map(|v| v.to_string()).unwrap_or_default(),
+            matches: extraction.subtotal.map(|v| (v - ground_truth.subtotal).abs() < 0.01).unwrap_or(false),
+        });
+        
+        // Tax
+        comparisons.push(FieldComparison {
+            field_name: "tax".to_string(),
+            expected: ground_truth.tax.to_string(),
+            actual: extraction.tax.map(|v| v.to_string()).unwrap_or_default(),
+            matches: extraction.tax.map(|v| (v - ground_truth.tax).abs() < 0.01).unwrap_or(false),
+        });
+        
+        // Total
+        comparisons.push(FieldComparison {
+            field_name: "total".to_string(),
+            expected: ground_truth.total.to_string(),
+            actual: extraction.total.map(|v| v.to_string()).unwrap_or_default(),
+            matches: extraction.total.map(|v| (v - ground_truth.total).abs() < 0.01).unwrap_or(false),
+        });
+        
+        comparisons
+    }
+    
+    /// Calculate per-field accuracy
+    fn calculate_field_accuracy(&self, results: &[CaseResult]) -> HashMap<String, f64> {
+        let mut field_counts: HashMap<String, (usize, usize)> = HashMap::new();
+        
+        for result in results {
+            for comparison in &result.field_comparisons {
+                let entry = field_counts.entry(comparison.field_name.clone()).or_insert((0, 0));
+                entry.0 += 1; // Total
+                if comparison.matches {
+                    entry.1 += 1; // Matches
+                }
+            }
+        }
+        
+        field_counts
+            .into_iter()
+            .map(|(field, (total, matches))| {
+                let accuracy = matches as f64 / total as f64;
+                (field, accuracy)
+            })
+            .collect()
+    }
+    
+    /// Generate report
+    pub fn generate_report(&self, metrics: &Metrics) -> String {
+        let mut report = String::new();
+        
+        report.push_str("=== OCR Metrics Report ===\n\n");
+        report.push_str(&format!("Total Cases: {}\n", metrics.total_cases));
+        report.push_str(&format!("Cases Processed: {}\n", metrics.cases_processed));
+        report.push_str(&format!("Cases Failed: {}\n", metrics.cases_failed));
+        report.push_str(&format!("Overall Accuracy: {:.2}%\n", metrics.overall_accuracy * 100.0));
+        report.push_str(&format!("Auto-Approve Rate: {:.2}%\n", metrics.auto_approve_rate * 100.0));
+        report.push_str(&format!("Avg Processing Time: {}ms\n", metrics.avg_processing_time_ms));
+        
+        report.push_str("\n=== Field Accuracy ===\n");
+        let mut fields: Vec<_> = metrics.field_accuracy.iter().collect();
+        fields.sort_by_key(|(name, _)| *name);
+        
+        for (field, accuracy) in fields {
+            report.push_str(&format!("  {}: {:.2}%\n", field, accuracy * 100.0));
+        }
+        
+        report
+    }
+}
+
+/// Metrics error
+#[derive(Debug)]
+pub enum MetricsError {
+    ProcessingFailed(String),
+    ComparisonFailed(String),
+}
+
+impl std::fmt::Display for MetricsError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MetricsError::ProcessingFailed(msg) => write!(f, "Processing failed: {}", msg),
+            MetricsError::ComparisonFailed(msg) => write!(f, "Comparison failed: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for MetricsError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::golden_set::{CaseMetadata, CaseCategory, Difficulty, LineItemGroundTruth};
+    use std::path::PathBuf;
+
+    #[tokio::test]
+    async fn test_metrics_runner() {
+        let ground_truth = GroundTruth {
+            invoice_number: "INV-001".to_string(),
+            invoice_date: "2024-01-15".to_string(),
+            vendor_name: "Acme Corp".to_string(),
+            vendor_address: None,
+            subtotal: 100.0,
+            tax: 5.0,
+            total: 105.0,
+            line_items: vec![],
+        };
+        
+        let case = GoldenCase {
+            id: "test-001".to_string(),
+            invoice_path: PathBuf::from("test.pdf"),
+            ground_truth,
+            metadata: CaseMetadata {
+                category: CaseCategory::Clean,
+                difficulty: Difficulty::Easy,
+                notes: None,
+            },
+        };
+        
+        let runner = MetricsRunner::new(vec![case]);
+        let metrics = runner.run().await.unwrap();
+        
+        assert_eq!(metrics.total_cases, 1);
+        assert_eq!(metrics.cases_processed, 1);
+        assert!(metrics.overall_accuracy > 0.0);
+    }
+}

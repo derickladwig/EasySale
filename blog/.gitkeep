@@ -1,0 +1,7 @@
+# Blog Posts Directory
+
+This directory contains blog posts generated from development sessions.
+
+Each post follows the format: `YYYY-MM-DD-slug.md`
+
+Posts are generated using the `@blog-generate` prompt, which synthesizes [BLOG] commits into narrative-driven developer diary entries.
