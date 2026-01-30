@@ -44,9 +44,11 @@
 
 .wizardShell {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--wizard-bg);
+  overflow: hidden;
 }
 
 /* ============================================================================
@@ -298,12 +300,12 @@
 }
 
 .stepBadgeRequired {
-  background: rgba(245, 166, 35, 0.12);
-  color: rgba(245, 166, 35, 0.8);
+  background: color-mix(in srgb, var(--color-warning-500) 12%, transparent);
+  color: var(--color-warning-500);
 }
 
 .stepBadgeOptional {
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
   color: var(--wizard-text-muted);
 }
 
@@ -393,7 +395,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* Critical: don't let content overflow - footer must stay visible */
+  /* Allow content to scroll - footer stays visible */
   overflow: hidden;
   flex: 1;
 }
@@ -412,6 +414,8 @@
   scroll-behavior: smooth;
   /* Ensure scrollbar is always visible when needed */
   scrollbar-gutter: stable;
+  /* Ensure content can scroll when zoomed */
+  max-height: 100%;
 }
 
 @media (max-width: 768px) {
@@ -904,8 +908,8 @@
   align-items: center;
   gap: clamp(5px, 0.75vw, 8px);
   padding: clamp(6px, 1vw, 10px) clamp(16px, 2.5vw, 28px);
-  background: rgba(245, 166, 35, 0.08);
-  border-top: 1px solid rgba(245, 166, 35, 0.2);
+  background: color-mix(in srgb, var(--color-warning-500) 8%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--color-warning-500) 20%, transparent);
   font-size: clamp(0.6875rem, 0.9vw, 0.8125rem);
   color: var(--wizard-warning);
 }
