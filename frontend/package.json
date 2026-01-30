@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
-    "axios": "^1.13.2",
+    "axios": "^1.13.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "jsbarcode": "^3.12.3",
