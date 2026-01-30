@@ -934,11 +934,20 @@ This section documents a production-grade audit of the POS checkout flow.
 4. Export handlers are placeholders
 5. CSV exports return empty data
 
-**Security Issues Found:**
-- Auth token stored in localStorage (should use httpOnly cookies)
-- Default webhook secret fallback in production code
-- No CSRF protection implemented
-- Dynamic SQL table/column names without validation
+**Security Issues - Status Update (Jan 30, 2026):**
+
+| Issue | Status |
+|-------|--------|
+| Auth token in localStorage | ✅ **FIXED** - httpOnly cookies in `auth.rs` |
+| No CSRF protection | ✅ **FIXED** - Double-submit pattern in `csrf.rs` |
+| Default webhook secret fallback | ⚠️ Still present in `webhooks.rs:47` |
+| Dynamic SQL without validation | ⚠️ Needs allowlist validation |
+| Legacy axios clients | ⚠️ `syncApi.ts`, `settingsApi.ts` still use localStorage |
+
+**New Implementations Verified:**
+- `backend/crates/server/src/middleware/csrf.rs` - 363 lines, full CSRF middleware
+- `docs/api/openapi.yaml` - 7,695 lines, 200+ endpoints documented
+- `frontend/src/common/utils/apiClient.ts` - Uses `credentials: 'include'` + CSRF headers
 
 **Code Quality Issues:**
 - 8 files with console.log in production review components

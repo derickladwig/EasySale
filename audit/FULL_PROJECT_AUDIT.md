@@ -302,19 +302,19 @@ From `DEVELOPMENT_LOG.md`:
 
 ## Security Issues
 
-### High Severity
+### High Severity - FIXED
 
-| # | Issue | File | Line | Fix |
-|---|-------|------|------|-----|
-| 1 | Auth token in localStorage | `AuthContext.tsx` | 119 | Move to httpOnly cookies |
-| 2 | Default webhook secret fallback | `webhooks.rs` | 47 | Fail if env var missing |
+| # | Issue | File | Status |
+|---|-------|------|--------|
+| 1 | Auth token in localStorage | `AuthContext.tsx` | ✅ **FIXED** - httpOnly cookies implemented |
+| 2 | No CSRF protection | API layer | ✅ **FIXED** - Double-submit cookie pattern in `csrf.rs` |
 
 ### Medium Severity
 
-| # | Issue | File | Fix |
-|---|-------|------|-----|
-| 3 | No CSRF protection | API layer | Implement CSRF tokens |
-| 4 | Dynamic SQL table names | `sync_queue_processor.rs:557` | Validate against allowlist |
+| # | Issue | File | Status |
+|---|-------|------|--------|
+| 3 | Default webhook secret fallback | `webhooks.rs:47` | ⚠️ Still present |
+| 4 | Dynamic SQL table names | `sync_queue_processor.rs:557` | ⚠️ Needs allowlist validation |
 
 ### Low Severity
 
@@ -322,6 +322,24 @@ From `DEVELOPMENT_LOG.md`:
 |---|-------|------|-----|
 | 5 | Input validation consistency | Various | Audit all input points |
 | 6 | Dynamic column names in UPDATE | `work_order.rs:304` | Validate column names |
+| 7 | Legacy axios clients use localStorage | `syncApi.ts`, `settingsApi.ts`, etc. | Migrate to apiClient.ts |
+
+### Security Implementations Verified (Jan 30, 2026)
+
+**httpOnly Cookie Authentication:**
+- `backend/crates/server/src/handlers/auth.rs` - Sets `http_only(true)` cookie with `SameSite::Strict`
+- `frontend/src/common/utils/apiClient.ts` - Uses `credentials: 'include'` for all requests
+- Main `AuthContext.tsx` no longer uses localStorage for tokens
+
+**CSRF Protection:**
+- `backend/crates/server/src/middleware/csrf.rs` - Full implementation (363 lines)
+- Double-submit cookie pattern with `X-CSRF-Token` header
+- Frontend automatically includes CSRF token in state-changing requests
+- Exempt paths: login, webhooks, health checks, fresh install
+
+**OpenAPI Specification:**
+- `docs/api/openapi.yaml` - 7,695 lines documenting 200+ endpoints
+- Includes authentication, schemas, and all API tags
 
 ---
 
