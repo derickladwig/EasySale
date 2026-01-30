@@ -1,0 +1,70 @@
+# Codecov Configuration
+# https://docs.codecov.io/docs/codecovyml-reference
+
+codecov:
+  require_ci_to_pass: false
+  notify:
+    wait_for_ci: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "50...100"
+  
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 5%
+        if_ci_failed: error
+      frontend:
+        target: 60%
+        threshold: 5%
+        flags:
+          - frontend
+      backend:
+        target: 50%
+        threshold: 5%
+        flags:
+          - backend
+    patch:
+      default:
+        target: 60%
+        threshold: 10%
+        if_ci_failed: error
+
+flags:
+  frontend:
+    paths:
+      - frontend/src/
+    carryforward: true
+  backend:
+    paths:
+      - backend/crates/
+    carryforward: true
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+ignore:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/target/**"
