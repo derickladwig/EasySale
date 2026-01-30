@@ -689,4 +689,182 @@ EasySale/
 
 ---
 
+## END-TO-END AUDIT: Cart→Invoice→Receipt System (Jan 30, 2026)
+
+This section documents a production-grade audit of the POS checkout flow.
+
+### TRACEABILITY MATRIX
+
+| UI Action | Component/File | API Endpoint | Handler | DB Tables | Status |
+|-----------|---------------|--------------|---------|-----------|--------|
+| Add to Cart | `SellPage.tsx:302` | ❌ None | N/A | N/A | ⚠️ Local state only |
+| Remove from Cart | `SellPage.tsx:449` | ❌ None | N/A | N/A | ⚠️ Local state only |
+| Update Quantity | `SellPage.tsx:428,437` | ❌ None | N/A | N/A | ⚠️ Local state only |
+| Clear Cart | `SellPage.tsx:482` | ❌ None | N/A | N/A | ⚠️ Local state only |
+| Apply Discount | `DiscountModal.tsx:168` | ❌ None | N/A | N/A | ⚠️ Local state only |
+| Select Customer | `SellPage.tsx:386` | ❌ None | N/A | N/A | ⚠️ Toggle only |
+| Cash Payment | `PaymentModal.tsx:266` | POST `/api/sales` | `sales.rs::create_sale` | `sales_transactions`, `sales_line_items` | ✅ Working |
+| Card Payment | `PaymentModal.tsx:143` | POST `/api/sales` | `sales.rs::create_sale` | `sales_transactions`, `sales_line_items` | ✅ Working |
+| Void Sale | `useSales.ts:49` | POST `/api/sales/{id}/void` | `sales.rs::void_sale` | `sales_transactions` | ⚠️ Hook exists, no UI |
+| View Sale History | ❌ Missing | GET `/api/sales` | `sales.rs::list_sales` | `sales_transactions` | ⚠️ API exists, no UI |
+| Print Receipt | ❌ Missing | ❌ Missing | ❌ Missing | N/A | ❌ Not implemented |
+| Email Receipt | ❌ Missing | ❌ Missing | ❌ Missing | N/A | ❌ Not implemented |
+| Process Return | ❌ Missing | ❌ Missing | ❌ Missing | N/A | ❌ Not implemented |
+| Create Credit Memo | ❌ Missing | POST `/api/credit-accounts/{id}/charge` | `credit.rs` | `credit_transactions` | ⚠️ API exists, limited UI |
+
+---
+
+### FRONTEND AUDIT FINDINGS
+
+#### SellPage Payment Flow - WORKING
+| Button | Handler | API Call | Status |
+|--------|---------|----------|--------|
+| Cash Payment | ✅ `setShowPaymentModal(true)` → `handlePayment` | ✅ `createSale.mutateAsync` | ✅ WORKING |
+| Card Payment | ✅ `setShowPaymentModal(true)` → `handlePayment` | ✅ `createSale.mutateAsync` | ✅ WORKING |
+| Other Payment | ✅ `setShowPaymentModal(true)` → `handlePayment` | ✅ `createSale.mutateAsync` | ✅ WORKING |
+
+#### SellPage Cart Operations - LOCAL ONLY
+| Button | Handler | API Call | Status |
+|--------|---------|----------|--------|
+| Add to Cart | ✅ `addToCart` | ❌ None | ⚠️ No persistence |
+| Remove Item | ✅ `removeFromCart` | ❌ None | ⚠️ No persistence |
+| Quantity +/- | ✅ `updateQuantity` | ❌ None | ⚠️ No persistence |
+| Clear Cart | ✅ `clearCart` | ❌ None | ⚠️ No persistence |
+
+#### SellPage Missing Features
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Discount Button | ⚠️ Opens modal | DiscountModal signature mismatch (type param ignored) |
+| Coupon Button | ❌ No onClick | Button exists but not wired |
+| Customer Search | ❌ Missing | Only toggles "Walk-in Customer" |
+| Hold Transaction | ❌ Missing | No suspend/hold functionality |
+| Print Receipt | ❌ Missing | No print button after sale |
+| Email Receipt | ❌ Missing | No email button after sale |
+
+#### Missing Pages
+| Page | Status | Notes |
+|------|--------|-------|
+| Invoice/Transaction History | ❌ Missing | `useSalesList` hook exists but no UI |
+| Invoice Detail | ❌ Missing | No view/edit invoice page |
+| Return Processing | ❌ Missing | No return workflow UI |
+| Credit Memo Creation | ❌ Missing | No credit memo UI |
+
+---
+
+### BACKEND AUDIT FINDINGS
+
+#### Implemented Endpoints
+| Endpoint | Method | Handler | DB Operations | Status |
+|----------|--------|---------|---------------|--------|
+| `/api/sales` | POST | `create_sale` | INSERT transactions + line items, UPDATE inventory | ✅ IMPLEMENTED |
+| `/api/sales` | GET | `list_sales` | SELECT with pagination | ✅ IMPLEMENTED |
+| `/api/sales/{id}` | GET | `get_sale` | SELECT | ✅ IMPLEMENTED |
+| `/api/sales/{id}/void` | POST | `void_sale` | UPDATE status, restore inventory | ✅ IMPLEMENTED |
+| `/api/credit-accounts` | POST | `create_credit_account` | INSERT | ✅ IMPLEMENTED |
+| `/api/credit-accounts/{id}/charge` | POST | `record_charge` | INSERT transaction, UPDATE balance | ✅ IMPLEMENTED |
+| `/api/credit-accounts/{id}/payment` | POST | `record_payment` | INSERT transaction, UPDATE balance | ✅ IMPLEMENTED |
+
+#### Missing Endpoints
+| Endpoint | Purpose | Status |
+|----------|---------|--------|
+| `/api/receipts/{id}` | Get receipt data | ❌ MISSING |
+| `/api/receipts/{id}/print` | Print receipt | ❌ MISSING |
+| `/api/receipts/{id}/email` | Email receipt | ❌ MISSING |
+| `/api/returns` | Process return | ❌ MISSING |
+| `/api/refunds` | Process refund | ❌ MISSING |
+| `/api/customers/{id}/transactions` | Customer history | ❌ MISSING |
+
+---
+
+### DATABASE AUDIT FINDINGS
+
+#### Tables Exist and Working
+| Table | Tenant Isolation | Soft Delete | Audit Columns | Status |
+|-------|-----------------|-------------|---------------|--------|
+| `sales_transactions` | ✅ `tenant_id` | ✅ `voided_at`, `voided_by` | ✅ `created_at`, `updated_at` | ✅ OK |
+| `sales_line_items` | ⚠️ Via parent | ❌ None | ✅ `created_at` | ⚠️ OK |
+| `customers` | ✅ `tenant_id` | ❌ None | ✅ `created_at`, `updated_at` | ⚠️ No soft delete |
+| `credit_accounts` | ✅ `tenant_id` | ❌ None | ✅ `created_at`, `updated_at` | ⚠️ No soft delete |
+| `credit_transactions` | ✅ `tenant_id` | ❌ None | ✅ `transaction_date` | ⚠️ OK |
+| `payments` | ✅ `tenant_id` | ❌ None | ✅ `created_at`, `updated_at` | ⚠️ OK |
+
+#### Critical Database Issues
+| Issue | Severity | Table | Impact |
+|-------|----------|-------|--------|
+| No UNIQUE on `transaction_number` | 🔴 CRITICAL | `sales_transactions` | Duplicate numbers possible |
+| No CASCADE on `customer_id` FK | 🟡 MEDIUM | `sales_transactions` | Orphaned transactions |
+| No CASCADE on `employee_id` FK | 🟡 MEDIUM | `sales_transactions` | Orphaned transactions |
+| Hardcoded tax rate (13%) | 🟡 MEDIUM | `sales.rs:96` | Cannot configure tax |
+| No `receipts` table | 🟢 LOW | N/A | Generated on-demand |
+
+---
+
+### TEST COVERAGE AUDIT
+
+| Area | Status | Coverage | Notes |
+|------|--------|----------|-------|
+| Transaction Creation | ✅ Tests exist | MEDIUM-HIGH | Unit + integration tests |
+| Payment Processing | ✅ Tests exist | HIGH | Property tests + E2E |
+| Credit Accounts | ✅ Tests exist | MEDIUM | Property tests |
+| Invoice Generation | ⚠️ Partial | LOW | Placeholders only |
+| Receipt Generation | ⚠️ E2E only | MEDIUM | No backend tests |
+| Returns/Refunds | ⚠️ E2E only | MEDIUM | No backend tests |
+| Smoke Tests | ❌ Missing | N/A | No quick verification |
+
+#### Test Data Handling
+- ✅ Batch ID tracking implemented
+- ✅ Data purging via `/api/data-manager/purge/{batch_id}`
+- ✅ Tenant isolation in test data
+- ✅ Atomic batch operations
+
+---
+
+### PRIORITIZED FIX LIST
+
+#### FIX NOW (Critical - Blocks Core Functionality)
+1. **Add transaction history page** - Users cannot view past sales
+2. **Add receipt print/email** - No way to give customer receipt
+3. **Fix transaction_number UNIQUE constraint** - Risk of duplicates
+4. **Wire coupon button** - Button exists but does nothing
+5. **Fix DiscountModal signature** - Type parameter ignored
+
+#### FIX SOON (High - Degrades Experience)
+6. **Add customer search** - Only "Walk-in" toggle works
+7. **Add hold/suspend transaction** - Cannot pause sales
+8. **Add void sale UI** - Hook exists, no button
+9. **Add return processing UI** - No return workflow
+10. **Add customer transaction history endpoint**
+11. **Make tax rate configurable** - Currently hardcoded 13%
+
+#### FIX LATER (Medium - Nice to Have)
+12. **Add cart persistence** - Cart lost on refresh
+13. **Add CASCADE constraints** - Prevent orphaned records
+14. **Add soft delete to customers** - Preserve history
+15. **Add smoke test scripts** - Quick verification
+16. **Add invoice generation tests** - Low coverage
+
+---
+
+### WHAT ACTUALLY WORKS END-TO-END
+
+✅ **Complete Sale Flow**:
+1. Browse products → Add to cart → Select payment method → Complete sale → Transaction saved to DB
+
+✅ **Credit Account Flow**:
+1. Create credit account → Record charges → Record payments → Balance updates
+
+⚠️ **Partial Flows**:
+- Void sale: API works, no UI button
+- Sale history: API works, no UI page
+- Discounts: Modal works, type parameter ignored
+
+❌ **Not Working**:
+- Receipt print/email
+- Returns/refunds
+- Customer search in cart
+- Hold/suspend transaction
+- Invoice detail view
+
+---
+
 *Last Updated: 2026-01-30*
