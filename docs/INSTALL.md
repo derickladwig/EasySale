@@ -78,12 +78,13 @@ After successful startup:
 - **Backend API**: http://localhost:8923
 - **Health Check**: http://localhost:8923/health
 
-### Default Credentials
+### Initial Setup
 
-- **Username**: `admin`
-- **Password**: `admin123`
+On first launch, you'll be prompted to create an admin account:
+- **Username**: Choose your admin username
+- **Password**: Choose a secure password (minimum 8 characters)
 
-⚠️ **Change these immediately in production!**
+✅ **No default passwords** - you set your own credentials during setup.**
 
 ---
 
@@ -280,8 +281,8 @@ Open http://localhost:7945 in a browser. You should see the login page.
 ### Test Login
 
 1. Navigate to http://localhost:7945
-2. Enter username: `admin`
-3. Enter password: `admin123`
+2. On first launch, complete the setup wizard to create your admin account
+3. Enter the username and password you created
 4. Click Login
 
 ---

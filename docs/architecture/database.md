@@ -113,16 +113,20 @@ Migrations run automatically on application startup via `db::migrations::run_mig
 2. Add the migration to `src/db/migrations.rs`
 3. Test the migration on a development database
 
-## Seed Data
+## Initial Setup
 
-The initial migration includes seed data for testing:
+User accounts are created during the setup wizard (no seed data with default passwords):
 
-**Default Users:**
-- Username: `admin`, Password: `admin123`, Role: `admin`
-- Username: `cashier`, Password: `cashier123`, Role: `cashier`
-- Username: `manager`, Password: `manager123`, Role: `manager`
+**Admin Account:**
+- Created during first-time setup
+- Password must be at least 8 characters
+- Username and password chosen by the user
 
-**⚠️ Security Note:** Change default passwords in production!
+**Additional Users:**
+- Created via Admin → Users after initial setup
+- Each user has customizable role and permissions
+
+✅ **Security:** No default passwords are used in the system.
 
 ## Indexes and Performance
 

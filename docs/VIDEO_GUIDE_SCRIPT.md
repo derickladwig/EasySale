@@ -39,7 +39,7 @@
 >
 > You can log in using either a password or a PIN for quick access. Let me show you both methods.
 >
-> For this demo, we'll use the default admin credentials: username 'admin' and password 'admin123'.
+> For this demo, we'll log in with the admin account we created during setup.
 >
 > Notice the 'Remember username' checkbox - this saves your username for faster login next time.
 >
@@ -48,7 +48,7 @@
 ### Actions
 1. Point to the status panel (Database: Connected, Sync: Online)
 2. Show the Password/PIN toggle tabs
-3. Enter credentials: admin / admin123
+3. Enter your admin credentials (created during setup)
 4. Check "Remember username"
 5. Click "Sign In"
 6. Wait for dashboard to load

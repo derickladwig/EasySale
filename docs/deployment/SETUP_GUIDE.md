@@ -59,13 +59,15 @@ chmod +x setup.sh
 http://localhost:7945
 ```
 
-## Default Credentials
+## Initial Setup
 
-- **Username:** `admin`
-- **Password:** `admin123`
+On first launch, you'll be prompted to create your admin account:
+
+- **Username:** Choose your admin username
+- **Password:** Choose a secure password (minimum 8 characters)
 - **Tenant:** `default-tenant`
 
-⚠️ **IMPORTANT:** Change the admin password after first login in production!
+✅ **Security:** No default passwords are used - you set your own credentials during setup.
 
 ## Manual Setup (If Scripts Fail)
 

@@ -240,7 +240,7 @@ After editing all files, check:
 
 # Test
 # Open: http://192.168.2.65:7945
-# Login: admin / admin123
+# Login with your admin credentials (created during setup)
 # Check each page shows empty states
 ```
 

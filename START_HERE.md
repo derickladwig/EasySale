@@ -53,7 +53,7 @@ cd frontend && npm install && npm run dev
 | Backend | http://localhost:8923 |
 | Health | http://localhost:8923/health |
 
-**Default Login**: `admin` / `admin123`
+**First-Time Setup**: Create your admin account on first launch (you choose the password, minimum 8 characters).
 
 ---
 

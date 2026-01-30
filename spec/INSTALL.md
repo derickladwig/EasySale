@@ -65,7 +65,7 @@ start-dev.bat
 # Browser will open automatically to http://localhost:7945
 ```
 
-**Default Login**: `admin` / `admin123`
+**First-Time Setup**: Create your admin account on first launch (minimum 8 character password).
 
 **Access URLs**:
 - Frontend: http://localhost:7945
@@ -141,8 +141,9 @@ npm run dev
 ### Step 7: Verify Installation
 
 1. Open http://localhost:7945 in browser
-2. Login with: `admin` / `admin123`
-3. Check health: http://localhost:8923/health
+2. Complete setup wizard to create admin account
+3. Login with your new credentials
+4. Check health: http://localhost:8923/health
 
 ---
 

@@ -1,7 +1,11 @@
 <p align="center">
   <img src="data/icon.png" alt="EasySale Logo" width="120" height="120">
 </p>
-<p align="center"><strong>White-Label, Multi-Tenant Point of Sale System</strong>
+
+<h1 align="center">EasySale</h1>
+
+<p align="center">
+  <strong>White-Label, Multi-Tenant Point of Sale System</strong>
 </p>
 
 <p align="center">
@@ -75,9 +79,9 @@ start-dev.bat            # Windows
 | Backend API | http://localhost:8923 |
 | Health Check | http://localhost:8923/health |
 
-**Default Login**: `admin` / `admin123`
+**First-Time Setup**: On first launch, you'll be prompted to create an admin account with your own secure password (minimum 8 characters).
 
-> **Important**: Change default credentials before production deployment.
+> **Security**: No default passwords are used. You set your credentials during initial setup.
 
 ---
 
@@ -222,7 +226,7 @@ Payment terminal integration requires additional configuration:
 
 1. Obtain API credentials from your payment provider
 2. Configure terminal settings in Admin → Payment Settings
-3. See [Payment Integration Guide](docs/integrations/payments.md) for details
+3. See [Payment Integration Guide](docs/integrations/stripe-connect-setup.md) for details
 
 > **Note**: These integrations are optional and not required for core POS functionality.
 

@@ -130,7 +130,7 @@
 
 **ACTIONS:**
 1. Show login page (2 sec)
-2. Login with admin/admin123 (3 sec)
+2. Login with admin credentials (created during setup) (3 sec)
 3. Pan across dashboard stats (5 sec)
 4. Hover over quick actions (3 sec)
 

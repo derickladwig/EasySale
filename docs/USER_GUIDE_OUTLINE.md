@@ -27,7 +27,7 @@
   - Sync status indicator
   - Store name display
   - Station ID display
-- **Default Credentials**: admin / admin123
+- **Credentials**: Set during initial setup (no default passwords)
 
 ### 1.3 First-Run Setup Wizard
 - Company information setup

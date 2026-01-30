@@ -256,7 +256,7 @@ npx playwright show-report
 ## Test Data Requirements
 
 ### Users
-- **admin** user with password **admin123** (full permissions)
+- **admin** user created during setup (full permissions)
 - At least one **store** configured
 - At least one **station** configured
 

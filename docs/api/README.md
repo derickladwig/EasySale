@@ -4,7 +4,7 @@
 
 The EasySale API is a RESTful API built with Rust and Actix-web. It provides endpoints for all POS operations including authentication, sales, inventory, customers, and reporting.
 
-**Base URL**: `http://localhost:3000/api`
+**Base URL**: `http://localhost:8923/api`
 
 **Authentication**: JWT Bearer tokens
 
@@ -15,26 +15,28 @@ The EasySale API is a RESTful API built with Rust and Actix-web. It provides end
 ### Authentication
 
 ```bash
-# Login
-curl -X POST http://localhost:3000/api/auth/login \
+# Login (use credentials created during initial setup)
+curl -X POST http://localhost:8923/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
+  -d '{"username": "your_username", "password": "your_password"}'
 
 # Response
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": 1,
-    "username": "admin",
+    "username": "your_username",
     "role": "admin",
     "permissions": ["access_sell", "apply_discount", ...]
   }
 }
 
 # Use token in subsequent requests
-curl -X GET http://localhost:3000/api/products \
+curl -X GET http://localhost:8923/api/products \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
+
+> **Note**: Credentials are set during initial setup. There are no default passwords.
 
 ## API Endpoints
 
@@ -46,8 +48,8 @@ Authenticate user and receive JWT token.
 **Request**:
 ```json
 {
-  "username": "admin",
-  "password": "admin123"
+  "username": "your_username",
+  "password": "your_password"
 }
 ```
 
@@ -558,40 +560,40 @@ GET /api/products?sort=price&order=desc
 ### Using curl
 
 ```bash
-# Login
-TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
+# Login (replace with your credentials from initial setup)
+TOKEN=$(curl -s -X POST http://localhost:8923/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}' \
+  -d '{"username": "your_username", "password": "your_password"}' \
   | jq -r '.token')
 
 # Get current user
-curl -X GET http://localhost:3000/api/auth/me \
+curl -X GET http://localhost:8923/api/auth/me \
   -H "Authorization: Bearer $TOKEN"
 
 # Health check
-curl -X GET http://localhost:3000/health
+curl -X GET http://localhost:8923/health
 ```
 
 ### Using Postman
 
 1. Import the Postman collection (coming soon)
-2. Set environment variable `base_url` to `http://localhost:3000/api`
-3. Login to get token
+2. Set environment variable `base_url` to `http://localhost:8923/api`
+3. Login with credentials you created during setup
 4. Token is automatically used in subsequent requests
 
 ### Using JavaScript
 
 ```javascript
-// Login
-const response = await fetch('http://localhost:3000/api/auth/login', {
+// Login (replace with your credentials from initial setup)
+const response = await fetch('http://localhost:8923/api/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ username: 'admin', password: 'admin123' })
+  body: JSON.stringify({ username: 'your_username', password: 'your_password' })
 });
 const { token, user } = await response.json();
 
 // Use token
-const products = await fetch('http://localhost:3000/api/products', {
+const products = await fetch('http://localhost:8923/api/products', {
   headers: { 'Authorization': `Bearer ${token}` }
 });
 const data = await products.json();
@@ -602,7 +604,7 @@ const data = await products.json();
 Real-time updates will be available via WebSocket:
 
 ```javascript
-const ws = new WebSocket('ws://localhost:3000/ws');
+const ws = new WebSocket('ws://localhost:8923/ws');
 
 ws.onmessage = (event) => {
   const message = JSON.parse(event.data);

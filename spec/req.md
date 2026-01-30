@@ -199,7 +199,8 @@ EasySale is a **white-label, multi-tenant point-of-sale system** designed to:
 - [ ] Docker containers start successfully
 - [ ] Health check passes: `GET /health` returns 200
 - [ ] Login page loads at `http://localhost:7945`
-- [ ] Default admin login works (admin/admin123)
+- [ ] Setup wizard allows creating admin account (8+ char password)
+- [ ] Login works with created credentials
 
 ### 4.2 Core Functionality Acceptance
 

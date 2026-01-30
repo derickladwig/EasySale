@@ -50,11 +50,11 @@ When you first access EasySale, you may see:
 - **Password Login**: Username and password
 - **PIN Login**: Quick 4-6 digit PIN (if configured)
 
-**Default Credentials**:
-- Username: `admin`
-- Password: `admin123`
+**First-Time Setup**:
+- On first launch, you'll create your admin account
+- Choose a secure password (minimum 8 characters)
 
-> ⚠️ **Change default credentials immediately!**
+> ✅ **Security**: No default passwords - you set your own credentials.
 
 **Login Page Features**:
 - "Remember username" checkbox
