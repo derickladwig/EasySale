@@ -117,18 +117,18 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
-  # Python backup service
-  - package-ecosystem: "pip"
-    directory: "/backup"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "deps(backup)"
-    labels:
-      - "dependencies"
-      - "python"
+  # Python backup service - DISABLED (folder not in repo)
+  # - package-ecosystem: "pip"
+  #   directory: "/backup"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "monday"
+  #   open-pull-requests-limit: 5
+  #   commit-message:
+  #     prefix: "deps(backup)"
+  #   labels:
+  #     - "dependencies"
+  #     - "python"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"

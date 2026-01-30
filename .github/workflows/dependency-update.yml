@@ -125,34 +125,17 @@ jobs:
           cargo outdated || echo "All crates are up to date!" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
-  # Check for outdated Python packages
-  check-python-updates:
-    name: Check Python Updates
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        service: [backup]  # Add 'sync' when implemented
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      
-      - name: Install pip-check
-        run: pip install pip-check
-      
-      - name: Check for outdated packages
-        working-directory: ./${{ matrix.service }}
-        run: |
-          pip install -r requirements.txt
-          pip list --outdated || true
-          echo "## 📦 ${{ matrix.service }} Dependency Updates" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          pip list --outdated || echo "All packages are up to date!" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+  # Check for outdated Python packages - DISABLED (backup/ not in repo)
+  # check-python-updates:
+  #   name: Check Python Updates
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       service: [backup]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.10'
+  #     - run: pip install -r requirements.txt && pip list --outdated || true
+  #       working-directory: ./${{ matrix.service }}
