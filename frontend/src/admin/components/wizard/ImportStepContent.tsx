@@ -50,11 +50,11 @@ const IMPORT_TEMPLATES = {
       ],
       sampleRows: [
         // Example 1: Basic product with required fields only
-        ['SKU001', 'Sample Product', 'General', '19.99', '10.00', 'store-001', 'Product description', '', '100', '10', '123456789012', 'UPC-A', 'true', '', '', '', '', '', '', '', '', '', '', ''],
+        ['WIDGET-001', 'Blue Widget', 'Electronics', '19.99', '10.00', 'main-store', 'High-quality widget', 'Gadgets', '100', '10', '012345678905', 'UPC-A', 'true', '', '', 'Blue', 'Standard', 'Acme', '150g', 'Plastic', 'Acme Supplies', 'ACME-W001', '8.00', 'standard', ''],
         // Example 2: Product with attributes and vendor info
-        ['SKU002', 'Blue T-Shirt Large', 'Apparel', '29.99', '12.00', 'store-001', 'Cotton t-shirt', 'Shirts', '50', '5', '123456789013', 'EAN-13', 'true', '', '', 'Blue', 'Large', 'BrandX', '200g', 'Cotton', 'Supplier Inc', 'SUPP-TS-BL-L', '10.00', 'standard', ''],
-        // Example 3: Product variant (child of parent)
-        ['SKU003', 'Blue T-Shirt Medium', 'Apparel', '29.99', '12.00', 'store-001', 'Cotton t-shirt', 'Shirts', '30', '5', '123456789014', 'EAN-13', 'true', 'SKU002', '', 'Blue', 'Medium', 'BrandX', '180g', 'Cotton', 'Supplier Inc', 'SUPP-TS-BL-M', '10.00', 'standard', ''],
+        ['SHIRT-001', 'Cotton T-Shirt Blue Large', 'Apparel', '29.99', '12.00', 'main-store', 'Comfortable cotton t-shirt', 'Shirts', '50', '5', '012345678912', 'EAN-13', 'true', '', '', 'Blue', 'Large', 'StyleCo', '200g', 'Cotton', 'Textile World', 'TW-TS-BL-L', '10.00', 'standard', ''],
+        // Example 3: Another standalone product (no parent_sku to avoid import order issues)
+        ['TOOL-001', 'Precision Screwdriver Set', 'Tools', '45.00', '22.00', 'main-store', '12-piece precision set', 'Hand Tools', '25', '5', '098765432109', 'UPC-A', 'true', '', '', '', '', 'ToolPro', '350g', 'Steel', 'Tool Masters', 'TM-PSD12', '18.00', 'standard', 'Professional grade'],
       ],
     },
     excel: {

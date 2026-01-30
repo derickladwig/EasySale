@@ -139,15 +139,43 @@ export function ProductImportPage() {
       ...customAttributes.map(a => `attr_${a}`),
     ];
 
-    const sampleRow = [
-      'SKU001', 'Sample Product', 'General', '29.99', '15.00', 'store-001',
-      'Product description', 'Subcategory', '100', '10', '123456789012', 'UPC-A', 'true',
-      'MFG-001', '012345678905', '5901234123457', 'VEND1-SKU', 'VEND2-SKU', 'VEND3-SKU',
-      'Supplier Inc', 'SUPP-001', '12.00', 'Parts Co', 'PARTS-001', '13.00',
-      ...customAttributes.map(() => ''),
+    // Sample rows with proper demo data matching header order exactly:
+    // Required: sku*, name*, category*, unit_price*, cost*, store_id*
+    // Optional: description, subcategory, quantity, reorder_point, barcode, barcode_type, is_active
+    // Cross-link: alt_sku_manufacturer, alt_sku_upc, alt_sku_ean, alt_sku_vendor_1, alt_sku_vendor_2, alt_sku_vendor_3
+    // Vendor: vendor_1_name, vendor_1_sku, vendor_1_cost, vendor_2_name, vendor_2_sku, vendor_2_cost
+    const sampleRows = [
+      // Row 1: Complete example with all fields
+      [
+        'WIDGET-001', 'Blue Widget', 'Electronics', '29.99', '15.00', 'main-store',
+        'High-quality blue widget for everyday use', 'Gadgets', '100', '10', '012345678905', 'UPC-A', 'true',
+        'MFG-BW001', '012345678905', '5901234123457', 'VEND1-BW001', 'VEND2-BW001', '',
+        'Acme Supplies', 'ACME-001', '12.00', 'Widget Co', 'WC-001', '13.50',
+        ...customAttributes.map((attr) => attr === 'color' ? 'Blue' : attr === 'size' ? 'Medium' : attr === 'brand' ? 'Acme' : ''),
+      ],
+      // Row 2: Minimal example with only required fields
+      [
+        'GADGET-002', 'Red Gadget', 'Electronics', '19.99', '8.50', 'main-store',
+        'Compact red gadget', 'Gadgets', '50', '5', '', '', 'true',
+        '', '', '', '', '', '',
+        '', '', '', '', '', '',
+        ...customAttributes.map(() => ''),
+      ],
+      // Row 3: Another category example
+      [
+        'TOOL-003', 'Precision Screwdriver Set', 'Tools', '45.00', '22.00', 'main-store',
+        '12-piece precision screwdriver set', 'Hand Tools', '25', '5', '098765432109', 'UPC-A', 'true',
+        'MFG-PSD12', '098765432109', '', '', '', '',
+        'Tool Masters', 'TM-PSD12', '20.00', '', '', '',
+        ...customAttributes.map((attr) => attr === 'brand' ? 'ToolPro' : ''),
+      ],
     ];
 
-    const content = [headers.join(','), sampleRow.map(v => `"${v}"`).join(',')].join('\n');
+    const csvRows = [
+      headers.join(','),
+      ...sampleRows.map(row => row.map(v => `"${v}"`).join(',')),
+    ];
+    const content = csvRows.join('\n');
     
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -159,7 +187,7 @@ export function ProductImportPage() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    toast.success('Template downloaded');
+    toast.success('Template downloaded with 3 sample products');
   }, [customAttributes]);
 
   const handleValidate = useCallback(async () => {
