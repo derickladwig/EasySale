@@ -18,7 +18,7 @@
   "author": "EasySale Team",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^25.1.0",
     "@vitest/ui": "^4.0.16",
     "fast-check": "^4.5.3",
     "typescript": "^5.9.3",
