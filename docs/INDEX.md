@@ -40,8 +40,10 @@
 
 **User Guides:**
 - [Quick Start](../START_HERE.md) - Get up and running
-- [User Manual](user-guides/) - Coming soon
-- [Feature Guides](user-guides/) - Coming soon
+- [Cashier Guide](user-guides/cashier-guide.md) - Complete cashier operations
+- [Inventory Guide](user-guides/inventory-guide.md) - Warehouse and stock management
+- [Admin Guide](user-guides/admin-guide.md) - System administration
+- [Troubleshooting](user-guides/troubleshooting.md) - Common issues and solutions
 
 ### 🔍 Auditors & QA
 
@@ -58,7 +60,12 @@ docs/
 ├── INDEX.md                    # This file - main entry point
 ├── architecture/               # Technical design documents
 │   └── design.md              # System architecture overview
-├── api/                       # API documentation (coming soon)
+├── api/                       # API documentation
+│   ├── README.md              # API overview and authentication
+│   ├── products.md            # Product endpoints
+│   ├── transactions.md        # Transaction endpoints
+│   ├── customers.md           # Customer endpoints
+│   └── inventory.md           # Inventory endpoints
 ├── deployment/                # Build, Docker, CI/CD guides
 │   ├── BUILD_GUIDE.md
 │   ├── CI_CD_GUIDE.md
@@ -74,7 +81,14 @@ docs/
 │   ├── plan.md
 │   ├── task.md
 │   └── VERIFICATION_CHECKLIST.md
-├── user-guides/              # End-user documentation (coming soon)
+├── user-guides/              # End-user documentation
+│   ├── quick-start.md        # Getting started guide
+│   ├── cashier-guide.md      # Cashier operations
+│   ├── inventory-guide.md    # Warehouse management
+│   ├── admin-guide.md        # System administration
+│   └── troubleshooting.md    # Common issues and solutions
+├── offline-sync.md           # Offline operation and sync
+├── deployment.md             # Deployment procedures
 ├── status-reports/           # Current status reports
 └── legacy/                   # Deprecated documentation
 ```
@@ -92,7 +106,7 @@ docs/
 ## 📊 Current Status
 
 **System Status:** Production Ready  
-**Last Updated:** 2026-01-26  
+**Last Updated:** 2026-01-30  
 **Build Status:** ✅ Passing  
 **Documentation Status:** ✅ Organized  
 
@@ -109,7 +123,7 @@ For detailed status information, see:
 ## 📞 Support
 
 **Need Help?**
-- Check the [FAQ](user-guides/) (coming soon)
+- Check the [Troubleshooting Guide](user-guides/troubleshooting.md)
 - Search [existing issues](https://github.com/derickladwig/EasySale/issues)
 - Create a [new issue](https://github.com/derickladwig/EasySale/issues/new)
 - Join [discussions](https://github.com/derickladwig/EasySale/discussions)

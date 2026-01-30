@@ -1,6 +1,6 @@
 # Documentation
 
-This directory contains all project documentation for the CAPS POS system.
+This directory contains all project documentation for the EasySale POS system.
 
 ## Quick Links
 
@@ -18,8 +18,8 @@ Technical documentation for developers and system administrators:
 - **[data-flow.md](architecture/data-flow.md)** ✅ - How data flows through the system
 - **[database.md](architecture/database.md)** ✅ - Database schema and design
 - **[security.md](architecture/security.md)** ✅ - Security model and practices
-- **offline-sync.md** ⬜ - Offline operation and synchronization (coming soon)
-- **deployment.md** ⬜ - Deployment procedures (coming soon)
+- **[offline-sync.md](offline-sync.md)** ✅ - Offline operation and synchronization
+- **[deployment.md](deployment.md)** ✅ - Deployment procedures
 
 ### API Documentation (`api/`)
 
@@ -28,20 +28,20 @@ REST API reference for developers:
 - **[README.md](api/README.md)** ✅ - Complete API reference with examples
 - Authentication endpoints ✅
 - Health check endpoint ✅
-- Product endpoints ⬜ (coming soon)
-- Transaction endpoints ⬜ (coming soon)
-- Customer endpoints ⬜ (coming soon)
-- Inventory endpoints ⬜ (coming soon)
+- **[products.md](api/products.md)** ✅ - Product endpoints
+- **[transactions.md](api/transactions.md)** ✅ - Transaction endpoints
+- **[customers.md](api/customers.md)** ✅ - Customer endpoints
+- **[inventory.md](api/inventory.md)** ✅ - Inventory endpoints
 
 ### User Guides (`user-guides/`)
 
 End-user documentation for store staff:
 
 - **[quick-start.md](user-guides/quick-start.md)** ✅ - Getting started guide
-- **cashier-guide.md** ⬜ - Detailed guide for cashiers (coming soon)
-- **inventory-guide.md** ⬜ - Warehouse and inventory management (coming soon)
-- **admin-guide.md** ⬜ - System administration (coming soon)
-- **troubleshooting.md** ⬜ - Common issues and solutions (coming soon)
+- **[cashier-guide.md](user-guides/cashier-guide.md)** ✅ - Detailed guide for cashiers
+- **[inventory-guide.md](user-guides/inventory-guide.md)** ✅ - Warehouse and inventory management
+- **[admin-guide.md](user-guides/admin-guide.md)** ✅ - System administration
+- **[troubleshooting.md](user-guides/troubleshooting.md)** ✅ - Common issues and solutions
 
 ## For Developers
 
@@ -94,8 +94,6 @@ When adding new features:
 - Quick start guide for users
 - Database schema documentation
 - Security documentation
-
-### Planned ⬜
 - Offline sync documentation
 - Deployment guide
 - Cashier guide (detailed)
@@ -103,6 +101,8 @@ When adding new features:
 - Admin guide (detailed)
 - Troubleshooting guide
 - API documentation (products, transactions, customers, inventory)
+
+### Planned ⬜
 - Architecture diagrams (Mermaid)
 - Video tutorials
 
@@ -115,5 +115,5 @@ Documentation feedback is welcome! If you find errors, unclear explanations, or 
 
 ---
 
-**Last Updated**: 2026-01-09  
-**Version**: 0.1.0
+**Last Updated**: 2026-01-30  
+**Version**: 1.0.0

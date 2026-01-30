@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CAPS POS API is a RESTful API built with Rust and Actix-web. It provides endpoints for all POS operations including authentication, sales, inventory, customers, and reporting.
+The EasySale API is a RESTful API built with Rust and Actix-web. It provides endpoints for all POS operations including authentication, sales, inventory, customers, and reporting.
 
 **Base URL**: `http://localhost:3000/api`
 
@@ -131,7 +131,9 @@ Check API health status.
 
 ---
 
-### Products (Coming Soon)
+### Products
+
+> **Full documentation**: [products.md](./products.md)
 
 #### GET /api/products
 List products with optional filtering.
@@ -205,7 +207,9 @@ Authorization: Bearer <token>
 
 ---
 
-### Transactions (Coming Soon)
+### Transactions
+
+> **Full documentation**: [transactions.md](./transactions.md)
 
 #### POST /api/transactions
 Create a new sales transaction.
@@ -297,7 +301,9 @@ Authorization: Bearer <token>
 
 ---
 
-### Customers (Coming Soon)
+### Customers
+
+> **Full documentation**: [customers.md](./customers.md)
 
 #### GET /api/customers
 List customers with optional filtering.
@@ -366,7 +372,9 @@ Authorization: Bearer <token>
 
 ---
 
-### Inventory (Coming Soon)
+### Inventory
+
+> **Full documentation**: [inventory.md](./inventory.md)
 
 #### POST /api/inventory/adjustments
 Adjust inventory levels.

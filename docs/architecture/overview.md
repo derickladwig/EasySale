@@ -2,7 +2,7 @@
 
 ## High-Level Architecture
 
-The CAPS POS system is an offline-first, desktop application designed for automotive retail stores selling caps, parts, paint, and equipment. The architecture prioritizes local-first operation with background synchronization.
+EasySale is an offline-first, desktop application designed for retail businesses. The architecture prioritizes local-first operation with background synchronization.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

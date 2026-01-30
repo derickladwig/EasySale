@@ -1,12 +1,12 @@
 # Quick Start Guide
 
-## Welcome to CAPS POS
+## Welcome to EasySale
 
 This guide will help you get started with the CAPS Point of Sale system. Whether you're a cashier, inventory clerk, or manager, this guide covers the basics you need to know.
 
 ## Logging In
 
-1. **Open the CAPS POS application** on your desktop
+1. **Open the EasySale application** on your desktop
 2. **Enter your username and password**
 3. **Click "Login"**
 
@@ -25,7 +25,7 @@ Your role determines what features you can access:
 
 ## Main Screen Layout
 
-The CAPS POS interface has four main areas:
+The EasySale interface has four main areas:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -139,7 +139,7 @@ Note: All inventory adjustments are logged and reviewed by managers.
 
 ## Working Offline
 
-The CAPS POS system works 100% offline. If your internet connection is lost:
+EasySale works 100% offline. If your internet connection is lost:
 
 1. **Offline indicator appears** in the top bar
 2. **Continue working normally** - all features still work

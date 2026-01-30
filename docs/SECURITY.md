@@ -1,4 +1,4 @@
-# Security Guidelines - CAPS POS System
+# Security Guidelines - EasySale System
 
 ## Overview
 
