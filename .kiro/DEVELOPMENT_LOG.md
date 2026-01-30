@@ -881,4 +881,36 @@ This section documents a production-grade audit of the POS checkout flow.
 
 ---
 
+## AUDITS COMPLETED
+
+### Settings Architecture Audit (Jan 30, 2026)
+**Document:** `audit/SETTINGS_ARCHITECTURE_AUDIT.md`
+
+**Key Findings:**
+- 21 flat navigation items in AdminPage (overwhelming UX)
+- Dual navigation patterns (tabs vs routes) causing confusion
+- Massive code duplication between AdminPage and AdminLayout
+- 3 placeholder sections (Payment, Security, Notifications) showing dead ends
+- Route mismatch bug: `/admin/branding` routes to LocalizationPage instead of BrandingSettingsPage
+- No logical grouping of settings categories
+
+**Recommendation:** Consolidate to route-based navigation with 6 logical categories.
+
+### CSS/Theming/Branding Audit (Jan 30, 2026)
+**Document:** `audit/THEMING_BRANDING_AUDIT.md`
+
+**Key Findings:**
+- 50+ hardcoded color instances outside theme system
+- 100+ Tailwind color utilities that should use semantic tokens
+- 15+ components missing dark mode support
+- LoginPage has 50+ hardcoded colors
+- No theme toggle on login page
+- 4 instances of hardcoded "EasySale" brand name in Setup Wizard
+- BrandingSettingsPage has TODO for company name (line 446)
+- Default configs use hardcoded "EasySale" instead of neutral placeholders
+
+**Recommendation:** Migrate all color usage to semantic tokens, add theme toggle to login, make brand names configurable.
+
+---
+
 *Last Updated: 2026-01-30*
