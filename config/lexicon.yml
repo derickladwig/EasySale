@@ -1,0 +1,317 @@
+# Universal Lexicon Configuration
+# Defines field synonyms and vendor-specific overrides for field extraction
+# Requirements: 4.1 (Candidate Extraction - Universal Terms)
+
+# Global field synonyms
+field_synonyms:
+  invoice_number:
+    - invoice no
+    - inv #
+    - invoice #
+    - invoice number
+    - receipt #
+    - receipt no
+    - statement #
+    - statement no
+    - bill no
+    - bill number
+    - order #
+    - order number
+    - reference #
+    - ref #
+    - document #
+    - doc #
+  
+  invoice_date:
+    - invoice date
+    - date issued
+    - bill date
+    - statement date
+    - date
+    - issued
+    - order date
+    - document date
+    - billing date
+    - transaction date
+  
+  due_date:
+    - due date
+    - payment due
+    - due by
+    - payable by
+    - payment date
+    - terms
+  
+  vendor_name:
+    - vendor
+    - supplier
+    - from
+    - seller
+    - company
+    - business name
+    - merchant
+    - provider
+  
+  vendor_address:
+    - address
+    - street address
+    - mailing address
+    - location
+    - office address
+  
+  vendor_phone:
+    - phone
+    - telephone
+    - tel
+    - contact
+    - phone number
+    - tel no
+  
+  vendor_email:
+    - email
+    - e-mail
+    - contact email
+    - email address
+  
+  customer_name:
+    - bill to
+    - customer
+    - client
+    - sold to
+    - buyer
+    - purchaser
+  
+  customer_address:
+    - billing address
+    - customer address
+    - ship to
+    - shipping address
+    - delivery address
+  
+  subtotal:
+    - subtotal
+    - sub total
+    - sub-total
+    - amount before tax
+    - net amount
+    - merchandise total
+  
+  tax:
+    - tax
+    - sales tax
+    - gst
+    - hst
+    - vat
+    - tax amount
+    - total tax
+  
+  shipping:
+    - shipping
+    - freight
+    - delivery
+    - shipping & handling
+    - s&h
+    - postage
+  
+  discount:
+    - discount
+    - savings
+    - reduction
+    - deduction
+    - rebate
+  
+  total:
+    - total
+    - total due
+    - amount due
+    - balance due
+    - grand total
+    - total amount
+    - amount payable
+    - invoice total
+    - final amount
+  
+  payment_terms:
+    - payment terms
+    - terms
+    - net
+    - due in
+    - payment due
+  
+  po_number:
+    - po #
+    - po number
+    - purchase order
+    - p.o. #
+    - order #
+  
+  # Line item fields
+  item_sku:
+    - sku
+    - item #
+    - item number
+    - product code
+    - part #
+    - part number
+    - code
+    - catalog #
+  
+  item_description:
+    - description
+    - item
+    - product
+    - details
+    - name
+    - item description
+  
+  item_quantity:
+    - qty
+    - quantity
+    - amount
+    - units
+    - count
+    - "#"
+  
+  item_unit_price:
+    - unit price
+    - price
+    - rate
+    - cost
+    - each
+    - per unit
+    - unit cost
+  
+  item_line_total:
+    - line total
+    - total
+    - amount
+    - extended price
+    - line amount
+    - subtotal
+
+# Vendor-specific overrides
+# These override the global synonyms for specific vendors
+vendor_overrides:
+  # Example: Acme Corp uses non-standard terminology
+  acme-corp:
+    invoice_number:
+      - acme invoice
+      - order reference
+      - transaction id
+    total:
+      - final payment
+      - total payable
+  
+  # Example: Office Supplies Inc
+  office-supplies-inc:
+    invoice_number:
+      - osi invoice
+      - account number
+    item_sku:
+      - osi code
+      - catalog number
+
+# Format patterns (regex) for field validation
+format_patterns:
+  invoice_number:
+    - "^INV-?\\d{4,10}$"
+    - "^\\d{4,10}$"
+    - "^[A-Z]{2,4}-?\\d{4,10}$"
+  
+  invoice_date:
+    - "\\d{1,2}/\\d{1,2}/\\d{2,4}"
+    - "\\d{4}-\\d{2}-\\d{2}"
+    - "\\d{1,2}-\\d{1,2}-\\d{2,4}"
+    - "[A-Za-z]{3,9}\\s+\\d{1,2},?\\s+\\d{4}"
+  
+  total:
+    - "\\$?\\d{1,3}(,\\d{3})*(\\.\\d{2})?"
+    - "\\d+\\.\\d{2}"
+  
+  phone:
+    - "\\(?\\d{3}\\)?[-\\s]?\\d{3}[-\\s]?\\d{4}"
+    - "\\d{3}-\\d{3}-\\d{4}"
+    - "\\(\\d{3}\\)\\s?\\d{3}-\\d{4}"
+  
+  email:
+    - "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+  
+  po_number:
+    - "^PO-?\\d{4,10}$"
+    - "^\\d{4,10}$"
+
+# Proximity rules (how close label should be to value)
+proximity_rules:
+  # Maximum distance in pixels between label and value
+  max_horizontal_distance: 300
+  max_vertical_distance: 50
+  
+  # Preferred direction (right, below, left, above)
+  preferred_direction: right
+  
+  # Allow diagonal proximity
+  allow_diagonal: true
+
+# Zone priors (which zones are likely to contain which fields)
+zone_priors:
+  HeaderFields:
+    - invoice_number
+    - invoice_date
+    - due_date
+    - vendor_name
+    - vendor_address
+    - customer_name
+    - po_number
+  
+  TotalsBox:
+    - subtotal
+    - tax
+    - shipping
+    - discount
+    - total
+  
+  LineItemsTable:
+    - item_sku
+    - item_description
+    - item_quantity
+    - item_unit_price
+    - item_line_total
+  
+  FooterNotes:
+    - payment_terms
+    - vendor_phone
+    - vendor_email
+
+# Confidence boosters
+confidence_boosters:
+  # Boost confidence if value matches format pattern
+  format_match_boost: 0.1
+  
+  # Boost confidence if found in expected zone
+  zone_prior_boost: 0.15
+  
+  # Boost confidence if label proximity is good
+  proximity_boost: 0.1
+  
+  # Boost confidence if multiple sources agree
+  consensus_boost: 0.2
+
+# Settings
+settings:
+  # Case sensitivity for label matching
+  case_sensitive: false
+  
+  # Allow partial label matches
+  allow_partial_matches: true
+  
+  # Minimum label match score (0-1)
+  min_label_match_score: 0.7
+  
+  # Maximum candidates to preserve per field
+  max_candidates_per_field: 5
+  
+  # Enable fuzzy matching for labels
+  enable_fuzzy_matching: true
+  
+  # Fuzzy matching threshold (0-1)
+  fuzzy_match_threshold: 0.8

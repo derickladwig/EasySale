@@ -1,0 +1,44 @@
+# EasySale - Build Variants Configuration
+# ========================================
+# Use this file to build specific variants of the backend
+#
+# Usage:
+#   docker-compose -f docker-compose.build.yml build lite
+#   docker-compose -f docker-compose.build.yml build export
+#   docker-compose -f docker-compose.build.yml build full
+#
+# Or build all variants:
+#   docker-compose -f docker-compose.build.yml build
+
+name: easysale-build
+
+services:
+  # Lite variant: Core POS only (~20MB binary)
+  # No document processing, OCR, or export features
+  lite:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        FEATURES: ""
+    image: easysale-backend:lite
+
+  # Export variant: Core POS + CSV export (~25MB binary)
+  # Includes QuickBooks/accounting integration export
+  export:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        FEATURES: "export"
+    image: easysale-backend:export
+
+  # Full variant: All features (~35MB binary)
+  # Includes OCR, document processing, cleanup engine, export
+  full:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        FEATURES: "full"
+    image: easysale-backend:full

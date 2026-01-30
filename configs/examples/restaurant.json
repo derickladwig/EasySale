@@ -1,0 +1,233 @@
+{
+  "version": "1.0.0",
+  "tenant": {
+    "id": "restaurant",
+    "name": "My Restaurant",
+    "slug": "restaurant",
+    "description": "Restaurant and food service example configuration"
+  },
+  "branding": {
+    "company": {
+      "name": "My Restaurant",
+      "shortName": "MR",
+      "tagline": "Fresh Food, Fast Service",
+      "logo": "/assets/logos/restaurant-logo.svg",
+      "favicon": "/assets/icons/favicon.png",
+      "icon": "MR"
+    },
+    "login": {
+      "background": "/assets/images/restaurant-login-bg.jpg",
+      "message": "Welcome to Restaurant POS",
+      "showLogo": true,
+      "layout": "centered"
+    },
+    "receipts": {
+      "header": "My Restaurant\n789 Food Court Ave\nDining City, ST 11223\nPhone: (555) 456-7890",
+      "footer": "Thank you for dining with us!\nTip suggestions: 15% | 18% | 20%",
+      "showLogo": true
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "colors": {
+      "primary": {
+        "500": "#ef4444",
+        "600": "#dc2626"
+      },
+      "secondary": {
+        "500": "#f97316",
+        "600": "#ea580c"
+      },
+      "background": "#0f172a",
+      "surface": "#1e293b",
+      "text": "#f1f5f9",
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    }
+  },
+  "categories": [
+    {
+      "id": "appetizers",
+      "name": "Appetizers",
+      "icon": "Salad",
+      "color": "#22c55e",
+      "order": 1,
+      "attributes": [
+        { "name": "name", "label": "Item Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Item Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "description", "label": "Description", "type": "text" },
+        { "name": "dietary", "label": "Dietary", "type": "multi-select", "values": ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free"] },
+        { "name": "spicy", "label": "Spice Level", "type": "dropdown", "values": ["None", "Mild", "Medium", "Hot", "Extra Hot"] }
+      ],
+      "searchFields": ["name", "sku", "description"],
+      "filters": [
+        { "field": "dietary", "label": "Dietary", "type": "checkbox" },
+        { "field": "spicy", "label": "Spice Level", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "mains",
+      "name": "Main Courses",
+      "icon": "UtensilsCrossed",
+      "color": "#ef4444",
+      "order": 2,
+      "attributes": [
+        { "name": "name", "label": "Item Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Item Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "description", "label": "Description", "type": "text" },
+        { "name": "dietary", "label": "Dietary", "type": "multi-select", "values": ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free"] },
+        { "name": "protein", "label": "Protein", "type": "dropdown", "values": ["Chicken", "Beef", "Pork", "Fish", "Seafood", "Tofu", "None"] },
+        { "name": "prepTime", "label": "Prep Time (min)", "type": "number" }
+      ],
+      "searchFields": ["name", "sku", "description", "protein"],
+      "filters": [
+        { "field": "dietary", "label": "Dietary", "type": "checkbox" },
+        { "field": "protein", "label": "Protein", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "sides",
+      "name": "Sides",
+      "icon": "Cookie",
+      "color": "#f59e0b",
+      "order": 3,
+      "attributes": [
+        { "name": "name", "label": "Item Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Item Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "dietary", "label": "Dietary", "type": "multi-select", "values": ["Vegetarian", "Vegan", "Gluten-Free"] }
+      ],
+      "searchFields": ["name", "sku"],
+      "filters": [
+        { "field": "dietary", "label": "Dietary", "type": "checkbox" }
+      ]
+    },
+    {
+      "id": "beverages",
+      "name": "Beverages",
+      "icon": "Coffee",
+      "color": "#3b82f6",
+      "order": 4,
+      "attributes": [
+        { "name": "name", "label": "Item Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Item Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "size", "label": "Size", "type": "dropdown", "values": ["Small", "Medium", "Large", "Pitcher"] },
+        { "name": "alcoholic", "label": "Alcoholic", "type": "boolean" },
+        { "name": "temperature", "label": "Temperature", "type": "dropdown", "values": ["Hot", "Cold", "Room Temp"] }
+      ],
+      "searchFields": ["name", "sku"],
+      "filters": [
+        { "field": "alcoholic", "label": "Alcoholic", "type": "checkbox" },
+        { "field": "temperature", "label": "Temperature", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "desserts",
+      "name": "Desserts",
+      "icon": "Cake",
+      "color": "#ec4899",
+      "order": 5,
+      "attributes": [
+        { "name": "name", "label": "Item Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Item Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "dietary", "label": "Dietary", "type": "multi-select", "values": ["Vegetarian", "Vegan", "Gluten-Free", "Sugar-Free"] }
+      ],
+      "searchFields": ["name", "sku"],
+      "filters": [
+        { "field": "dietary", "label": "Dietary", "type": "checkbox" }
+      ]
+    }
+  ],
+  "navigation": {
+    "main": [
+      { "id": "home", "label": "Home", "icon": "Home", "route": "/", "order": 0 },
+      { "id": "sell", "label": "Orders", "icon": "ShoppingCart", "route": "/sell", "permission": "access_sell", "order": 1 },
+      { "id": "tables", "label": "Tables", "icon": "LayoutGrid", "route": "/tables", "permission": "access_sell", "order": 2 },
+      { "id": "kitchen", "label": "Kitchen", "icon": "ChefHat", "route": "/kitchen", "permission": "access_warehouse", "order": 3 },
+      { "id": "customers", "label": "Customers", "icon": "Users", "route": "/customers", "permission": "access_sell", "order": 4 },
+      { "id": "reporting", "label": "Reports", "icon": "BarChart3", "route": "/reporting", "permission": "access_admin", "order": 5 },
+      { "id": "admin", "label": "Settings", "icon": "Settings", "route": "/admin", "permission": "access_admin", "order": 6 }
+    ],
+    "quickActions": [
+      { "label": "New Order", "icon": "Plus", "action": "navigate:/sell" },
+      { "label": "Table Map", "icon": "LayoutGrid", "action": "navigate:/tables" },
+      { "label": "Kitchen Display", "icon": "ChefHat", "action": "navigate:/kitchen" }
+    ],
+    "sidebar": { "width": "narrow", "collapsible": true, "showLabels": true },
+    "header": { "showSearch": true, "showNotifications": true, "showSync": true, "showUser": true }
+  },
+  "widgets": {
+    "dashboard": [
+      { "id": "daily-sales", "type": "stat-card", "title": "Today's Sales", "endpoint": "/api/stats/daily-sales", "format": "currency", "size": "1x1", "position": { "x": 0, "y": 0 } },
+      { "id": "orders", "type": "stat-card", "title": "Orders Today", "endpoint": "/api/stats/orders", "format": "number", "size": "1x1", "position": { "x": 1, "y": 0 } },
+      { "id": "avg-ticket", "type": "stat-card", "title": "Avg Check", "endpoint": "/api/stats/avg-ticket", "format": "currency", "size": "1x1", "position": { "x": 2, "y": 0 } },
+      { "id": "active-tables", "type": "stat-card", "title": "Active Tables", "endpoint": "/api/stats/active-tables", "format": "number", "size": "1x1", "position": { "x": 3, "y": 0 } },
+      { "id": "kitchen-queue", "type": "list", "title": "Kitchen Queue", "endpoint": "/api/kitchen/queue", "size": "2x2", "position": { "x": 0, "y": 1 } },
+      { "id": "popular-items", "type": "bar-chart", "title": "Popular Items", "endpoint": "/api/stats/popular-items", "size": "2x2", "position": { "x": 2, "y": 1 } }
+    ]
+  },
+  "modules": {
+    "inventory": { "enabled": true, "settings": { "trackIngredients": true } },
+    "layaway": { "enabled": false },
+    "workOrders": { "enabled": false },
+    "commissions": { "enabled": false },
+    "loyalty": { "enabled": true },
+    "creditAccounts": { "enabled": false },
+    "giftCards": { "enabled": true },
+    "promotions": { "enabled": true },
+    "appointments": { "enabled": false },
+    "reservations": { "enabled": true, "settings": { "maxPartySize": 20, "timeSlotMinutes": 30 } },
+    "tableManagement": { "enabled": true, "settings": { "tableCount": 25 } },
+    "kitchenDisplay": { "enabled": true },
+    "delivery": { "enabled": true }
+  },
+  "localization": {
+    "language": "en-US",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h",
+    "numberFormat": { "decimal": ".", "thousands": "," },
+    "currency": { "code": "USD", "symbol": "$", "position": "before" },
+    "timezone": "America/New_York",
+    "firstDayOfWeek": 0,
+    "measurementUnits": "imperial"
+  },
+  "layouts": {
+    "sell": {
+      "type": "split",
+      "panels": [
+        { "id": "menu", "type": "product-grid", "width": "flex-1" },
+        { "id": "order", "type": "cart", "width": "380px" }
+      ]
+    },
+    "lookup": {
+      "type": "full",
+      "panels": [
+        { "id": "menu-search", "type": "search-results", "width": "flex-1" }
+      ]
+    }
+  },
+  "wizards": {
+    "hierarchies": [],
+    "importMappings": [
+      {
+        "id": "menu-import",
+        "name": "Menu Import",
+        "supportedFormats": ["csv", "xlsx"],
+        "fields": [
+          { "target": "name", "label": "Item Name", "required": true },
+          { "target": "sku", "label": "Item Code", "required": true },
+          { "target": "price", "label": "Price", "required": true },
+          { "target": "category", "label": "Category", "required": false },
+          { "target": "description", "label": "Description", "required": false },
+          { "target": "dietary", "label": "Dietary Info", "required": false }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,924 @@
+/**
+ * Setup Wizard Styles - Theme-Compatible UI
+ * 
+ * Uses CSS variables from the global theme system (tokens.css/themes.css).
+ * Defaults to blue accent from global config, adapts when user sets custom theme.
+ * 
+ * All colors flow from CSS variables - NO hardcoded hex values.
+ * Source of truth: frontend/src/styles/tokens.css and themes.css
+ */
+
+/* ============================================================================
+   CSS Custom Properties - Theme-Compatible Token Set
+   ============================================================================ */
+
+.wizardShell {
+  /* Background colors - use theme vars (no hardcoded fallbacks) */
+  --wizard-bg: var(--color-background);
+  --wizard-surface: var(--color-surface);
+  --wizard-surface-elevated: var(--color-surface-elevated);
+  --wizard-border: var(--color-border);
+  --wizard-border-subtle: var(--color-border-subtle);
+  
+  /* Text colors - use theme vars */
+  --wizard-text-primary: var(--color-text-primary);
+  --wizard-text-secondary: var(--color-text-secondary);
+  --wizard-text-muted: var(--color-text-muted);
+  
+  /* Accent color - uses theme primary (blue by default) */
+  --wizard-accent: var(--color-primary-500);
+  --wizard-accent-hover: var(--color-primary-400);
+  --wizard-accent-glow: color-mix(in srgb, var(--color-primary-500) 25%, transparent);
+  
+  /* Status colors - use theme vars */
+  --wizard-error: var(--color-error-500);
+  --wizard-error-glow: color-mix(in srgb, var(--color-error-500) 20%, transparent);
+  --wizard-success: var(--color-success-500);
+  --wizard-success-glow: color-mix(in srgb, var(--color-success-500) 20%, transparent);
+  --wizard-warning: var(--color-warning-500);
+}
+
+/* ============================================================================
+   Shell Layout - Centered card design
+   ============================================================================ */
+
+.wizardShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--wizard-bg);
+}
+
+/* ============================================================================
+   Header - Full width with progress (compact)
+   ============================================================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: var(--wizard-surface);
+  border-bottom: 1px solid var(--wizard-border);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+.headerContent {
+  flex: 1;
+}
+
+.headerTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--wizard-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.headerSubtitle {
+  font-size: 0.75rem;
+  color: var(--wizard-text-muted);
+  margin-top: 1px;
+}
+
+/* Progress indicator in header */
+.progressSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+}
+
+@media (max-width: 768px) {
+  .progressSection {
+    width: 100%;
+  }
+}
+
+.progressLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.progressText {
+  color: var(--wizard-text-secondary);
+  font-weight: 500;
+}
+
+.progressPercent {
+  color: var(--wizard-accent);
+  font-weight: 600;
+}
+
+.progressBarWrapper {
+  flex: 1;
+  min-width: 100px;
+}
+
+.progressBar {
+  height: 3px;
+  background: var(--wizard-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--wizard-accent);
+  border-radius: 999px;
+  transition: width 0.4s ease-out;
+}
+
+/* ============================================================================
+   Main Content Area - Two column layout (responsive sidebar)
+   ============================================================================ */
+
+.mainContent {
+  flex: 1;
+  display: grid;
+  /* Responsive sidebar: min 200px, preferred 18%, max 260px */
+  grid-template-columns: clamp(200px, 18vw, 260px) 1fr;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   Stepper Sidebar (responsive)
+   ============================================================================ */
+
+.stepper {
+  padding: clamp(10px, 1.5vw, 16px) clamp(8px, 1vw, 14px);
+  background: var(--wizard-surface);
+  border-right: 1px solid var(--wizard-border);
+  overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+  .stepper {
+    display: none;
+  }
+}
+
+.stepperNav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* Individual step item */
+.stepItem {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.stepItem:hover:not(.stepItemDisabled) {
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+}
+
+.stepItemActive {
+  background: color-mix(in srgb, var(--color-primary-500) 8%, transparent);
+}
+
+.stepItemComplete {
+  opacity: 0.8;
+}
+
+.stepItemDisabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Step indicator dot */
+.stepDot {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid var(--wizard-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.2s ease;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.stepItemActive .stepDot {
+  border-color: var(--wizard-accent);
+  background: var(--wizard-accent);
+  box-shadow: 0 0 0 4px var(--wizard-accent-glow);
+}
+
+.stepItemComplete .stepDot {
+  border-color: var(--wizard-success);
+  background: var(--wizard-success);
+}
+
+.stepDotInner {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: white;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.stepItemActive .stepDotInner {
+  opacity: 1;
+}
+
+.stepDotIcon {
+  width: 12px;
+  height: 12px;
+  color: white;
+}
+
+/* Step text content */
+.stepContent {
+  min-width: 0;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stepTitle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--wizard-text-muted);
+  transition: color 0.15s ease;
+}
+
+.stepItemActive .stepTitle {
+  color: var(--wizard-text-primary);
+  font-weight: 600;
+}
+
+.stepItemComplete .stepTitle {
+  color: var(--wizard-text-secondary);
+}
+
+/* Calmer badges - smaller and muted */
+.stepBadge {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stepBadgeRequired {
+  background: rgba(245, 166, 35, 0.12);
+  color: rgba(245, 166, 35, 0.8);
+}
+
+.stepBadgeOptional {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--wizard-text-muted);
+}
+
+.stepDescription {
+  font-size: 0.6875rem;
+  color: var(--wizard-text-muted);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.stepItemActive .stepDescription {
+  color: var(--wizard-text-secondary);
+}
+
+/* ============================================================================
+   Mobile Step Indicator (compact)
+   ============================================================================ */
+
+.mobileStepIndicator {
+  display: none;
+  padding: 8px 12px;
+  background: var(--wizard-surface);
+  border-bottom: 1px solid var(--wizard-border);
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .mobileStepIndicator {
+    display: block;
+  }
+}
+
+.mobileStepDots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.mobileStepDot {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: var(--wizard-text-muted);
+}
+
+.mobileStepDotActive {
+  background: var(--wizard-accent);
+  color: white;
+  box-shadow: 0 0 0 2px var(--wizard-accent-glow);
+}
+
+.mobileStepDotComplete {
+  background: color-mix(in srgb, var(--color-success-500) 15%, transparent);
+  color: var(--wizard-success);
+}
+
+.mobileStepInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.mobileStepTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--wizard-text-primary);
+}
+
+/* ============================================================================
+   Content Area - Flex column with scrollable content and fixed footer
+   ============================================================================ */
+
+.contentArea {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* Critical: don't let content overflow - footer must stay visible */
+  overflow: hidden;
+  flex: 1;
+}
+
+.contentScroll {
+  /* Take remaining space but allow shrinking */
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Minimal padding - card should fill the space */
+  padding: clamp(10px, 1.25vw, 16px);
+  display: flex;
+  flex-direction: column;
+  /* Enable smooth scrolling */
+  scroll-behavior: smooth;
+  /* Ensure scrollbar is always visible when needed */
+  scrollbar-gutter: stable;
+}
+
+@media (max-width: 768px) {
+  .contentScroll {
+    padding: 8px;
+  }
+}
+
+/* Main content card - compact design */
+.card {
+  width: 100%;
+  /* Don't use flex: 1 here - let content determine height */
+  /* Card will grow with content, scroll area handles overflow */
+  background: var(--wizard-surface);
+  border: 1px solid var(--wizard-border);
+  border-radius: 10px;
+  box-shadow: 
+    0 2px 12px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .card {
+    border-radius: 8px;
+  }
+}
+
+/* Card header - compact */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(8px, 1.25vw, 12px);
+  padding: clamp(10px, 1.5vw, 14px) clamp(12px, 2vw, 20px) clamp(8px, 1.25vw, 12px);
+  border-bottom: 1px solid var(--wizard-border);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .cardHeader {
+    padding: 10px 12px 8px;
+    gap: 10px;
+  }
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-primary-500) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wizard-accent);
+}
+
+.cardIconSvg {
+  width: 16px;
+  height: 16px;
+}
+
+.cardTitleGroup {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: clamp(0.875rem, 1.1vw, 1rem);
+  font-weight: 700;
+  color: var(--wizard-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.cardDescription {
+  font-size: clamp(0.625rem, 0.85vw, 0.75rem);
+  color: var(--wizard-text-muted);
+  margin-top: 1px;
+  line-height: 1.4;
+}
+
+/* Card body - contains step content - compact */
+.cardBody {
+  /* Let content determine height, scroll handled by contentScroll */
+  padding: clamp(12px, 1.5vw, 18px) clamp(14px, 2vw, 24px) clamp(14px, 1.5vw, 20px);
+}
+
+@media (max-width: 768px) {
+  .cardBody {
+    padding: 10px 12px 14px;
+  }
+}
+
+/* ============================================================================
+   Form Elements - Compact spacing for better fit
+   ============================================================================ */
+
+.formSection {
+  margin-bottom: clamp(12px, 1.5vw, 18px);
+}
+
+.formSectionTitle {
+  font-size: clamp(0.625rem, 0.8vw, 0.75rem);
+  font-weight: 600;
+  color: var(--wizard-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: clamp(8px, 1vw, 12px);
+  padding-bottom: clamp(5px, 0.75vw, 8px);
+  border-bottom: 1px solid var(--wizard-border-subtle);
+}
+
+.formGroup {
+  margin-bottom: clamp(10px, 1.25vw, 16px);
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.formLabel {
+  display: block;
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+  font-weight: 500;
+  color: var(--wizard-text-secondary);
+  margin-bottom: clamp(4px, 0.5vw, 6px);
+}
+
+.formLabelRequired::after {
+  content: ' *';
+  color: var(--wizard-error);
+}
+
+.formInput {
+  width: 100%;
+  height: clamp(36px, 4vw, 42px);
+  padding: 0 clamp(10px, 1.25vw, 14px);
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  color: var(--wizard-text-primary);
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  border: 1px solid var(--wizard-border);
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.formInput::placeholder {
+  color: var(--wizard-text-muted);
+}
+
+.formInput:hover:not(:focus) {
+  border-color: var(--color-border);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--wizard-accent);
+  box-shadow: 0 0 0 3px var(--wizard-accent-glow);
+  background: color-mix(in srgb, var(--color-primary-500) 3%, transparent);
+}
+
+.formInputError {
+  border-color: var(--wizard-error);
+}
+
+.formInputError:focus {
+  border-color: var(--wizard-error);
+  box-shadow: 0 0 0 3px var(--wizard-error-glow);
+}
+
+.formInputSuccess {
+  border-color: var(--wizard-success);
+}
+
+.formError {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--wizard-error);
+}
+
+.formHint {
+  margin-top: 4px;
+  font-size: 0.6875rem;
+  color: var(--wizard-text-muted);
+}
+
+.formSelect {
+  width: 100%;
+  height: clamp(36px, 4vw, 42px);
+  padding: 0 clamp(10px, 1.25vw, 14px);
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  color: var(--wizard-text-primary);
+  background-color: var(--wizard-surface-elevated);
+  border: 1px solid var(--wizard-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 36px;
+}
+
+.formSelect:hover {
+  border-color: var(--color-border);
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--wizard-accent);
+  box-shadow: 0 0 0 3px var(--wizard-accent-glow);
+  background-color: var(--wizard-surface-elevated);
+}
+
+/* Style select options - use theme variables */
+.formSelect option {
+  background-color: var(--wizard-surface-elevated);
+  color: var(--wizard-text-primary);
+  padding: 12px 14px;
+}
+
+.formSelect option:hover,
+.formSelect option:focus {
+  background-color: var(--wizard-accent);
+  color: white;
+}
+
+.formSelect option:checked {
+  background-color: var(--wizard-accent);
+  color: white;
+}
+
+.formTextarea {
+  width: 100%;
+  min-height: clamp(70px, 8vw, 100px);
+  padding: clamp(8px, 1vw, 12px) clamp(10px, 1.25vw, 14px);
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  color: var(--wizard-text-primary);
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  border: 1px solid var(--wizard-border);
+  border-radius: 6px;
+  resize: vertical;
+  transition: all 0.15s ease;
+}
+
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--wizard-accent);
+  box-shadow: 0 0 0 3px var(--wizard-accent-glow);
+}
+
+/* Password input with toggle */
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: var(--wizard-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.passwordToggle:hover {
+  color: var(--wizard-text-secondary);
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+}
+
+.passwordToggleIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Password rules */
+.passwordRules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.passwordRule {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6875rem;
+  color: var(--wizard-text-muted);
+}
+
+.passwordRuleMet {
+  color: var(--wizard-success);
+}
+
+.passwordRuleIcon {
+  width: 12px;
+  height: 12px;
+}
+
+/* Checkbox styling */
+.formCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.formCheckboxInput {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--wizard-border);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  accent-color: var(--wizard-accent);
+}
+
+.formCheckboxInput:checked {
+  background: var(--wizard-accent);
+  border-color: var(--wizard-accent);
+}
+
+.formCheckboxLabel {
+  font-size: 0.875rem;
+  color: var(--wizard-text-secondary);
+}
+
+/* ============================================================================
+   Footer Navigation - Fixed at bottom of content area
+   ============================================================================ */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(10px, 1.5vw, 16px) clamp(16px, 2.5vw, 28px);
+  background: var(--wizard-surface);
+  border-top: 1px solid var(--wizard-border);
+  /* Critical: never shrink, always visible */
+  flex-shrink: 0;
+  gap: clamp(10px, 1.5vw, 16px);
+  /* Ensure minimum height for touch targets */
+  min-height: 56px;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+}
+
+.footerLeft {
+  /* Back button */
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Footer buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(5px, 0.75vw, 8px);
+  height: clamp(34px, 4vw, 40px);
+  padding: 0 clamp(14px, 1.75vw, 20px);
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btnSecondary {
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: var(--wizard-text-secondary);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  color: var(--wizard-text-primary);
+}
+
+.btnPrimary {
+  background: var(--wizard-accent);
+  color: white;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--wizard-accent-hover);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Skip button */
+.btnSkip {
+  background: transparent;
+  color: var(--wizard-text-muted);
+  padding: 0 12px;
+}
+
+.btnSkip:hover:not(:disabled) {
+  color: var(--wizard-text-secondary);
+}
+
+/* ============================================================================
+   Completion State (compact)
+   ============================================================================ */
+
+.completionCard {
+  text-align: center;
+  padding: clamp(24px, 4vw, 40px) clamp(16px, 2.5vw, 28px);
+}
+
+.completionIcon {
+  width: clamp(44px, 6vw, 60px);
+  height: clamp(44px, 6vw, 60px);
+  margin: 0 auto clamp(12px, 2vw, 20px);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-success-500) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wizard-success);
+}
+
+.completionIconSvg {
+  width: clamp(22px, 3vw, 30px);
+  height: clamp(22px, 3vw, 30px);
+}
+
+.completionTitle {
+  font-size: clamp(1.125rem, 1.75vw, 1.5rem);
+  font-weight: 700;
+  color: var(--wizard-text-primary);
+  margin: 0 0 clamp(4px, 0.75vw, 8px);
+}
+
+.completionDescription {
+  font-size: clamp(0.8125rem, 1.1vw, 0.9375rem);
+  color: var(--wizard-text-secondary);
+  margin: 0 0 clamp(16px, 2.5vw, 24px);
+  line-height: 1.5;
+}
+
+.completionActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+
+/* ============================================================================
+   Footer Warning (compact)
+   ============================================================================ */
+
+.footerWarning {
+  display: flex;
+  align-items: center;
+  gap: clamp(5px, 0.75vw, 8px);
+  padding: clamp(6px, 1vw, 10px) clamp(16px, 2.5vw, 28px);
+  background: rgba(245, 166, 35, 0.08);
+  border-top: 1px solid rgba(245, 166, 35, 0.2);
+  font-size: clamp(0.6875rem, 0.9vw, 0.8125rem);
+  color: var(--wizard-warning);
+}
+
+@media (max-width: 768px) {
+  .footerWarning {
+    padding: 6px 12px;
+    gap: 5px;
+  }
+}
+
+.footerWarningIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}

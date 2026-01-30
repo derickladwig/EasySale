@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT key, value\n        FROM settings\n        WHERE key LIKE 'theme.locks.%'\n        AND scope = 'store'\n        AND scope_id = ?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "key",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "value",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "8e3d117c679633965bbc3ee16cf5de17d2604684ffe36457cf9aacb549a89a8b"
+}

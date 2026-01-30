@@ -1,0 +1,34 @@
+[package]
+name = "capabilities"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+thiserror = "1.0"
+
+# HTTP client for healthcheck
+reqwest = { workspace = true, optional = true }
+
+# Async runtime
+tokio = { workspace = true, optional = true }
+
+[features]
+default = []
+export = []  # Feature flag to enable export functionality
+runtime_detection = ["reqwest", "tokio"]
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+enum_glob_use = "deny"
+pedantic = "warn"
+nursery = "warn"
+unwrap_used = "warn"

@@ -1,0 +1,46 @@
+/**
+ * TEST FILE: Sample CSS violations to verify linting rules
+ * This file should trigger multiple Stylelint errors
+ * DO NOT USE IN PRODUCTION
+ */
+
+/* ❌ VIOLATION 1: Hex color (should fail) */
+.test-hex-color {
+  color: #0066cc;
+  background: #ffffff;
+}
+
+/* ❌ VIOLATION 2: RGB color (should fail) */
+.test-rgb-color {
+  color: rgb(0, 102, 204);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ❌ VIOLATION 3: HSL color (should fail) */
+.test-hsl-color {
+  color: hsl(210, 100%, 40%);
+  background: hsla(0, 0%, 100%, 0.8);
+}
+
+/* ❌ VIOLATION 4: Position fixed (should fail) */
+.test-fixed-position {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* ❌ VIOLATION 5: Literal z-index (should fail) */
+.test-literal-zindex {
+  z-index: 1000;
+}
+
+/* ❌ VIOLATION 6: Border color without variable (should fail) */
+.test-border-color {
+  border: 1px solid #e0e0e0;
+  border-color: #cccccc;
+}
+
+/* ❌ VIOLATION 7: Box shadow with color (should fail) */
+.test-box-shadow {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

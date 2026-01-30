@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc fd212a329811f078e5c4e6d12de9436a2fca3896546734757f58980bb20e7f31 # shrinks to db_retention_daily = 1, db_retention_weekly = 1, db_retention_monthly = 1, file_retention_count = 1, full_retention_count = 1, num_db_backups = 10, num_file_backups = 10, num_full_backups = 10

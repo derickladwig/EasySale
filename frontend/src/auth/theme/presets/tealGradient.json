@@ -1,0 +1,170 @@
+{
+  "name": "Teal Gradient",
+  "version": "1.0.0",
+  "layout": {
+    "template": "leftStatusRightAuthCard",
+    "slots": {
+      "header": {
+        "enabled": true,
+        "components": ["logo", "environmentSelector"]
+      },
+      "left": {
+        "variant": "status"
+      },
+      "main": {
+        "variant": "card"
+      },
+      "footer": {
+        "enabled": true,
+        "components": ["version", "copyright"]
+      }
+    },
+    "responsive": {
+      "breakpoints": {
+        "mobile": 320,
+        "tablet": 768,
+        "desktop": 1024,
+        "kiosk": 1920
+      },
+      "stackOnMobile": true
+    }
+  },
+  "tokens": {
+    "colors": {
+      "surface": {
+        "primary": "rgba(15, 23, 42, 0.90)",
+        "secondary": "rgba(30, 41, 59, 0.85)",
+        "tertiary": "rgba(51, 65, 85, 0.75)"
+      },
+      "text": {
+        "primary": "#f8fafc",
+        "secondary": "#e2e8f0",
+        "tertiary": "#cbd5e1",
+        "inverse": "#0f172a"
+      },
+      "border": {
+        "default": "rgba(20, 184, 166, 0.25)",
+        "focus": "#14b8a6",
+        "error": "#f87171"
+      },
+      "accent": {
+        "primary": "#14b8a6",
+        "hover": "#0d9488",
+        "active": "#0f766e"
+      },
+      "status": {
+        "success": "#34d399",
+        "warning": "#fbbf24",
+        "error": "#f87171",
+        "info": "#3b82f6"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "primary": "Inter, system-ui, -apple-system, sans-serif",
+        "monospace": "Fira Code, Consolas, monospace"
+      },
+      "fontSize": {
+        "xs": "0.75rem",
+        "sm": "0.875rem",
+        "base": "1rem",
+        "lg": "1.125rem",
+        "xl": "1.25rem",
+        "xxl": "1.5rem"
+      },
+      "fontWeight": {
+        "normal": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "lineHeight": {
+        "tight": 1.25,
+        "normal": 1.5,
+        "relaxed": 1.75
+      }
+    },
+    "spacing": {
+      "scale": {
+        "xs": "0.25rem",
+        "sm": "0.5rem",
+        "md": "1rem",
+        "lg": "1.5rem",
+        "xl": "2rem",
+        "xxl": "3rem"
+      },
+      "density": "comfortable"
+    },
+    "shadows": {
+      "elevation": {
+        "none": "none",
+        "sm": "0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)",
+        "md": "0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12)",
+        "lg": "0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10)",
+        "xl": "0 15px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.05)"
+      }
+    },
+    "blur": {
+      "backdrop": {
+        "none": "none",
+        "sm": "blur(8px)",
+        "md": "blur(16px)",
+        "lg": "blur(24px)"
+      },
+      "enabled": true
+    },
+    "radius": {
+      "card": "16px",
+      "input": "8px",
+      "button": "8px",
+      "pill": "9999px"
+    }
+  },
+  "components": {
+    "authCard": {
+      "methods": ["password", "pin"],
+      "showStorePicker": true,
+      "showStationPicker": true,
+      "showDeviceIdentity": true,
+      "showDemoAccounts": true,
+      "glassmorphism": true,
+      "elevation": "lg"
+    },
+    "statusCard": {
+      "variant": "systemForward",
+      "showDatabaseStatus": true,
+      "showSyncStatus": true,
+      "showLastSync": true,
+      "showStoreInfo": true,
+      "showStationInfo": true
+    },
+    "header": {
+      "showLogo": true,
+      "showEnvironmentSelector": true,
+      "showHelpMenu": true,
+      "companyName": "EasySale"
+    },
+    "footer": {
+      "showVersion": true,
+      "showBuild": true,
+      "showCopyright": true,
+      "copyrightText": "© 2026 EasySale"
+    },
+    "errorCallout": {
+      "presentation": "callout",
+      "showRetryAction": true,
+      "showDiagnosticsAction": true
+    }
+  },
+  "background": {
+    "type": "gradient",
+    "gradient": {
+      "stops": [
+        { "color": "#0f172a", "position": 0 },
+        { "color": "#134e4a", "position": 33 },
+        { "color": "#115e59", "position": 66 },
+        { "color": "#0d9488", "position": 100 }
+      ]
+    }
+  }
+}

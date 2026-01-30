@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                INSERT INTO settings (key, value, scope, scope_id, data_type, created_at, updated_at)\n                VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))\n                ON CONFLICT(key, scope, scope_id) \n                DO UPDATE SET \n                    value = excluded.value,\n                    updated_at = datetime('now')\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "72ea5b1a138ea666cd4f82e8b0d265ecde3c3c49f477a6ddcdf0ce852e2978bc"
+}

@@ -1,0 +1,61 @@
+# Development Profile Configuration
+# Relaxed validation, dev tools enabled, safe defaults for local development
+
+[profile]
+name = "dev"
+strict_validation = false
+enable_demo = false
+
+[database]
+# Canonical key: DATABASE_PATH
+# For development, use a local file-based database
+path = "./data/pos.db"
+
+[server]
+host = "127.0.0.1"
+port = 8923
+# Public base URL for OAuth callbacks and webhooks
+# In dev, this can be localhost or ngrok URL
+public_base_url = "http://localhost:8923"
+# Dev endpoints enabled for debugging and testing
+enable_dev_endpoints = true
+
+[security]
+# Dev profile allows placeholder secrets for convenience
+require_secrets = false
+reject_placeholder_secrets = false
+# IMPORTANT: Change this in production!
+jwt_secret = "dev-secret-key-change-in-production"
+jwt_expiration_hours = 8
+
+[oauth]
+# OAuth redirect URIs for integrations
+# In dev, localhost is acceptable
+quickbooks_redirect_uri = "http://localhost:8923/api/integrations/quickbooks/callback"
+google_drive_redirect_uri = "http://localhost:8923/api/integrations/google-drive/callback"
+# Dev profile allows localhost OAuth for testing
+reject_localhost_in_prod = false
+
+[branding]
+# Branding source: "runtime" loads from tenant config
+source = "runtime"
+# Tenant ID to load configuration for
+tenant_id = "default"
+
+[integrations]
+# Integrations disabled by default in dev
+# Enable individually as needed for testing
+quickbooks_enabled = false
+woocommerce_enabled = false
+supabase_enabled = false
+
+[logging]
+level = "debug"
+# Log to stdout in dev for easier debugging
+output = "stdout"
+
+[features]
+# Feature flags for optional functionality
+enable_demo_mode = false
+enable_preset_packs = false
+enable_automotive_pack = false

@@ -1,0 +1,210 @@
+{
+  "version": "1.0.0",
+  "tenant": {
+    "id": "retail-store",
+    "name": "My Retail Store",
+    "slug": "retail-store",
+    "description": "General retail store example configuration"
+  },
+  "branding": {
+    "company": {
+      "name": "My Store",
+      "shortName": "MS",
+      "tagline": "Quality Products, Great Prices",
+      "logo": "/assets/logos/store-logo.svg",
+      "favicon": "/assets/icons/favicon.png",
+      "icon": "MS"
+    },
+    "login": {
+      "background": "/assets/images/retail-login-bg.jpg",
+      "message": "Welcome to My Store POS",
+      "showLogo": true,
+      "layout": "centered"
+    },
+    "receipts": {
+      "header": "My Retail Store\n456 Shopping Lane\nRetail City, ST 67890\nPhone: (555) 987-6543",
+      "footer": "Thank you for shopping with us!\nReturns accepted within 14 days.",
+      "showLogo": true
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "colors": {
+      "primary": {
+        "500": "#10b981",
+        "600": "#059669"
+      },
+      "background": "#0f172a",
+      "surface": "#1e293b",
+      "text": "#f1f5f9",
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    }
+  },
+  "categories": [
+    {
+      "id": "clothing",
+      "name": "Clothing",
+      "icon": "Shirt",
+      "color": "#3b82f6",
+      "order": 1,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "size", "label": "Size", "type": "dropdown", "values": ["XS", "S", "M", "L", "XL", "XXL"] },
+        { "name": "color", "label": "Color", "type": "text" },
+        { "name": "gender", "label": "Gender", "type": "dropdown", "values": ["Men", "Women", "Unisex", "Kids"] }
+      ],
+      "searchFields": ["name", "sku", "brand", "color"],
+      "filters": [
+        { "field": "size", "label": "Size", "type": "dropdown" },
+        { "field": "gender", "label": "Gender", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "electronics",
+      "name": "Electronics",
+      "icon": "Smartphone",
+      "color": "#8b5cf6",
+      "order": 2,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "model", "label": "Model", "type": "text" },
+        { "name": "warranty", "label": "Warranty", "type": "dropdown", "values": ["None", "1 Year", "2 Years", "3 Years"] }
+      ],
+      "searchFields": ["name", "sku", "brand", "model"],
+      "filters": [
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "warranty", "label": "Warranty", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "home-goods",
+      "name": "Home & Garden",
+      "icon": "Home",
+      "color": "#22c55e",
+      "order": 3,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "category", "label": "Sub-Category", "type": "dropdown", "values": ["Kitchen", "Bedroom", "Bathroom", "Garden", "Decor"] }
+      ],
+      "searchFields": ["name", "sku", "brand"],
+      "filters": [
+        { "field": "category", "label": "Category", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "accessories",
+      "name": "Accessories",
+      "icon": "Watch",
+      "color": "#f59e0b",
+      "order": 4,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "type", "label": "Type", "type": "dropdown", "values": ["Jewelry", "Watches", "Bags", "Belts", "Sunglasses"] }
+      ],
+      "searchFields": ["name", "sku", "brand"],
+      "filters": [
+        { "field": "type", "label": "Type", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" }
+      ]
+    }
+  ],
+  "navigation": {
+    "main": [
+      { "id": "home", "label": "Home", "icon": "Home", "route": "/", "order": 0 },
+      { "id": "sell", "label": "Sell", "icon": "ShoppingCart", "route": "/sell", "permission": "access_sell", "order": 1 },
+      { "id": "lookup", "label": "Lookup", "icon": "Search", "route": "/lookup", "permission": "access_sell", "order": 2 },
+      { "id": "warehouse", "label": "Inventory", "icon": "Package", "route": "/warehouse", "permission": "access_warehouse", "order": 3 },
+      { "id": "customers", "label": "Customers", "icon": "Users", "route": "/customers", "permission": "access_sell", "order": 4 },
+      { "id": "reporting", "label": "Reports", "icon": "BarChart3", "route": "/reporting", "permission": "access_admin", "order": 5 },
+      { "id": "admin", "label": "Settings", "icon": "Settings", "route": "/admin", "permission": "access_admin", "order": 6 }
+    ],
+    "quickActions": [
+      { "label": "New Sale", "icon": "Plus", "action": "navigate:/sell" },
+      { "label": "Quick Lookup", "icon": "Search", "action": "modal:product-search" }
+    ],
+    "sidebar": { "width": "medium", "collapsible": true, "showLabels": true },
+    "header": { "showSearch": true, "showNotifications": true, "showSync": true, "showUser": true }
+  },
+  "widgets": {
+    "dashboard": [
+      { "id": "daily-sales", "type": "stat-card", "title": "Today's Sales", "endpoint": "/api/stats/daily-sales", "format": "currency", "size": "1x1", "position": { "x": 0, "y": 0 } },
+      { "id": "transactions", "type": "stat-card", "title": "Transactions", "endpoint": "/api/stats/transactions", "format": "number", "size": "1x1", "position": { "x": 1, "y": 0 } },
+      { "id": "low-stock", "type": "table", "title": "Low Stock Items", "endpoint": "/api/inventory/low-stock", "size": "2x2", "position": { "x": 2, "y": 0 } },
+      { "id": "sales-chart", "type": "line-chart", "title": "Sales This Week", "endpoint": "/api/stats/weekly-sales", "size": "2x1", "position": { "x": 0, "y": 1 } }
+    ]
+  },
+  "modules": {
+    "inventory": { "enabled": true },
+    "layaway": { "enabled": true },
+    "workOrders": { "enabled": false },
+    "commissions": { "enabled": false },
+    "loyalty": { "enabled": true },
+    "creditAccounts": { "enabled": false },
+    "giftCards": { "enabled": true },
+    "promotions": { "enabled": true },
+    "appointments": { "enabled": false },
+    "reservations": { "enabled": false }
+  },
+  "localization": {
+    "language": "en-US",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h",
+    "numberFormat": { "decimal": ".", "thousands": "," },
+    "currency": { "code": "USD", "symbol": "$", "position": "before" },
+    "timezone": "America/New_York",
+    "firstDayOfWeek": 0,
+    "measurementUnits": "imperial"
+  },
+  "layouts": {
+    "sell": {
+      "type": "split",
+      "panels": [
+        { "id": "catalog", "type": "product-grid", "width": "flex-1" },
+        { "id": "cart", "type": "cart", "width": "420px" }
+      ]
+    },
+    "lookup": {
+      "type": "split",
+      "panels": [
+        { "id": "search", "type": "search-results", "width": "flex-1" },
+        { "id": "details", "type": "product-details", "width": "400px" }
+      ]
+    }
+  },
+  "wizards": {
+    "hierarchies": [],
+    "importMappings": [
+      {
+        "id": "products-import",
+        "name": "Products Import",
+        "supportedFormats": ["csv", "xlsx"],
+        "fields": [
+          { "target": "name", "label": "Product Name", "required": true },
+          { "target": "sku", "label": "SKU", "required": true },
+          { "target": "price", "label": "Price", "required": true },
+          { "target": "cost", "label": "Cost", "required": false },
+          { "target": "category", "label": "Category", "required": false },
+          { "target": "brand", "label": "Brand", "required": false },
+          { "target": "quantity", "label": "Quantity", "required": false }
+        ]
+      }
+    ]
+  }
+}

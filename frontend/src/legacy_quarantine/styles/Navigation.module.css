@@ -1,0 +1,151 @@
+/**
+ * QUARANTINED: Navigation Component Styles
+ * 
+ * Original Location: frontend/src/common/components/Navigation.module.css
+ * Quarantined: 2026-01-26
+ * Reason: Duplicate navigation system - AppLayout already provides navigation
+ * Replacement: AppLayout uses Tailwind classes for sidebar styling
+ * 
+ * This file is preserved per NO DELETES policy.
+ * DO NOT import this file in active code.
+ * 
+ * Uses design tokens for all colors, spacing, and transitions.
+ * Supports both light and dark themes through token system.
+ */
+
+/* ============================================
+ * SIDEBAR NAVIGATION (Desktop)
+ * ============================================ */
+
+.sidebarNav {
+  padding: var(--space-4);
+}
+
+.navTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-primary);
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-1);
+  position: relative;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  border-left: var(--border-2) solid transparent;
+}
+
+.navItem:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+
+.navItem:focus-visible {
+  outline: var(--ring-2) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Active state with visual indicators */
+.navItemActive {
+  background: var(--color-surface-3);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+  border-left-color: var(--color-accent);
+}
+
+.navItemActive:hover {
+  background: var(--color-surface-3);
+  color: var(--color-accent-hover);
+}
+
+.navIcon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--font-size-2xl);
+}
+
+.navLabel {
+  flex: 1;
+  font-size: var(--font-size-base);
+}
+
+.navBadge {
+  margin-left: auto;
+}
+
+/* ============================================
+ * MOBILE NAVIGATION (Bottom Bar)
+ * ============================================ */
+
+.mobileNav {
+  display: flex;
+  justify-content: space-around;
+  padding: var(--space-2) 0;
+  background: var(--color-bg-primary);
+  border-top: var(--border-1) solid var(--color-border);
+}
+
+.mobileNavItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-1);
+  position: relative;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  border-bottom: var(--border-2) solid transparent;
+}
+
+.mobileNavItem:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+}
+
+.mobileNavItem:focus-visible {
+  outline: var(--ring-2) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Active state for mobile */
+.mobileNavItemActive {
+  color: var(--color-accent);
+  background: var(--color-surface-3);
+  border-bottom-color: var(--color-accent);
+}
+
+.mobileNavItemActive:hover {
+  color: var(--color-accent-hover);
+}
+
+.mobileNavLabel {
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-1);
+}
+
+/* Badge positioning for mobile */
+.mobileNavItem .navBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT enabled as \"enabled: bool\" FROM feature_flags WHERE name = ? AND tenant_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "enabled: bool",
+        "ordinal": 0,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "20e7d499c3b80b931806456dc0f9d4aafe9bf0a770ce3ae6e7a28631caff2f39"
+}

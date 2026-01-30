@@ -1,0 +1,10 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc bb497d36dc88da5c01f5262cd4d7d6d09eaa62b881210bea4d63a2c34e3bab7f # shrinks to employee_id = "000aa0a0-00aa-a00a-00aa-a000a0a000a0", commission_amounts = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 859.0100600238126]
+cc 11b03737cfeed4f3cfc958f882fdaeb7d6c921970c48d463569f5a5b7d923912 # shrinks to employee_id = "aaa0aa00-0aa0-0aa0-00a0-0a000a0a00aa", transaction_id = "aaa0a00a-00aa-aaaa-aa00-aaaaaa00a0aa", commission_amounts = [0.01, 0.01]
+cc 32a7a0f397cb40abd304ad427aeefbffdf145500f3db72e342f45206940957d4 # shrinks to employee_id_1 = "00a00a0a-0000-00a0-000a-a00a0a0a00a0", employee_id_2 = "aa0a0a0a-aaa0-0aaa-a0aa-0aa00a00aaaa", transaction_id = "aaa0a00a-a0aa-0a00-aa00-a0aaaaaa0aa0", commission_amount_1 = 0.01, commission_amount_2 = 0.01
+cc eab2c2ce32021431bf7496eb731f74115aeb86e2aca7f67a6cfba993c31a660c # shrinks to employee_id = "0aa00aaa-00a0-00a0-00aa-aa0aa0aaa0aa", transaction_id = "aa00a0aa-a0aa-0000-0a0a-0aa0aa0a00a0", commission_id = "0a00aa0a-aaa0-aa00-00aa-aaa00aa0aa0a", commission_amount = 0.01

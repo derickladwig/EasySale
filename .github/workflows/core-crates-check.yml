@@ -1,0 +1,112 @@
+name: Core Crates Compilation Check
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/crates/pos_core_domain/**'
+      - 'backend/crates/pos_core_models/**'
+      - 'backend/crates/pos_core_storage/**'
+      - '.github/workflows/core-crates-check.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/crates/pos_core_domain/**'
+      - 'backend/crates/pos_core_models/**'
+      - 'backend/crates/pos_core_storage/**'
+      - '.github/workflows/core-crates-check.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-core-crates:
+    name: Verify Core Crates Compile Independently
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        crate:
+          - pos_core_domain
+          - pos_core_models
+          - pos_core_storage
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: backend/target
+          key: ${{ runner.os }}-cargo-build-${{ matrix.crate }}-${{ hashFiles('backend/crates/${{ matrix.crate }}/Cargo.toml') }}
+      
+      - name: Build ${{ matrix.crate }} independently
+        run: cargo build --manifest-path backend/crates/${{ matrix.crate }}/Cargo.toml
+      
+      - name: Run tests for ${{ matrix.crate }}
+        run: cargo test --manifest-path backend/crates/${{ matrix.crate }}/Cargo.toml
+      
+      - name: Check for integration dependencies
+        run: |
+          echo "Checking ${{ matrix.crate }} for integration dependencies..."
+          DEPS=$(cargo tree --manifest-path backend/crates/${{ matrix.crate }}/Cargo.toml | grep -iE "quickbooks|woocommerce|supabase" || true)
+          if [ -n "$DEPS" ]; then
+            echo "ERROR: Found integration dependencies in ${{ matrix.crate }}:"
+            echo "$DEPS"
+            exit 1
+          else
+            echo "✓ No integration dependencies found in ${{ matrix.crate }}"
+          fi
+  
+  verify-no-integration-deps:
+    name: Verify No Integration Dependencies
+    runs-on: ubuntu-latest
+    needs: check-core-crates
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      
+      - name: Check all core crates for integration dependencies
+        run: |
+          echo "Checking all core crates for integration dependencies..."
+          
+          for crate in pos_core_domain pos_core_models pos_core_storage; do
+            echo "Checking $crate..."
+            DEPS=$(cargo tree --manifest-path backend/crates/$crate/Cargo.toml | grep -iE "quickbooks|woocommerce|supabase|reqwest" || true)
+            if [ -n "$DEPS" ]; then
+              echo "ERROR: Found integration dependencies in $crate:"
+              echo "$DEPS"
+              exit 1
+            fi
+          done
+          
+          echo "✓ All core crates are free of integration dependencies"
+      
+      - name: Verify core crates compile together
+        run: |
+          cd backend
+          cargo build -p pos_core_domain -p pos_core_models -p pos_core_storage

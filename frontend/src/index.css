@@ -1,0 +1,261 @@
+@import 'tailwindcss';
+
+/* Import design system tokens and themes */
+@import './styles/tokens.css';
+@import './styles/themes.css';
+
+/* Import print styles */
+@import './styles/print.css';
+
+/* CSS Custom Properties for Dynamic Scaling */
+:root {
+  /* Text size scaling (default: 1 = 100%) */
+  --text-scale: 1;
+
+  /* Density scaling (default: 1 = comfortable) */
+  --density-scale: 1;
+
+  /* Sidebar width (default: 240px = medium) */
+  --sidebar-width: 240px;
+
+  /* Animation duration multiplier (default: 1 = normal speed) */
+  --animation-duration-multiplier: 1;
+}
+
+/* Global styles - Dark theme by default */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Apply text scaling */
+  font-size: calc(16px * var(--text-scale));
+
+  /* THEMESYNC[FE-0009][module=index][type=hardcoded-color]: Fallback hex values
+   * These fallbacks (#222224 dark, #ffffff light) are intentional for when CSS vars are not yet loaded.
+   * Source-of-truth: frontend/src/styles/tokens.css
+   * See: audit/THEME_CONFLICT_MAP.md#FE-0009
+   */
+  /* Use CSS variables for theme colors - allows light/dark switching */
+  background-color: var(--color-background, #ffffff);
+  color: var(--color-text-primary, #1a1a1a);
+
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
+}
+
+#root {
+  position: relative;
+  isolation: isolate;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Scrollbar styling - uses theme variables */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface, #2a2a2c);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border, var(--color-slate-600, #475569));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-dark, var(--color-slate-500, #64748b));
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animation-duration-multiplier: 0;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Global select dropdown styling - uses theme variables */
+/* Ensures proper contrast in both light and dark themes */
+select {
+  background-color: var(--color-surface, #f9f9f9);
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+select option {
+  background-color: var(--color-surface, #f9f9f9);
+  color: var(--color-text-primary, #1a1a1a);
+  padding: 8px 12px;
+}
+
+select option:hover,
+select option:focus {
+  background-color: var(--color-primary-500, #0756d9);
+  color: white;
+}
+
+select option:checked {
+  background-color: var(--color-primary-500, #0756d9);
+  color: white;
+}
+
+/* Light theme select styling */
+[data-theme="light"] select {
+  background-color: var(--color-surface, #f9f9f9);
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+[data-theme="light"] select option {
+  background-color: var(--color-surface, #f9f9f9);
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+[data-theme="light"] select option:hover,
+[data-theme="light"] select option:focus,
+[data-theme="light"] select option:checked {
+  background-color: var(--color-primary-500, #0756d9);
+  color: white;
+}
+
+/* Dark theme select styling (explicit for clarity) */
+[data-theme="dark"] select {
+  background-color: var(--color-surface, #2a2a2c);
+  color: var(--color-text-primary, #f5f5f7);
+}
+
+[data-theme="dark"] select option {
+  background-color: var(--color-surface, #2a2a2c);
+  color: var(--color-text-primary, #f5f5f7);
+}
+
+[data-theme="dark"] select option:hover,
+[data-theme="dark"] select option:focus,
+[data-theme="dark"] select option:checked {
+  background-color: var(--color-primary-500, #0756d9);
+  color: white;
+}
+
+/* System theme select styling - follows OS preference */
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] select {
+    background-color: var(--color-surface, #f9f9f9);
+    color: var(--color-text-primary, #1a1a1a);
+  }
+
+  [data-theme="system"] select option {
+    background-color: var(--color-surface, #f9f9f9);
+    color: var(--color-text-primary, #1a1a1a);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] select {
+    background-color: var(--color-surface, #2a2a2c);
+    color: var(--color-text-primary, #f5f5f7);
+  }
+
+  [data-theme="system"] select option {
+    background-color: var(--color-surface, #2a2a2c);
+    color: var(--color-text-primary, #f5f5f7);
+  }
+}
+
+/* Minimum viewport support */
+@media (max-width: 320px) {
+  body {
+    font-size: 14px; /* Ensure minimum readable text size */
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Enable momentum scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Focus visible for accessibility - blue to match theme */
+*:focus-visible {
+  outline: 2px solid var(--color-accent, #0756d9);
+  outline-offset: 2px;
+}
+
+/* Selection color - blue to match theme */
+::selection {
+  background-color: var(--color-accent, #0756d9);
+  color: #ffffff;
+}
+
+/* Prevent layout shifts */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure proper stacking context */
+header {
+  position: relative;
+  z-index: 50;
+}
+
+aside {
+  position: relative;
+  z-index: 40;
+}
+
+main {
+  position: relative;
+  z-index: 10;
+}
+
+/* Settings highlight animation */
+@keyframes setting-highlight {
+  0% {
+    background-color: rgba(var(--color-accent-rgb, 59, 130, 246), 0.2);
+    box-shadow: 0 0 0 4px rgba(var(--color-accent-rgb, 59, 130, 246), 0.3);
+  }
+  50% {
+    background-color: rgba(var(--color-accent-rgb, 59, 130, 246), 0.1);
+    box-shadow: 0 0 0 8px rgba(var(--color-accent-rgb, 59, 130, 246), 0.2);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.setting-highlight {
+  animation: setting-highlight 2s ease-out;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}

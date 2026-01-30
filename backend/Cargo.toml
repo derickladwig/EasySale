@@ -1,0 +1,118 @@
+[workspace]
+members = [
+  "crates/pos_core_domain",
+  "crates/pos_core_models",
+  "crates/pos_core_storage",
+  "crates/accounting_snapshots",
+  "crates/export_batches",
+  "crates/capabilities",
+  "crates/csv_export_pack",
+  "crates/server",
+]
+
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["EasySale Team"]
+license = "MIT"
+
+[workspace.dependencies]
+# Web framework
+actix-web = "4.4"
+actix-cors = "0.7"
+actix-files = "0.6"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+# Environment variables
+dotenv = "0.15"
+
+# Authentication
+jsonwebtoken = "9.2"
+bcrypt = "0.15"
+rand_core = { version = "0.6", features = ["getrandom"] }
+
+# Date/Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# Backup & Archive
+zip = "0.6"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+
+# Scheduler
+tokio-cron-scheduler = "0.10"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+log = "0.4"
+once_cell = "1.19"
+
+# Validation
+regex = "1.10"
+
+# Error handling
+thiserror = "1.0"
+
+# Random number generation
+rand = "0.8"
+
+# HTTP client for external API integrations
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+
+# Async trait support
+async-trait = "0.1"
+
+# URL encoding
+urlencoding = "2.1"
+
+# Encryption for credential storage
+aes-gcm = "0.10"
+base64 = "0.21"
+
+# Multipart form data
+actix-multipart = "0.6"
+futures-util = "0.3"
+
+# Image processing for OCR enhancement (optional - used by document processing features)
+image = "0.24"
+imageproc = "0.23"
+
+# PDF processing for text layer extraction (optional - used by document processing features)
+lopdf = "0.32"
+
+# Platform-specific disk space APIs (Windows)
+winapi = { version = "0.3", features = ["fileapi", "winbase"] }
+
+# Platform-specific disk space APIs (Unix)
+nix = { version = "0.27", features = ["fs"] }
+
+# Pin home crate to avoid edition 2024 requirement
+home = "=0.5.5"
+
+# Dev dependencies
+actix-rt = "2.9"
+tempfile = "3.8"
+proptest = "1.4"
+wiremock = "0.6"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

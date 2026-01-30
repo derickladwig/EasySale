@@ -1,0 +1,235 @@
+{
+  "version": "1.0.0",
+  "tenant": {
+    "id": "service-business",
+    "name": "My Service Business",
+    "slug": "service-business",
+    "description": "Service-based business example (repair shop, salon, etc.)"
+  },
+  "branding": {
+    "company": {
+      "name": "Service Pro",
+      "shortName": "SP",
+      "tagline": "Professional Service, Every Time",
+      "logo": "/assets/logos/service-logo.svg",
+      "favicon": "/assets/icons/favicon.png",
+      "icon": "SP"
+    },
+    "login": {
+      "background": "/assets/images/service-login-bg.jpg",
+      "message": "Welcome to Service Pro POS",
+      "showLogo": true,
+      "layout": "centered"
+    },
+    "receipts": {
+      "header": "Service Pro\n321 Workshop Blvd\nService Town, ST 44556\nPhone: (555) 321-0987",
+      "footer": "Thank you for choosing Service Pro!\nAll work guaranteed for 90 days.",
+      "showLogo": true
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "colors": {
+      "primary": {
+        "500": "#0ea5e9",
+        "600": "#0284c7"
+      },
+      "secondary": {
+        "500": "#f97316",
+        "600": "#ea580c"
+      },
+      "background": "#0f172a",
+      "surface": "#1e293b",
+      "text": "#f1f5f9",
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    }
+  },
+  "categories": [
+    {
+      "id": "services",
+      "name": "Services",
+      "icon": "Wrench",
+      "color": "#0ea5e9",
+      "order": 1,
+      "attributes": [
+        { "name": "name", "label": "Service Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Service Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Base Price", "type": "number", "required": true },
+        { "name": "description", "label": "Description", "type": "text" },
+        { "name": "duration", "label": "Duration (min)", "type": "number" },
+        { "name": "laborRate", "label": "Labor Rate/hr", "type": "number" },
+        { "name": "serviceType", "label": "Service Type", "type": "dropdown", "values": ["Repair", "Maintenance", "Installation", "Consultation", "Inspection"] },
+        { "name": "skillLevel", "label": "Skill Required", "type": "dropdown", "values": ["Basic", "Intermediate", "Advanced", "Expert"] }
+      ],
+      "searchFields": ["name", "sku", "description", "serviceType"],
+      "filters": [
+        { "field": "serviceType", "label": "Type", "type": "dropdown" },
+        { "field": "skillLevel", "label": "Skill Level", "type": "dropdown" },
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ]
+    },
+    {
+      "id": "parts",
+      "name": "Parts & Materials",
+      "icon": "Package",
+      "color": "#22c55e",
+      "order": 2,
+      "attributes": [
+        { "name": "name", "label": "Part Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Part Number", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true },
+        { "name": "cost", "label": "Cost", "type": "number" },
+        { "name": "brand", "label": "Brand", "type": "text" },
+        { "name": "partType", "label": "Part Type", "type": "dropdown", "values": ["OEM", "Aftermarket", "Generic", "Consumable"] },
+        { "name": "warranty", "label": "Warranty", "type": "dropdown", "values": ["None", "30 Days", "90 Days", "1 Year", "Lifetime"] }
+      ],
+      "searchFields": ["name", "sku", "brand"],
+      "filters": [
+        { "field": "partType", "label": "Type", "type": "dropdown" },
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "warranty", "label": "Warranty", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "labor",
+      "name": "Labor",
+      "icon": "Clock",
+      "color": "#f59e0b",
+      "order": 3,
+      "attributes": [
+        { "name": "name", "label": "Labor Description", "type": "text", "required": true },
+        { "name": "sku", "label": "Labor Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Rate/Hour", "type": "number", "required": true },
+        { "name": "laborType", "label": "Labor Type", "type": "dropdown", "values": ["Standard", "Overtime", "Emergency", "Specialized"] }
+      ],
+      "searchFields": ["name", "sku"],
+      "filters": [
+        { "field": "laborType", "label": "Type", "type": "dropdown" }
+      ]
+    },
+    {
+      "id": "packages",
+      "name": "Service Packages",
+      "icon": "Gift",
+      "color": "#8b5cf6",
+      "order": 4,
+      "attributes": [
+        { "name": "name", "label": "Package Name", "type": "text", "required": true },
+        { "name": "sku", "label": "Package Code", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Package Price", "type": "number", "required": true },
+        { "name": "description", "label": "Description", "type": "text" },
+        { "name": "includedServices", "label": "Included Services", "type": "json" },
+        { "name": "validDays", "label": "Valid For (days)", "type": "number" }
+      ],
+      "searchFields": ["name", "sku", "description"],
+      "filters": [
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ]
+    }
+  ],
+  "navigation": {
+    "main": [
+      { "id": "home", "label": "Home", "icon": "Home", "route": "/", "order": 0 },
+      { "id": "sell", "label": "Checkout", "icon": "ShoppingCart", "route": "/sell", "permission": "access_sell", "order": 1 },
+      { "id": "work-orders", "label": "Work Orders", "icon": "ClipboardList", "route": "/work-orders", "permission": "access_sell", "order": 2 },
+      { "id": "schedule", "label": "Schedule", "icon": "Calendar", "route": "/schedule", "permission": "access_sell", "order": 3 },
+      { "id": "warehouse", "label": "Inventory", "icon": "Package", "route": "/warehouse", "permission": "access_warehouse", "order": 4 },
+      { "id": "customers", "label": "Customers", "icon": "Users", "route": "/customers", "permission": "access_sell", "order": 5 },
+      { "id": "reporting", "label": "Reports", "icon": "BarChart3", "route": "/reporting", "permission": "access_admin", "order": 6 },
+      { "id": "admin", "label": "Settings", "icon": "Settings", "route": "/admin", "permission": "access_admin", "order": 7 }
+    ],
+    "quickActions": [
+      { "label": "New Work Order", "icon": "Plus", "action": "modal:new-work-order" },
+      { "label": "Quick Checkout", "icon": "ShoppingCart", "action": "navigate:/sell" },
+      { "label": "Schedule", "icon": "Calendar", "action": "navigate:/schedule" }
+    ],
+    "sidebar": { "width": "medium", "collapsible": true, "showLabels": true },
+    "header": { "showSearch": true, "showNotifications": true, "showSync": true, "showUser": true }
+  },
+  "widgets": {
+    "dashboard": [
+      { "id": "daily-revenue", "type": "stat-card", "title": "Today's Revenue", "endpoint": "/api/stats/daily-sales", "format": "currency", "size": "1x1", "position": { "x": 0, "y": 0 } },
+      { "id": "work-orders", "type": "stat-card", "title": "Open Work Orders", "endpoint": "/api/stats/open-work-orders", "format": "number", "size": "1x1", "position": { "x": 1, "y": 0 } },
+      { "id": "appointments", "type": "stat-card", "title": "Today's Appointments", "endpoint": "/api/stats/appointments-today", "format": "number", "size": "1x1", "position": { "x": 2, "y": 0 } },
+      { "id": "labor-hours", "type": "stat-card", "title": "Labor Hours", "endpoint": "/api/stats/labor-hours", "format": "number", "size": "1x1", "position": { "x": 3, "y": 0 } },
+      { "id": "work-order-queue", "type": "table", "title": "Work Order Queue", "endpoint": "/api/work-orders/queue", "size": "2x2", "position": { "x": 0, "y": 1 } },
+      { "id": "upcoming-appointments", "type": "list", "title": "Upcoming Appointments", "endpoint": "/api/appointments/upcoming", "size": "2x2", "position": { "x": 2, "y": 1 } },
+      { "id": "revenue-chart", "type": "line-chart", "title": "Weekly Revenue", "endpoint": "/api/stats/weekly-revenue", "size": "2x1", "position": { "x": 0, "y": 3 } },
+      { "id": "service-breakdown", "type": "pie-chart", "title": "Revenue by Service", "endpoint": "/api/stats/revenue-by-service", "size": "2x1", "position": { "x": 2, "y": 3 } }
+    ]
+  },
+  "modules": {
+    "inventory": { "enabled": true, "settings": { "trackSerialNumbers": true } },
+    "layaway": { "enabled": false },
+    "workOrders": { "enabled": true, "settings": { "requireApproval": true, "trackTime": true } },
+    "commissions": { "enabled": true, "settings": { "defaultRate": 10 } },
+    "loyalty": { "enabled": true },
+    "creditAccounts": { "enabled": true, "settings": { "defaultCreditLimit": 500 } },
+    "giftCards": { "enabled": true },
+    "promotions": { "enabled": true },
+    "appointments": { "enabled": true, "settings": { "slotDuration": 30, "advanceBookingDays": 30 } },
+    "reservations": { "enabled": false },
+    "timeTracking": { "enabled": true },
+    "estimates": { "enabled": true }
+  },
+  "localization": {
+    "language": "en-US",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h",
+    "numberFormat": { "decimal": ".", "thousands": "," },
+    "currency": { "code": "USD", "symbol": "$", "position": "before" },
+    "timezone": "America/New_York",
+    "firstDayOfWeek": 0,
+    "measurementUnits": "imperial"
+  },
+  "layouts": {
+    "sell": {
+      "type": "split",
+      "panels": [
+        { "id": "services", "type": "product-grid", "width": "flex-1" },
+        { "id": "invoice", "type": "cart", "width": "450px" }
+      ]
+    },
+    "lookup": {
+      "type": "split",
+      "panels": [
+        { "id": "search", "type": "search-results", "width": "flex-1" },
+        { "id": "details", "type": "product-details", "width": "400px" }
+      ]
+    }
+  },
+  "wizards": {
+    "hierarchies": [],
+    "importMappings": [
+      {
+        "id": "services-import",
+        "name": "Services Import",
+        "supportedFormats": ["csv", "xlsx"],
+        "fields": [
+          { "target": "name", "label": "Service Name", "required": true },
+          { "target": "sku", "label": "Service Code", "required": true },
+          { "target": "price", "label": "Base Price", "required": true },
+          { "target": "duration", "label": "Duration (min)", "required": false },
+          { "target": "serviceType", "label": "Service Type", "required": false },
+          { "target": "description", "label": "Description", "required": false }
+        ]
+      },
+      {
+        "id": "parts-import",
+        "name": "Parts Import",
+        "supportedFormats": ["csv", "xlsx"],
+        "fields": [
+          { "target": "name", "label": "Part Name", "required": true },
+          { "target": "sku", "label": "Part Number", "required": true },
+          { "target": "price", "label": "Price", "required": true },
+          { "target": "cost", "label": "Cost", "required": false },
+          { "target": "brand", "label": "Brand", "required": false },
+          { "target": "quantity", "label": "Quantity", "required": false }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE feature_flags SET enabled = ?, updated_at = CURRENT_TIMESTAMP \n         WHERE name = ? AND tenant_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "859baa8ef9b8dc35fe3b7d5a66bd6d1e58d7731a66c7d30d27ed578ebd26638d"
+}

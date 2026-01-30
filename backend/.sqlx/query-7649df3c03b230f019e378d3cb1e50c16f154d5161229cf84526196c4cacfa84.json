@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                UPDATE layaways\n                SET archived = 1, archived_at = CURRENT_TIMESTAMP\n                WHERE status = 'completed'\n                AND completed_at < datetime('now', '-' || ? || ' days')\n                AND archived = 0\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "7649df3c03b230f019e378d3cb1e50c16f154d5161229cf84526196c4cacfa84"
+}

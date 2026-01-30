@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc d846a68f0b091a0e2e6041783ad2e0cd874ed6a804af2b54d2cbdbce1a744bd0 # shrinks to card_number = "0000000000000000", initial_balance = 100.0, reload_amounts = [10.0, 10.0], customer_id = None, expiry_date = None, tenant_id = "tenant-000"
+cc c83b07336e5627daf89d1bc5516a309cc39774f5a4377419cc2ae49ef407af0e # shrinks to card_number = "0000000000000000", initial_balance = 100.0, reload_amount = 10.0, customer_id = None, expiry_date = None, tenant_id = "tenant-000"
+cc c7791485ae7f0f39b89f6ec34664ec135f0146c638d9d4daae40e9bc9558e95b # shrinks to card_number = "0000000000000000", initial_balance = 10.0, current_balance = 10.0, reload_amount = 0.01, status = "Active", customer_id = None, expiry_date = None, tenant_id = "tenant-000"

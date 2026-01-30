@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                DELETE FROM sessions\n                WHERE created_at < datetime('now', '-' || ? || ' days')\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "c87caf102aa82c0cdf1f8d07d0dfe6a37fe35628b1eee504fc04755aeb0f65fc"
+}

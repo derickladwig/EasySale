@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO sync_queue (\n            id, entity_type, entity_id, operation, payload, \n            store_id, created_at, sync_status\n        )\n        VALUES (?, 'theme_preference', ?, 'update', ?, ?, datetime('now'), 'pending')\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "6ad80a63694a7f869c2f69d46ab84feafad9b1b4c94316039e8de97abb885023"
+}

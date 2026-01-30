@@ -1,0 +1,90 @@
+/**
+ * Sell & Payments Settings Definitions
+ * Group: Sales and payment processing settings
+ */
+
+import { SettingDefinition } from '../types';
+
+export const sellPaymentsSettings: SettingDefinition[] = [
+  {
+    key: 'sell.allow_discounts',
+    label: 'Allow Discounts',
+    description: 'Enable discount functionality in sales',
+    type: 'policy',
+    group: 'sell-payments',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'sell.max_discount_percent',
+    label: 'Maximum Discount Percentage',
+    description: 'Maximum discount percentage allowed per transaction',
+    type: 'policy',
+    group: 'sell-payments',
+    defaultValue: 100,
+    allowedScopes: ['store', 'default'],
+    validator: (value: number) => value >= 0 && value <= 100,
+    schemaVersion: 1,
+  },
+  {
+    key: 'sell.require_customer',
+    label: 'Require Customer',
+    description: 'Require customer selection for all sales',
+    type: 'policy',
+    group: 'sell-payments',
+    defaultValue: false,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'sell.allow_negative_inventory',
+    label: 'Allow Negative Inventory',
+    description: 'Allow sales when inventory is zero or negative',
+    type: 'policy',
+    group: 'sell-payments',
+    defaultValue: false,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'payments.cash_enabled',
+    label: 'Cash Payments Enabled',
+    description: 'Accept cash payments',
+    type: 'policy',
+    group: 'sell-payments',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'payments.card_enabled',
+    label: 'Card Payments Enabled',
+    description: 'Accept credit/debit card payments',
+    type: 'policy',
+    group: 'sell-payments',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'payments.digital_wallet_enabled',
+    label: 'Digital Wallet Enabled',
+    description: 'Accept digital wallet payments (Apple Pay, Google Pay, etc.)',
+    type: 'policy',
+    group: 'sell-payments',
+    defaultValue: false,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'payments.receipt_printer_enabled',
+    label: 'Receipt Printer Enabled',
+    description: 'Automatically print receipts after sale',
+    type: 'preference',
+    group: 'sell-payments',
+    defaultValue: true,
+    allowedScopes: ['user', 'store', 'default'],
+    schemaVersion: 1,
+  },
+];

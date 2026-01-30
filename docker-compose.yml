@@ -1,0 +1,116 @@
+# EasySale - Docker Compose Configuration (Development)
+# ============================================
+# This file is for DEVELOPMENT use only.
+# For production, use: docker-compose.prod.yml
+#
+# Development Features:
+#   - Hot-reload enabled (Vite HMR + cargo watch)
+#   - Debug profile (no --release flag)
+#   - Volume mounts for live code changes
+#   - Permissive CORS (any origin allowed)
+#   - Verbose logging (RUST_LOG=info)
+#   - Debug symbols enabled
+#
+# Usage:
+#   Start:  start-dev.bat or docker-compose up --build
+#   Stop:   stop-dev.bat or docker-compose down
+#   Build:  build-dev.bat or docker-compose build
+#
+# Network: easysale-network | Volumes: easysale-* prefixed
+
+name: easysale
+
+services:
+  # Frontend - React + Vite development server
+  # Hot Module Replacement (HMR) enabled for instant updates
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: easysale-frontend-dev
+    ports:
+      - "7945:7945"
+    volumes:
+      - ./frontend:/app
+      - easysale-frontend-modules:/app/node_modules
+    environment:
+      VITE_API_URL: "http://localhost:8923"
+      NODE_ENV: "development"
+    command: npm run dev
+    networks:
+      - easysale-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Backend - Rust API server (DEBUG profile)
+  # Uses 'cargo run' for development (no --release flag)
+  # Recompiles on code changes via volume mount
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: easysale-backend-dev
+    ports:
+      - "8923:8923"
+    volumes:
+      - ./backend:/app
+      - ./configs:/configs:ro
+      - easysale-data-dev:/data
+      - easysale-cargo-registry:/usr/local/cargo/registry
+      - easysale-cargo-git:/usr/local/cargo/git
+      - easysale-target:/app/target
+    environment:
+      TENANT_ID: "default"
+      DATABASE_PATH: "/data/easysale.db"
+      RUST_LOG: "info"
+      RUST_BACKTRACE: "1"
+      API_HOST: "0.0.0.0"
+      API_PORT: "8923"
+      JWT_SECRET: "dev-secret-key-change-in-production-12345678"
+      STORE_ID: "store-001"
+      STORE_NAME: "Development Store"
+      JWT_EXPIRATION_HOURS: "8"
+      INTEGRATION_ENCRYPTION_KEY: "qOV9BZQJ/bcDxbwOQwG6oYEitaq7AqdCyMi3l3Q1tFQ="
+      OAUTH_REDIRECT_URI: "http://localhost:7945/api/integrations/quickbooks/callback"
+      SANDBOX_MODE: "false"
+    command: cargo run
+    networks:
+      - easysale-network
+    restart: unless-stopped
+
+  # Storybook - Component documentation
+  storybook:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: easysale-storybook-dev
+    ports:
+      - "7946:7946"
+    volumes:
+      - ./frontend:/app
+      - easysale-frontend-modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run storybook
+    networks:
+      - easysale-network
+    profiles:
+      - storybook
+
+networks:
+  easysale-network:
+    name: easysale-network
+    driver: bridge
+
+volumes:
+  easysale-frontend-modules:
+    name: easysale-frontend-modules
+  easysale-data-dev:
+    name: easysale-data-dev
+  easysale-cargo-registry:
+    name: easysale-cargo-registry
+  easysale-cargo-git:
+    name: easysale-cargo-git
+  easysale-target:
+    name: easysale-target

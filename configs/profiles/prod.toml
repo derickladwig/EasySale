@@ -1,0 +1,90 @@
+# Production Profile Configuration
+# Strict validation, no defaults, no dev endpoints, no placeholder secrets
+
+[profile]
+name = "prod"
+strict_validation = true
+enable_demo = false
+
+[database]
+# Canonical key: DATABASE_PATH
+# REQUIRED: Must be set via environment variable or installer
+# Example for Windows: C:\ProgramData\EasySale\data\EasySale.db
+# Example for Linux: /var/lib/EasySale/EasySale.db
+path = "${DATABASE_PATH}"
+
+[server]
+# REQUIRED: Must be set via environment variable or installer
+host = "${API_HOST}"
+port = "${API_PORT}"
+# REQUIRED: Public base URL for OAuth callbacks and webhooks
+# Must be a real domain, not localhost
+public_base_url = "${PUBLIC_BASE_URL}"
+# Dev endpoints MUST be disabled in production
+enable_dev_endpoints = false
+
+[security]
+# Production requires all secrets to be explicitly set
+require_secrets = true
+# Production rejects placeholder secrets
+reject_placeholder_secrets = true
+# REQUIRED: Must be set via environment variable or installer
+# Must be a strong, randomly generated secret (minimum 32 characters)
+jwt_secret = "${JWT_SECRET}"
+jwt_expiration_hours = 8
+
+[oauth]
+# REQUIRED if integrations are enabled
+# Must be real domain URLs, not localhost
+quickbooks_redirect_uri = "${QUICKBOOKS_REDIRECT_URI}"
+google_drive_redirect_uri = "${GOOGLE_DRIVE_REDIRECT_URI}"
+# Production rejects localhost OAuth when integrations are enabled
+reject_localhost_in_prod = true
+
+[branding]
+# Branding source: "runtime" loads from tenant config
+source = "runtime"
+# REQUIRED: Tenant ID must be set via environment variable or installer
+tenant_id = "${TENANT_ID}"
+
+[integrations]
+# Integrations disabled by default
+# Enable only if properly configured with real OAuth credentials
+quickbooks_enabled = false
+woocommerce_enabled = false
+supabase_enabled = false
+
+[logging]
+level = "info"
+# Log to file in production
+output = "file"
+# REQUIRED: Log path must be set via environment variable or installer
+# Example for Windows: C:\ProgramData\EasySale\logs\EasySale.log
+# Example for Linux: /var/log/EasySale/EasySale.log
+path = "${LOG_PATH}"
+
+[features]
+# Feature flags for optional functionality
+# Demo mode MUST be disabled in production
+enable_demo_mode = false
+# Preset packs MUST be disabled in production
+enable_preset_packs = false
+# Optional vertical packs can be enabled if needed
+enable_automotive_pack = false
+
+[validation]
+# Production validation rules
+# Fail startup if any of these conditions are detected
+fail_on_placeholder_secrets = true
+fail_on_demo_mode = true
+fail_on_dev_endpoints = true
+fail_on_localhost_oauth = true
+fail_on_missing_required_fields = true
+
+[backup]
+# Backup configuration (optional but recommended)
+enabled = true
+interval_hours = 24
+retention_days = 30
+# Backup path should be on a separate drive or network location
+path = "${BACKUP_PATH}"

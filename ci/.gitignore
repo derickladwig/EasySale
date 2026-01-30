@@ -1,0 +1,9 @@
+# CI Directory - Node.js artifacts
+node_modules/
+npm-debug.log*
+.npm
+
+# Test outputs
+coverage/
+test-results/
+*.log

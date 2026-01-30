@@ -1,0 +1,53 @@
+# Frontend - React + TypeScript + Vite
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+.vite/
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+.env.development.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Generated output files
+lint-errors.txt
+test-output.txt
+badge-size-verification.html
+*.verification.html
+*.log.txt
+
+# Storybook
+storybook-static/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+*storybook.log

@@ -1,0 +1,97 @@
+{
+  "mapping_id": "woo-to-qbo-invoice",
+  "source_connector": "woocommerce",
+  "target_connector": "quickbooks",
+  "entity_type": "order-to-invoice",
+  "description": "Map WooCommerce orders to QuickBooks Online invoices",
+  "mappings": [
+    {
+      "source_field": "id",
+      "target_field": "DocNumber",
+      "required": true,
+      "description": "Order number becomes invoice document number"
+    },
+    {
+      "source_field": "billing.email",
+      "target_field": "BillEmail.Address",
+      "required": true,
+      "description": "Customer billing email"
+    },
+    {
+      "source_field": "billing.first_name",
+      "target_field": "CustomerMemo.value",
+      "required": false,
+      "transform": "concat( )",
+      "description": "Customer name in memo (requires concat with last_name)"
+    },
+    {
+      "source_field": "date_created",
+      "target_field": "TxnDate",
+      "required": true,
+      "transform": "dateFormat(ISO8601, YYYY-MM-DD)",
+      "description": "Order date converted to QBO date format"
+    },
+    {
+      "source_field": "total",
+      "target_field": "TotalAmt",
+      "required": true,
+      "description": "Order total amount"
+    },
+    {
+      "source_field": "line_items",
+      "target_field": "Line",
+      "required": true,
+      "transform": "mapLineItems",
+      "description": "Map line items with SKU lookup"
+    },
+    {
+      "source_field": "shipping_total",
+      "target_field": "ShipMethodRef.value",
+      "required": false,
+      "description": "Shipping amount"
+    },
+    {
+      "source_field": "total_tax",
+      "target_field": "TxnTaxDetail.TotalTax",
+      "required": false,
+      "description": "Total tax amount"
+    },
+    {
+      "source_field": "status",
+      "target_field": "CustomField1",
+      "required": false,
+      "description": "WooCommerce order status (custom field 1)"
+    },
+    {
+      "source_field": "payment_method_title",
+      "target_field": "CustomField2",
+      "required": false,
+      "description": "Payment method (custom field 2)"
+    }
+  ],
+  "transformations": [
+    {
+      "name": "dateFormat",
+      "type": "date_conversion",
+      "config": {
+        "from_format": "ISO8601",
+        "to_format": "YYYY-MM-DD"
+      }
+    },
+    {
+      "name": "mapLineItems",
+      "type": "lookup",
+      "config": {
+        "lookup_type": "qbo_item",
+        "source_field": "sku"
+      }
+    }
+  ],
+  "notes": [
+    "QuickBooks allows maximum 3 custom fields - currently using 2",
+    "Customer must exist in QuickBooks before creating invoice",
+    "Items must exist in QuickBooks before creating invoice lines",
+    "Use lookupQBOCustomer transformation to resolve customer by email",
+    "Use mapLineItems transformation to resolve items by SKU"
+  ]
+}

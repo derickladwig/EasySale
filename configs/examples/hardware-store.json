@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "tenant": {
+    "id": "hardware-store-demo",
+    "name": "BuildRight Hardware",
+    "slug": "buildright-hardware",
+    "description": "Complete hardware and building supplies store"
+  },
+  "branding": {
+    "company": {
+      "name": "BuildRight Hardware",
+      "shortName": "BuildRight",
+      "tagline": "Building Your Dreams, One Tool at a Time",
+      "logo": "/assets/logos/buildright-logo.svg",
+      "favicon": "/assets/icons/favicon.png"
+    },
+    "login": {
+      "background": "/assets/images/hardware-bg.jpg",
+      "message": "Welcome to BuildRight Hardware POS",
+      "showLogo": true,
+      "layout": "split"
+    },
+    "receipts": {
+      "header": "BuildRight Hardware - Your Building Partner",
+      "footer": "Thank you for shopping with us!",
+      "showLogo": true
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "colors": {
+      "primary": "#f59e0b",
+      "secondary": "#10b981",
+      "accent": "#3b82f6",
+      "background": "#0f172a",
+      "surface": "#1e293b",
+      "text": "#f1f5f9",
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    }
+  },
+  "categories": [
+    {
+      "id": "tools",
+      "name": "Tools",
+      "icon": "Wrench",
+      "color": "#f59e0b",
+      "description": "Hand tools and power tools",
+      "attributes": [
+        { "name": "toolType", "label": "Type", "type": "dropdown", "values": ["Hand Tool", "Power Tool", "Measuring Tool", "Cutting Tool"], "required": true },
+        { "name": "brand", "label": "Brand", "type": "text", "required": true },
+        { "name": "powerSource", "label": "Power Source", "type": "dropdown", "values": ["Manual", "Corded Electric", "Cordless", "Pneumatic", "Gas"] },
+        { "name": "voltage", "label": "Voltage", "type": "text", "placeholder": "e.g., 20V" },
+        { "name": "warranty", "label": "Warranty (years)", "type": "number" }
+      ],
+      "searchFields": ["toolType", "brand"]
+    },
+    {
+      "id": "lumber",
+      "name": "Lumber & Building Materials",
+      "icon": "Box",
+      "color": "#10b981",
+      "description": "Wood, plywood, and building materials",
+      "attributes": [
+        { "name": "material", "label": "Material", "type": "dropdown", "values": ["Pine", "Oak", "Plywood", "MDF", "Composite"], "required": true },
+        { "name": "dimensions", "label": "Dimensions", "type": "text", "required": true, "placeholder": "2x4x8" },
+        { "name": "grade", "label": "Grade", "type": "dropdown", "values": ["Select", "Premium", "Standard", "Utility"] },
+        { "name": "treatment", "label": "Treatment", "type": "dropdown", "values": ["None", "Pressure Treated", "Kiln Dried"] },
+        { "name": "pricePerUnit", "label": "Price Per", "type": "dropdown", "values": ["Each", "Linear Foot", "Board Foot"] }
+      ],
+      "searchFields": ["material", "dimensions"]
+    },
+    {
+      "id": "paint",
+      "name": "Paint & Supplies",
+      "icon": "Paintbrush",
+      "color": "#3b82f6",
+      "description": "Paint, stain, and painting supplies",
+      "attributes": [
+        { "name": "productType", "label": "Type", "type": "dropdown", "values": ["Interior Paint", "Exterior Paint", "Primer", "Stain", "Varnish"], "required": true },
+        { "name": "finish", "label": "Finish", "type": "dropdown", "values": ["Flat", "Eggshell", "Satin", "Semi-Gloss", "Gloss"] },
+        { "name": "color", "label": "Color", "type": "text" },
+        { "name": "colorCode", "label": "Color Code", "type": "text" },
+        { "name": "size", "label": "Size", "type": "dropdown", "values": ["Quart", "Gallon", "5 Gallon"] },
+        { "name": "coverage", "label": "Coverage (sq ft)", "type": "number" }
+      ],
+      "searchFields": ["productType", "color", "colorCode"]
+    },
+    {
+      "id": "hardware",
+      "name": "Hardware & Fasteners",
+      "icon": "Bolt",
+      "color": "#8b5cf6",
+      "description": "Screws, nails, bolts, and hardware",
+      "attributes": [
+        { "name": "itemType", "label": "Type", "type": "dropdown", "values": ["Screw", "Nail", "Bolt", "Nut", "Washer", "Anchor", "Hinge", "Lock"], "required": true },
+        { "name": "material", "label": "Material", "type": "dropdown", "values": ["Steel", "Stainless Steel", "Brass", "Aluminum", "Zinc"] },
+        { "name": "size", "label": "Size", "type": "text", "required": true },
+        { "name": "finish", "label": "Finish", "type": "dropdown", "values": ["Plain", "Zinc Plated", "Galvanized", "Black Oxide"] },
+        { "name": "quantity", "label": "Quantity Per Package", "type": "number" }
+      ],
+      "searchFields": ["itemType", "size"]
+    },
+    {
+      "id": "electrical",
+      "name": "Electrical",
+      "icon": "Zap",
+      "color": "#ef4444",
+      "description": "Electrical supplies and fixtures",
+      "attributes": [
+        { "name": "category", "label": "Category", "type": "dropdown", "values": ["Wire", "Outlet", "Switch", "Breaker", "Fixture", "Conduit"], "required": true },
+        { "name": "voltage", "label": "Voltage", "type": "text" },
+        { "name": "amperage", "label": "Amperage", "type": "text" },
+        { "name": "gauge", "label": "Wire Gauge", "type": "text" },
+        { "name": "color", "label": "Color", "type": "text" }
+      ],
+      "searchFields": ["category", "voltage"]
+    },
+    {
+      "id": "plumbing",
+      "name": "Plumbing",
+      "icon": "Droplet",
+      "color": "#06b6d4",
+      "description": "Plumbing supplies and fixtures",
+      "attributes": [
+        { "name": "category", "label": "Category", "type": "dropdown", "values": ["Pipe", "Fitting", "Valve", "Fixture", "Drain"], "required": true },
+        { "name": "material", "label": "Material", "type": "dropdown", "values": ["PVC", "Copper", "PEX", "Brass", "Stainless Steel"] },
+        { "name": "size", "label": "Size", "type": "text", "required": true },
+        { "name": "connection", "label": "Connection Type", "type": "dropdown", "values": ["Threaded", "Slip", "Compression", "Push-Fit"] }
+      ],
+      "searchFields": ["category", "material", "size"]
+    }
+  ],
+  "navigation": {
+    "main": [
+      { "id": "sell", "label": "Sell", "icon": "ShoppingCart", "route": "/sell", "order": 1 },
+      { "id": "lookup", "label": "Lookup", "icon": "Search", "route": "/lookup", "order": 2 },
+      { "id": "customers", "label": "Customers", "icon": "Users", "route": "/customers", "order": 3 },
+      { "id": "inventory", "label": "Inventory", "icon": "Package", "route": "/inventory", "order": 4 },
+      { "id": "orders", "label": "Orders", "icon": "ClipboardList", "route": "/orders", "order": 5 },
+      { "id": "reports", "label": "Reports", "icon": "BarChart", "route": "/reports", "order": 6 },
+      { "id": "admin", "label": "Admin", "icon": "Settings", "route": "/admin", "permission": "admin", "order": 7 }
+    ],
+    "quickActions": [
+      { "label": "New Sale", "icon": "Plus", "action": "new-sale" },
+      { "label": "Special Order", "icon": "FileText", "action": "special-order" },
+      { "label": "Price Check", "icon": "DollarSign", "action": "price-check" }
+    ]
+  },
+  "modules": {
+    "specialOrders": { "enabled": true },
+    "contractorAccounts": { "enabled": true },
+    "commissions": { "enabled": true },
+    "loyalty": { "enabled": true },
+    "creditAccounts": { "enabled": true },
+    "deliveryScheduling": { "enabled": true }
+  },
+  "localization": {
+    "language": "en",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h",
+    "currency": {
+      "code": "USD",
+      "symbol": "$",
+      "position": "before"
+    },
+    "timezone": "America/Chicago",
+    "measurementUnits": "imperial"
+  }
+}

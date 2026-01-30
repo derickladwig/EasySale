@@ -1,0 +1,12 @@
+export { IntegrationsPage } from './IntegrationsPage';
+export { DataManagementPage } from './DataManagementPage';
+export { HardwarePage } from './HardwarePage';
+export { NetworkPage } from './NetworkPage';
+export { PerformancePage } from './PerformancePage';
+export { FeatureFlagsPage } from './FeatureFlagsPage';
+export { LocalizationPage } from './LocalizationPage';
+export { ProductConfigPage } from './ProductConfigPage';
+export { TaxRulesPage } from './TaxRulesPage';
+export { CompanyStoresPage } from './CompanyStoresPage';
+export { SyncDashboardPage } from './SyncDashboardPage';
+export { MyPreferencesPage } from './MyPreferencesPage';

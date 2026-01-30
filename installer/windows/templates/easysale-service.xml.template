@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  WinSW Service Configuration Template for EasySale
+  
+  This template is used by the installer to create a Windows Service
+  configuration for the EasySale backend server.
+  
+  Variables to be replaced by installer:
+  - {{INSTALL_PATH}} - Installation directory (e.g., C:\Program Files\EasySale)
+  - {{DATA_PATH}} - Data directory (e.g., C:\ProgramData\EasySale)
+  - {{SERVICE_NAME}} - Service name (e.g., EasySale)
+  - {{PORT}} - Server port (e.g., 7945)
+  - {{RUNTIME_PROFILE}} - Runtime profile (dev, demo, prod)
+-->
+<service>
+  <id>{{SERVICE_NAME}}</id>
+  <name>{{SERVICE_NAME}}</name>
+  <description>EasySale Point of Sale System - Backend Server</description>
+  
+  <!-- Executable configuration -->
+  <executable>{{INSTALL_PATH}}\bin\easysale-server.exe</executable>
+  <arguments></arguments>
+  
+  <!-- Working directory -->
+  <workingdirectory>{{INSTALL_PATH}}</workingdirectory>
+  
+  <!-- Environment variables -->
+  <env name="DATABASE_PATH" value="{{DATA_PATH}}\data\pos.db"/>
+  <env name="RUNTIME_PROFILE" value="{{RUNTIME_PROFILE}}"/>
+  <env name="SERVER_PORT" value="{{PORT}}"/>
+  <env name="LOG_LEVEL" value="info"/>
+  <env name="RUST_BACKTRACE" value="1"/>
+  
+  <!-- Service startup configuration -->
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>true</delayedAutoStart>
+  
+  <!-- Service account -->
+  <!-- Run as Local System by default, can be changed to specific user -->
+  <serviceaccount>
+    <domain>NT AUTHORITY</domain>
+    <user>LocalSystem</user>
+  </serviceaccount>
+  
+  <!-- Service dependencies -->
+  <depend>Tcpip</depend>
+  
+  <!-- Logging configuration -->
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+  
+  <!-- Log directory -->
+  <logpath>{{DATA_PATH}}\logs</logpath>
+  
+  <!-- Service recovery options -->
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="20 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <resetfailure>1 day</resetfailure>
+  
+  <!-- Graceful shutdown -->
+  <stopexecutable>{{INSTALL_PATH}}\bin\easysale-server.exe</stopexecutable>
+  <stoparguments>--shutdown</stoparguments>
+  <stoptimeout>30 sec</stoptimeout>
+  
+  <!-- Process priority -->
+  <priority>Normal</priority>
+  
+  <!-- Security -->
+  <security>
+    <!-- Allow service to interact with desktop (set to false for production) -->
+    <allowServiceLogon>false</allowServiceLogon>
+  </security>
+  
+  <!-- Download and update configuration (optional) -->
+  <!-- Uncomment to enable automatic updates -->
+  <!--
+  <download from="https://updates.example.com/easysale-server.exe" to="%BASE%\bin\easysale-server.exe" auth="none"/>
+  -->
+</service>

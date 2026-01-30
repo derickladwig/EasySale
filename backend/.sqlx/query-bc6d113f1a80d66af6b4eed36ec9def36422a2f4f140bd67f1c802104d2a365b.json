@@ -1,0 +1,80 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT \n            id as \"id!\", username, email,\n            display_name as \"display_name!: String\",\n            role,\n            store_id,\n            station_policy,\n            station_id,\n            is_active as \"is_active: bool\",\n            created_at, updated_at\n        FROM users\n        ORDER BY created_at DESC\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "username",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "email",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "display_name!: String",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "role",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "store_id",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "station_policy",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "station_id",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_active: bool",
+        "ordinal": 8,
+        "type_info": "Int64"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 10,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "bc6d113f1a80d66af6b4eed36ec9def36422a2f4f140bd67f1c802104d2a365b"
+}

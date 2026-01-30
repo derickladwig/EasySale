@@ -1,0 +1,251 @@
+{
+  "version": "1.0.0",
+  "tenant": {
+    "id": "default",
+    "name": "EasySale",
+    "slug": "easysale",
+    "description": "Generic Point of Sale System"
+  },
+  "branding": {
+    "company": {
+      "name": "EasySale",
+      "shortName": "ES",
+      "tagline": "Your Flexible Point of Sale Solution",
+      "logo": "/logo.svg",
+      "favicon": "/assets/icons/favicon.png",
+      "icon": "/assets/icons/icon.png"
+    },
+    "login": {
+      "background": "",
+      "message": "Welcome to EasySale",
+      "showLogo": true,
+      "layout": "centered"
+    },
+    "receipts": {
+      "header": "Your Business Name\n123 Main Street\nCity, State 12345",
+      "footer": "Thank you for your business!",
+      "showLogo": true
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "colors": {
+      "primary": {
+        "50": "#f0fdfa",
+        "100": "#ccfbf1",
+        "200": "#99f6e4",
+        "300": "#5eead4",
+        "400": "#2dd4bf",
+        "500": "#14b8a6",
+        "600": "#0d9488",
+        "700": "#0f766e",
+        "800": "#115e59",
+        "900": "#134e4a"
+      },
+      "background": "#0f172a",
+      "surface": "#1e293b",
+      "text": "#f1f5f9",
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    },
+    "fonts": {
+      "heading": "Inter",
+      "body": "Inter",
+      "mono": "JetBrains Mono"
+    },
+    "spacing": {
+      "base": 4,
+      "scale": [0, 1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64]
+    },
+    "borderRadius": {
+      "sm": "0.25rem",
+      "md": "0.375rem",
+      "lg": "0.5rem",
+      "xl": "0.75rem"
+    },
+    "animations": {
+      "fast": "150ms",
+      "normal": "300ms",
+      "slow": "500ms",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)"
+    }
+  },
+  "categories": [
+    {
+      "id": "products",
+      "name": "Products",
+      "icon": "Package",
+      "color": "#3b82f6",
+      "description": "General products",
+      "order": 1,
+      "attributes": [
+        { "name": "name", "label": "Product Name", "type": "text", "required": true },
+        { "name": "sku", "label": "SKU", "type": "text", "required": true, "unique": true },
+        { "name": "price", "label": "Price", "type": "number", "required": true, "min": 0 },
+        { "name": "cost", "label": "Cost", "type": "number", "min": 0 },
+        { "name": "description", "label": "Description", "type": "text" },
+        { "name": "brand", "label": "Brand", "type": "text" }
+      ],
+      "searchFields": ["name", "sku", "brand", "description"],
+      "displayTemplate": "{name}",
+      "filters": [
+        { "field": "brand", "label": "Brand", "type": "dropdown" },
+        { "field": "price", "label": "Price Range", "type": "range" }
+      ]
+    }
+  ],
+  "navigation": {
+    "main": [
+      { "id": "home", "label": "Home", "icon": "Home", "route": "/", "order": 0 },
+      { "id": "sell", "label": "Sell", "icon": "ShoppingCart", "route": "/sell", "permission": "access_sell", "order": 1 },
+      { "id": "lookup", "label": "Lookup", "icon": "Search", "route": "/lookup", "permission": "access_sell", "order": 2 },
+      { "id": "warehouse", "label": "Warehouse", "icon": "Package", "route": "/warehouse", "permission": "access_warehouse", "order": 3 },
+      { "id": "templates", "label": "Templates", "icon": "Layout", "route": "/vendor-bills/templates", "permission": "access_warehouse", "order": 4 },
+      { "id": "customers", "label": "Customers", "icon": "Users", "route": "/customers", "permission": "access_sell", "order": 5 },
+      { "id": "reporting", "label": "Reports", "icon": "BarChart3", "route": "/reporting", "permission": "access_admin", "order": 6 },
+      { "id": "admin", "label": "Admin", "icon": "Settings", "route": "/admin", "permission": "access_admin", "order": 7 }
+    ],
+    "quickActions": [
+      { "label": "New Sale", "icon": "Plus", "action": "navigate:/sell" },
+      { "label": "Quick Lookup", "icon": "Search", "action": "modal:product-search" }
+    ],
+    "sidebar": {
+      "width": "medium",
+      "collapsible": true,
+      "showLabels": true
+    },
+    "header": {
+      "showSearch": true,
+      "showNotifications": true,
+      "showSync": true,
+      "showUser": true
+    }
+  },
+  "widgets": {
+    "dashboard": [
+      {
+        "id": "daily-sales",
+        "type": "stat-card",
+        "title": "Today's Sales",
+        "endpoint": "/api/stats/daily-sales",
+        "format": "currency",
+        "size": "1x1",
+        "position": { "x": 0, "y": 0 },
+        "refreshInterval": 60
+      },
+      {
+        "id": "transactions",
+        "type": "stat-card",
+        "title": "Transactions",
+        "endpoint": "/api/stats/transactions",
+        "format": "number",
+        "size": "1x1",
+        "position": { "x": 1, "y": 0 },
+        "refreshInterval": 60
+      },
+      {
+        "id": "low-stock",
+        "type": "table",
+        "title": "Low Stock Items",
+        "endpoint": "/api/inventory/low-stock",
+        "size": "2x2",
+        "position": { "x": 2, "y": 0 },
+        "refreshInterval": 300
+      },
+      {
+        "id": "sales-chart",
+        "type": "line-chart",
+        "title": "Sales This Week",
+        "endpoint": "/api/stats/weekly-sales",
+        "size": "2x1",
+        "position": { "x": 0, "y": 1 },
+        "refreshInterval": 300
+      }
+    ]
+  },
+  "modules": {
+    "inventory": { "enabled": true },
+    "layaway": { "enabled": false },
+    "workOrders": { "enabled": false },
+    "commissions": { "enabled": false },
+    "loyalty": { "enabled": false },
+    "creditAccounts": { "enabled": false },
+    "giftCards": { "enabled": false },
+    "promotions": { "enabled": false },
+    "appointments": { "enabled": false },
+    "reservations": { "enabled": false },
+    "automotive": { "enabled": false }
+  },
+  "localization": {
+    "language": "en-US",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h",
+    "numberFormat": {
+      "decimal": ".",
+      "thousands": ","
+    },
+    "currency": {
+      "code": "USD",
+      "symbol": "$",
+      "position": "before"
+    },
+    "timezone": "America/New_York",
+    "firstDayOfWeek": 0,
+    "measurementUnits": "imperial"
+  },
+  "layouts": {
+    "sell": {
+      "type": "split",
+      "panels": [
+        { "id": "catalog", "type": "product-grid", "width": "flex-1", "minWidth": "400px" },
+        { "id": "cart", "type": "cart", "width": "420px", "collapsible": false }
+      ],
+      "responsive": {
+        "mobile": "stack",
+        "tablet": "split",
+        "desktop": "split"
+      }
+    },
+    "lookup": {
+      "type": "split",
+      "panels": [
+        { "id": "search", "type": "search-results", "width": "flex-1" },
+        { "id": "details", "type": "product-details", "width": "400px", "collapsible": true }
+      ]
+    },
+    "dashboard": {
+      "type": "grid",
+      "panels": []
+    },
+    "settings": {
+      "type": "sidebar",
+      "panels": [
+        { "id": "nav", "type": "settings-nav", "width": "280px" },
+        { "id": "content", "type": "settings-content", "width": "flex-1" }
+      ]
+    }
+  },
+  "wizards": {
+    "hierarchies": [],
+    "importMappings": [
+      {
+        "id": "products-import",
+        "name": "Products Import",
+        "description": "Import products from CSV, Excel, or JSON",
+        "supportedFormats": ["csv", "xlsx", "json"],
+        "fields": [
+          { "target": "name", "label": "Product Name", "required": true },
+          { "target": "sku", "label": "SKU", "required": true },
+          { "target": "price", "label": "Price", "required": true },
+          { "target": "cost", "label": "Cost", "required": false },
+          { "target": "quantity", "label": "Quantity", "required": false },
+          { "target": "category", "label": "Category", "required": false },
+          { "target": "brand", "label": "Brand", "required": false },
+          { "target": "description", "label": "Description", "required": false }
+        ]
+      }
+    ]
+  }
+}

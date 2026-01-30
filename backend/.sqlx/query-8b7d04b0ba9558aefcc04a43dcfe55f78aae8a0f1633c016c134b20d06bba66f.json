@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT id as \"id!: i64\", key, value, scope, scope_id, data_type, created_at, updated_at\n        FROM settings\n        WHERE key = ? AND scope = ? AND (scope_id = ? OR scope_id IS NULL)\n        ORDER BY \n            CASE scope\n                WHEN 'user' THEN 1\n                WHEN 'station' THEN 2\n                WHEN 'store' THEN 3\n                WHEN 'global' THEN 4\n            END\n        LIMIT 1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: i64",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "key",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "value",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "scope",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "scope_id",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "data_type",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 7,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8b7d04b0ba9558aefcc04a43dcfe55f78aae8a0f1633c016c134b20d06bba66f"
+}

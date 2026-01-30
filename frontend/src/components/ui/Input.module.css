@@ -1,0 +1,116 @@
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  border: var(--border-1) solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-1);
+  min-height: 40px; /* Accessibility: minimum touch target */
+}
+
+/* In dark mode, use a lighter surface for better text visibility */
+:global([data-theme="dark"]) .input,
+:global(.dark) .input {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Focus state */
+.input:focus {
+  outline: var(--ring-2) solid var(--color-focus-ring);
+  outline-offset: 0;
+  border-color: var(--color-focus-ring);
+}
+
+/* Hover state */
+.input:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-border);
+}
+
+/* Disabled state */
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-surface-2);
+}
+
+/* Error state */
+.input.error {
+  border-color: var(--color-error);
+}
+
+.input.error:focus {
+  outline-color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+}
+
+.helperText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+
+/* Input container for password toggle */
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWithToggle {
+  padding-right: 44px;
+}
+
+/* Password toggle button */
+.passwordToggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--duration-1);
+}
+
+.passwordToggle:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-hover);
+}
+
+.toggleIcon {
+  width: 18px;
+  height: 18px;
+}

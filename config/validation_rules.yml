@@ -1,0 +1,134 @@
+# Validation Rules Configuration
+# Defines hard and soft validation rules for invoice OCR results
+
+version: "1.0"
+
+rules:
+  # Hard Rules (Block Approval)
+  - rule_id: total_math
+    rule_type: TotalMath
+    severity: Hard
+    message: "Total must equal Subtotal + Tax (±$0.02)"
+    penalty: 50
+    enabled: true
+    description: "Validates that Total = Subtotal + Tax within $0.02 tolerance"
+    
+  - rule_id: date_not_future
+    rule_type: DateRange
+    severity: Hard
+    message: "Invoice date cannot be in the future"
+    penalty: 30
+    enabled: true
+    description: "Ensures invoice date is not after current date"
+    
+  - rule_id: required_fields
+    rule_type: RequiredField
+    severity: Hard
+    message: "Required fields missing"
+    penalty: 100
+    enabled: true
+    description: "Validates presence of: invoice_number, invoice_date, vendor_name, total"
+    required_fields:
+      - invoice_number
+      - invoice_date
+      - vendor_name
+      - total
+      
+  - rule_id: total_positive
+    rule_type: FormatValidation
+    severity: Hard
+    message: "Total must be a positive number"
+    penalty: 40
+    enabled: true
+    description: "Validates that total is > 0"
+    
+  - rule_id: date_not_too_old
+    rule_type: DateRange
+    severity: Hard
+    message: "Invoice date cannot be more than 2 years old"
+    penalty: 20
+    enabled: true
+    description: "Prevents processing of very old invoices"
+    max_age_days: 730
+    
+  # Soft Rules (Warn Only)
+  - rule_id: format_validation
+    rule_type: FormatValidation
+    severity: Soft
+    message: "Field format validation failed"
+    penalty: 10
+    enabled: true
+    description: "Validates field formats (invoice number, amounts, dates)"
+    
+  - rule_id: cross_field_check
+    rule_type: CrossFieldCheck
+    severity: Soft
+    message: "Cross-field validation failed"
+    penalty: 15
+    enabled: true
+    description: "Validates relationships between fields"
+    
+  - rule_id: vendor_name_length
+    rule_type: FormatValidation
+    severity: Soft
+    message: "Vendor name seems too short"
+    penalty: 5
+    enabled: true
+    description: "Warns if vendor name is less than 3 characters"
+    min_length: 3
+    
+  - rule_id: invoice_number_format
+    rule_type: FormatValidation
+    severity: Soft
+    message: "Invoice number contains unusual characters"
+    penalty: 8
+    enabled: true
+    description: "Warns if invoice number has special characters"
+    allowed_chars: "alphanumeric-_"
+    
+  - rule_id: subtotal_tax_reasonable
+    rule_type: CrossFieldCheck
+    severity: Soft
+    message: "Tax amount seems unreasonable (>30% of subtotal)"
+    penalty: 12
+    enabled: true
+    description: "Warns if tax is more than 30% of subtotal"
+    max_tax_percentage: 30
+
+# Vendor-specific overrides
+vendor_overrides:
+  acme-corp:
+    rules:
+      - rule_id: invoice_number_format
+        enabled: false  # Acme uses special characters
+        
+  global-supplies:
+    rules:
+      - rule_id: date_not_too_old
+        max_age_days: 365  # Only accept invoices from last year
+
+# Policy presets
+presets:
+  strict:
+    description: "Strict validation - all rules enabled, low tolerance"
+    rules:
+      - rule_id: total_math
+        penalty: 100
+      - rule_id: date_not_future
+        penalty: 100
+      - rule_id: required_fields
+        penalty: 100
+        
+  balanced:
+    description: "Balanced validation - standard settings"
+    # Uses default settings
+    
+  fast:
+    description: "Fast validation - only critical rules"
+    rules:
+      - rule_id: format_validation
+        enabled: false
+      - rule_id: cross_field_check
+        enabled: false
+      - rule_id: vendor_name_length
+        enabled: false

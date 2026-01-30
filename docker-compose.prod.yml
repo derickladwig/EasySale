@@ -1,0 +1,97 @@
+# EasySale - Docker Compose Configuration (Production)
+# ============================================
+# This file is for PRODUCTION use only.
+# For development, use: docker-compose.yml
+#
+# Production Features:
+#   - Release profile (--release flag, optimized binaries)
+#   - Pre-built images (no volume mounts)
+#   - Configurable CORS via environment variables
+#   - Health checks enabled
+#   - Minimal logging
+#   - No hot-reload
+#
+# Usage:
+#   Build:  build-prod.bat
+#   Start:  start-prod.bat or docker-compose -f docker-compose.prod.yml up -d
+#   Stop:   docker-compose -f docker-compose.prod.yml down
+#
+# CORS Configuration:
+#   Set CORS_ALLOWED_ORIGINS environment variable for production
+#   Example: CORS_ALLOWED_ORIGINS=https://yourdomain.com
+#
+# Security:
+#   - Change JWT_SECRET in production!
+#   - Configure proper CORS origins
+#   - Use HTTPS in production
+
+name: easysale
+
+services:
+  # Frontend - Pre-built React app served by nginx
+  # No hot-reload, optimized production build
+  frontend:
+    image: easysale-frontend:latest
+    container_name: easysale-frontend
+    ports:
+      - "7945:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - easysale-network
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Backend - Pre-built Rust binary (RELEASE profile)
+  # Built with 'cargo build --release' for optimized performance
+  # No volume mounts for code, no hot-reload
+  backend:
+    image: easysale-backend:latest
+    container_name: easysale-backend
+    ports:
+      - "8923:8923"
+    volumes:
+      - easysale-data:/data
+      - ./backend/migrations:/app/migrations:ro
+      - ./configs:/app/configs:ro
+    networks:
+      - easysale-network
+    restart: unless-stopped
+    environment:
+      - DATABASE_PATH=/data/easysale.db
+      - RUST_LOG=info
+      - API_HOST=0.0.0.0
+      - API_PORT=8923
+      # REQUIRED: Set these in .env or environment before running!
+      # Production rejects: default-store, tenant_default, test
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production-min-32-chars}
+      - STORE_ID=${STORE_ID:-main-store}
+      - STORE_NAME=${STORE_NAME:-Main Store}
+      - TENANT_ID=${TENANT_ID:-production}
+      # CORS Configuration - Set for production!
+      # Example: CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8923/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+networks:
+  easysale-network:
+    name: easysale-network
+    driver: bridge
+
+volumes:
+  easysale-data:
+    name: easysale_easysale-data
+    driver: local

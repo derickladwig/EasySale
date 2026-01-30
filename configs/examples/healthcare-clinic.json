@@ -1,0 +1,154 @@
+{
+  "version": "1.0.0",
+  "tenant": {
+    "id": "healthcare-clinic-demo",
+    "name": "HealthFirst Clinic",
+    "slug": "healthfirst-clinic",
+    "description": "Medical clinic with pharmacy and lab services"
+  },
+  "branding": {
+    "company": {
+      "name": "HealthFirst Clinic",
+      "shortName": "HealthFirst",
+      "tagline": "Your Health, Our Priority",
+      "logo": "/assets/logos/healthfirst-logo.svg",
+      "favicon": "/assets/icons/favicon.png"
+    },
+    "login": {
+      "background": "/assets/images/healthcare-bg.jpg",
+      "message": "Welcome to HealthFirst Clinic Management System",
+      "showLogo": true,
+      "layout": "centered"
+    },
+    "receipts": {
+      "header": "HealthFirst Clinic - Receipt",
+      "footer": "Thank you for trusting us with your health",
+      "showLogo": true
+    }
+  },
+  "theme": {
+    "mode": "light",
+    "colors": {
+      "primary": "#0ea5e9",
+      "secondary": "#10b981",
+      "accent": "#8b5cf6",
+      "background": "#ffffff",
+      "surface": "#f8fafc",
+      "text": "#0f172a",
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    }
+  },
+  "categories": [
+    {
+      "id": "consultations",
+      "name": "Consultations",
+      "icon": "Stethoscope",
+      "color": "#0ea5e9",
+      "description": "Medical consultations and examinations",
+      "attributes": [
+        { "name": "consultationType", "label": "Type", "type": "dropdown", "values": ["General", "Specialist", "Follow-up", "Emergency"], "required": true },
+        { "name": "duration", "label": "Duration (minutes)", "type": "number", "required": true },
+        { "name": "doctor", "label": "Doctor", "type": "text", "required": true }
+      ],
+      "searchFields": ["consultationType", "doctor"]
+    },
+    {
+      "id": "medications",
+      "name": "Medications",
+      "icon": "Pill",
+      "color": "#10b981",
+      "description": "Prescription and OTC medications",
+      "attributes": [
+        { "name": "genericName", "label": "Generic Name", "type": "text", "required": true },
+        { "name": "brandName", "label": "Brand Name", "type": "text" },
+        { "name": "dosage", "label": "Dosage", "type": "text", "required": true },
+        { "name": "form", "label": "Form", "type": "dropdown", "values": ["Tablet", "Capsule", "Liquid", "Injection", "Cream", "Inhaler"] },
+        { "name": "requiresPrescription", "label": "Requires Prescription", "type": "boolean", "default": true }
+      ],
+      "searchFields": ["genericName", "brandName", "dosage"]
+    },
+    {
+      "id": "lab-tests",
+      "name": "Laboratory Tests",
+      "icon": "TestTube",
+      "color": "#8b5cf6",
+      "description": "Diagnostic laboratory tests",
+      "attributes": [
+        { "name": "testName", "label": "Test Name", "type": "text", "required": true },
+        { "name": "testCode", "label": "Test Code", "type": "text", "required": true },
+        { "name": "category", "label": "Category", "type": "dropdown", "values": ["Blood", "Urine", "Imaging", "Biopsy", "Other"] },
+        { "name": "turnaroundTime", "label": "Turnaround Time (hours)", "type": "number" },
+        { "name": "fastingRequired", "label": "Fasting Required", "type": "boolean" }
+      ],
+      "searchFields": ["testName", "testCode", "category"]
+    },
+    {
+      "id": "procedures",
+      "name": "Medical Procedures",
+      "icon": "Activity",
+      "color": "#f59e0b",
+      "description": "Medical procedures and treatments",
+      "attributes": [
+        { "name": "procedureName", "label": "Procedure Name", "type": "text", "required": true },
+        { "name": "cptCode", "label": "CPT Code", "type": "text" },
+        { "name": "duration", "label": "Duration (minutes)", "type": "number", "required": true },
+        { "name": "anesthesia", "label": "Anesthesia Required", "type": "boolean" }
+      ],
+      "searchFields": ["procedureName", "cptCode"]
+    },
+    {
+      "id": "medical-supplies",
+      "name": "Medical Supplies",
+      "icon": "Package",
+      "color": "#ef4444",
+      "description": "Medical equipment and supplies",
+      "attributes": [
+        { "name": "itemType", "label": "Type", "type": "dropdown", "values": ["Disposable", "Durable", "Equipment", "Instrument"] },
+        { "name": "sterile", "label": "Sterile", "type": "boolean" },
+        { "name": "lotNumber", "label": "Lot Number", "type": "text" },
+        { "name": "expiryDate", "label": "Expiry Date", "type": "date" }
+      ],
+      "searchFields": ["itemType"]
+    }
+  ],
+  "navigation": {
+    "main": [
+      { "id": "appointments", "label": "Appointments", "icon": "Calendar", "route": "/appointments", "order": 1 },
+      { "id": "patients", "label": "Patients", "icon": "Users", "route": "/patients", "order": 2 },
+      { "id": "billing", "label": "Billing", "icon": "DollarSign", "route": "/billing", "order": 3 },
+      { "id": "pharmacy", "label": "Pharmacy", "icon": "Pill", "route": "/pharmacy", "order": 4 },
+      { "id": "lab", "label": "Laboratory", "icon": "TestTube", "route": "/lab", "order": 5 },
+      { "id": "inventory", "label": "Inventory", "icon": "Package", "route": "/inventory", "order": 6 },
+      { "id": "reports", "label": "Reports", "icon": "BarChart", "route": "/reports", "order": 7 },
+      { "id": "admin", "label": "Admin", "icon": "Settings", "route": "/admin", "permission": "admin", "order": 8 }
+    ],
+    "quickActions": [
+      { "label": "New Appointment", "icon": "Calendar", "action": "new-appointment" },
+      { "label": "Register Patient", "icon": "UserPlus", "action": "new-patient" },
+      { "label": "Dispense Medication", "icon": "Pill", "action": "dispense-medication" }
+    ]
+  },
+  "modules": {
+    "appointments": { "enabled": true },
+    "patients": { "enabled": true },
+    "pharmacy": { "enabled": true },
+    "laboratory": { "enabled": true },
+    "billing": { "enabled": true },
+    "insurance": { "enabled": true },
+    "creditAccounts": { "enabled": true }
+  },
+  "localization": {
+    "language": "en",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h",
+    "currency": {
+      "code": "USD",
+      "symbol": "$",
+      "position": "before"
+    },
+    "timezone": "America/New_York"
+  }
+}

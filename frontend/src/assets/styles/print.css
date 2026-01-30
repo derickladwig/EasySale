@@ -1,0 +1,274 @@
+/* Print Styles for Receipts, Labels, and Reports */
+
+@media print {
+  /* Hide UI elements */
+  .no-print,
+  nav,
+  header,
+  footer,
+  button,
+  .sidebar {
+    display: none !important;
+  }
+
+  /* Show print-only elements */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Reset page margins */
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Prevent page breaks inside elements */
+  .no-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Force page breaks */
+  .page-break {
+    page-break-before: always;
+    break-before: always;
+  }
+
+  /* Receipt styles */
+  .receipt {
+    width: 80mm; /* Thermal printer width */
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #000;
+    background: #fff;
+  }
+
+  .receipt-header {
+    text-align: center;
+    margin-bottom: 10px;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 10px;
+  }
+
+  .receipt-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .receipt-info {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .receipt-items {
+    margin: 10px 0;
+  }
+
+  .receipt-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+
+  .receipt-item-name {
+    flex: 1;
+  }
+
+  .receipt-item-qty {
+    width: 30px;
+    text-align: center;
+  }
+
+  .receipt-item-price {
+    width: 60px;
+    text-align: right;
+  }
+
+  .receipt-totals {
+    border-top: 1px dashed #000;
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+
+  .receipt-total-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+
+  .receipt-total-line.grand-total {
+    font-size: 14px;
+    font-weight: bold;
+    border-top: 1px solid #000;
+    padding-top: 5px;
+    margin-top: 5px;
+  }
+
+  .receipt-footer {
+    text-align: center;
+    margin-top: 15px;
+    border-top: 1px dashed #000;
+    padding-top: 10px;
+    font-size: 10px;
+  }
+
+  /* Label styles */
+  .label {
+    width: 4in; /* Standard label width */
+    height: 2in; /* Standard label height */
+    padding: 0.25in;
+    border: 1px solid #000;
+    page-break-after: always;
+  }
+
+  .label-barcode {
+    text-align: center;
+    margin: 10px 0;
+  }
+
+  .label-barcode img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .label-info {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .label-name {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .label-sku {
+    font-size: 10px;
+    color: #666;
+  }
+
+  .label-price {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  /* Report styles */
+  .report {
+    width: 100%;
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: 0.5in;
+  }
+
+  .report-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+
+  .report-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .report-subtitle {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+
+  .report-table th {
+    background: #f0f0f0;
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  .report-table td {
+    border: 1px solid #000;
+    padding: 8px;
+  }
+
+  .report-table tr:nth-child(even) {
+    background: #f9f9f9;
+  }
+
+  .report-footer {
+    margin-top: 30px;
+    border-top: 1px solid #000;
+    padding-top: 10px;
+    font-size: 12px;
+  }
+
+  /* Ensure colors print */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove shadows and transitions */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Ensure links are visible */
+  a {
+    text-decoration: underline;
+  }
+
+  a[href]:after {
+    content: ' (' attr(href) ')';
+  }
+
+  /* Don't show link URLs for internal links */
+  a[href^='#']:after,
+  a[href^='javascript:']:after {
+    content: '';
+  }
+}
+
+/* Print button styles (visible on screen, hidden in print) */
+.print-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.print-button:hover {
+  background: #2563eb;
+}
+
+@media print {
+  .print-button {
+    display: none !important;
+  }
+}

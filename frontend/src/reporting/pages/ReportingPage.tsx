@@ -1,0 +1,305 @@
+import { useState } from 'react';
+import {
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  ShoppingCart,
+  Package,
+  Calendar,
+  Download,
+  ChevronDown,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
+import { cn } from '@common/utils/classNames';
+import { useConfig } from '../../config/ConfigProvider';
+import { useSalesReportQuery, useSalesByCategoryQuery, getDateRange, downloadSalesReport } from '@domains/reporting/hooks';
+import { toast } from '@common/components/molecules/Toast';
+import { Button } from '@common/components/atoms/Button';
+
+type ReportType = 'sales' | 'inventory' | 'customers' | 'products';
+type DateRange = 'today' | 'week' | 'month' | 'quarter' | 'year';
+
+export function ReportingPage() {
+  const [reportType, setReportType] = useState<ReportType>('sales');
+  const [dateRange, setDateRange] = useState<DateRange>('month');
+  const [isExporting, setIsExporting] = useState(false);
+  useConfig(); // Config context for potential future use
+
+  // Calculate date range params
+  const dateParams = getDateRange(dateRange);
+
+  // Fetch sales data using React Query
+  const { data: salesData, isLoading: salesLoading, error: salesError } = useSalesReportQuery(dateParams);
+  const { data: categoryData, isLoading: categoryLoading } = useSalesByCategoryQuery(dateParams);
+
+  const isLoading = salesLoading || categoryLoading;
+  const error = salesError ? salesError.message : null;
+  const salesSummary = salesData?.summary;
+
+  // Calculate summary cards from API data
+  const summaryCards = salesSummary ? [
+    { 
+      label: 'Total Revenue', 
+      value: `$${salesSummary.total_sales.toFixed(2)}`, 
+      change: 0, // TODO: Calculate from previous period
+      icon: DollarSign 
+    },
+    { 
+      label: 'Transactions', 
+      value: salesSummary.total_transactions.toString(), 
+      change: 0, 
+      icon: ShoppingCart 
+    },
+    { 
+      label: 'Avg. Transaction', 
+      value: `$${salesSummary.average_transaction.toFixed(2)}`, 
+      change: 0, 
+      icon: TrendingUp 
+    },
+    { 
+      label: 'Items Sold', 
+      value: salesSummary.total_items_sold.toString(), 
+      change: 0, 
+      icon: Package 
+    },
+  ] : [];
+
+  // Calculate total revenue for percentage calculation
+  const categorySales = categoryData || [];
+  const totalRevenue = categorySales.reduce((sum, cat) => sum + cat.total_revenue, 0);
+
+  // Transform category sales for display
+  const salesByCategory = categorySales.map((cat, index) => ({
+    category: cat.category,
+    revenue: cat.total_revenue,
+    percentage: totalRevenue > 0 ? (cat.total_revenue / totalRevenue) * 100 : 0,
+    color: ['bg-primary-500', 'bg-warning-500', 'bg-success-500', 'bg-info-500'][index % 4],
+  }));
+
+  // Handle export
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await downloadSalesReport(dateParams);
+      toast.success('Report exported successfully');
+    } catch (error) {
+      toast.error('Failed to export report');
+      console.error('Export error:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-full bg-background-primary p-4 md:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Reports & Analytics</h1>
+          <p className="text-text-tertiary text-sm">Track performance and make data-driven decisions</p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="secondary"
+            leftIcon={isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+            onClick={handleExport}
+            disabled={isExporting || !salesSummary}
+            loading={isExporting}
+          >
+            {isExporting ? 'Exporting...' : 'Export'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        {/* Report type tabs */}
+        <div className="flex gap-1 bg-surface-base rounded-lg p-1">
+          {(['sales', 'inventory', 'customers', 'products'] as ReportType[]).map((type) => (
+            <button
+              key={type}
+              onClick={() => setReportType(type)}
+              className={cn(
+                'px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors',
+                reportType === type ? 'bg-primary-600 text-white' : 'text-text-tertiary hover:text-white'
+              )}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        {/* Date range */}
+        <div className="flex gap-1 bg-surface-base rounded-lg p-1">
+          {(['today', 'week', 'month', 'quarter', 'year'] as DateRange[]).map((range) => (
+            <button
+              key={range}
+              onClick={() => setDateRange(range)}
+              className={cn(
+                'px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors',
+                dateRange === range ? 'bg-surface-elevated text-white' : 'text-text-tertiary hover:text-white'
+              )}
+            >
+              {range}
+            </button>
+          ))}
+        </div>
+
+        <Button
+          variant="secondary"
+          leftIcon={<Calendar size={18} />}
+          rightIcon={<ChevronDown size={16} />}
+          className="ml-auto"
+        >
+          Custom Range
+        </Button>
+      </div>
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-error-900/20 border border-error-500 rounded-lg p-4 mb-6 flex items-start gap-3">
+          <AlertCircle className="text-error-400 flex-shrink-0" size={20} />
+          <div>
+            <p className="text-error-200 font-medium">Error Loading Report</p>
+            <p className="text-error-300 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+            <p className="text-text-tertiary">Loading report data...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !error && !salesSummary && (
+        <div className="bg-surface-base border border-border rounded-xl p-12 text-center">
+          <BarChart3 size={48} className="mx-auto mb-4 text-text-disabled" />
+          <h3 className="text-lg font-medium text-white mb-2">No Data Available</h3>
+          <p className="text-text-tertiary">
+            There is no sales data for the selected period. Try selecting a different date range.
+          </p>
+        </div>
+      )}
+
+      {/* Sales Summary Cards */}
+      {!isLoading && salesSummary && (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {summaryCards.map((stat) => {
+              const Icon = stat.icon;
+              const isPositive = stat.change >= 0;
+              return (
+                <div
+                  key={stat.label}
+                  className="bg-surface-base border border-border rounded-xl p-4 md:p-5"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="p-2 bg-surface-elevated rounded-lg">
+                      <Icon className="text-primary-400" size={20} />
+                    </div>
+                    {stat.change !== 0 && (
+                      <div
+                        className={cn(
+                          'flex items-center gap-1 text-sm font-medium',
+                          isPositive ? 'text-success-400' : 'text-error-400'
+                        )}
+                      >
+                        {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                        {Math.abs(stat.change)}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</div>
+                  <div className="text-sm text-text-tertiary">{stat.label}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Charts and Tables */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Sales by Category */}
+            {salesByCategory.length > 0 ? (
+              <div className="bg-surface-base border border-border rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">Sales by Category</h2>
+                <div className="space-y-4">
+                  {salesByCategory.map((cat) => (
+                    <div key={cat.category}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-text-secondary">{cat.category}</span>
+                        <span className="text-text-tertiary">${cat.revenue.toFixed(2)}</span>
+                      </div>
+                      <div className="h-2 bg-surface-elevated rounded-full overflow-hidden">
+                        <div
+                          className={cn('h-full rounded-full', cat.color)}
+                          style={{ width: `${cat.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-tertiary">Total Revenue</span>
+                    <span className="text-xl font-bold text-white">
+                      ${totalRevenue.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-surface-base border border-border rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">Sales by Category</h2>
+                <div className="text-center py-8 text-text-tertiary">
+                  No category data available for this period
+                </div>
+              </div>
+            )}
+
+            {/* Top Products */}
+            <div className="bg-surface-base border border-border rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Top Selling Products</h2>
+              <div className="text-center py-8 text-text-tertiary">
+                <Package size={32} className="mx-auto mb-3 opacity-50" />
+                <p className="text-sm">Product-level analytics require additional data.</p>
+                <p className="text-xs mt-1">View category breakdown in the chart above.</p>
+              </div>
+            </div>
+
+            {/* Sales Chart Placeholder */}
+            <div className="bg-surface-base border border-border rounded-xl p-6 lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white">Sales Trend</h2>
+                <div className="flex gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-primary-500 rounded-full" />
+                    <span className="text-text-tertiary">This Period</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-surface-overlay rounded-full" />
+                    <span className="text-text-tertiary">Previous Period</span>
+                  </div>
+                </div>
+              </div>
+              <div className="h-64 flex items-center justify-center text-text-tertiary">
+                <div className="text-center">
+                  <BarChart3 size={48} className="mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">Chart Visualization</p>
+                  <p className="text-sm">Sales trend chart will be displayed here</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

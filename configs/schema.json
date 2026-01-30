@@ -1,0 +1,520 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://EasySale.io/config-schema.json",
+  "title": "EasySale Tenant Configuration",
+  "description": "Schema for EasySale tenant configuration files",
+  "type": "object",
+  "required": ["version", "tenant", "branding", "categories", "navigation", "modules"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Configuration schema version (semver)"
+    },
+    "tenant": {
+      "$ref": "#/definitions/tenant"
+    },
+    "branding": {
+      "$ref": "#/definitions/branding"
+    },
+    "theme": {
+      "$ref": "#/definitions/theme"
+    },
+    "categories": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/category" },
+      "description": "Product categories with custom attributes"
+    },
+    "navigation": {
+      "$ref": "#/definitions/navigation"
+    },
+    "widgets": {
+      "$ref": "#/definitions/widgets"
+    },
+    "modules": {
+      "$ref": "#/definitions/modules"
+    },
+    "localization": {
+      "$ref": "#/definitions/localization"
+    },
+    "layouts": {
+      "$ref": "#/definitions/layouts"
+    },
+    "wizards": {
+      "$ref": "#/definitions/wizards"
+    },
+    "database": {
+      "$ref": "#/definitions/database"
+    }
+  },
+  "definitions": {
+    "tenant": {
+      "type": "object",
+      "required": ["id", "name", "slug"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "domain": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "branding": {
+      "type": "object",
+      "required": ["company"],
+      "properties": {
+        "company": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string" },
+            "shortName": { "type": "string" },
+            "tagline": { "type": "string" },
+            "logo": { "type": "string" },
+            "logoLight": { "type": "string" },
+            "logoDark": { "type": "string" },
+            "favicon": { "type": "string" },
+            "icon": { "type": "string" }
+          }
+        },
+        "login": {
+          "type": "object",
+          "properties": {
+            "background": { "type": "string" },
+            "message": { "type": "string" },
+            "showLogo": { "type": "boolean" },
+            "layout": { "enum": ["centered", "split", "full-screen"] }
+          }
+        },
+        "receipts": {
+          "type": "object",
+          "properties": {
+            "header": { "type": "string" },
+            "footer": { "type": "string" },
+            "showLogo": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "properties": {
+        "mode": { "enum": ["light", "dark", "auto"] },
+        "colors": {
+          "type": "object",
+          "properties": {
+            "primary": { "$ref": "#/definitions/colorScale" },
+            "secondary": { "$ref": "#/definitions/colorScale" },
+            "accent": { "$ref": "#/definitions/colorScale" },
+            "background": { "type": "string" },
+            "surface": { "type": "string" },
+            "text": { "type": "string" },
+            "success": { "type": "string" },
+            "warning": { "type": "string" },
+            "error": { "type": "string" },
+            "info": { "type": "string" }
+          }
+        },
+        "fonts": {
+          "type": "object",
+          "properties": {
+            "heading": { "type": "string" },
+            "body": { "type": "string" },
+            "mono": { "type": "string" }
+          }
+        },
+        "spacing": {
+          "type": "object",
+          "properties": {
+            "base": { "type": "number" },
+            "scale": { "type": "array", "items": { "type": "number" } }
+          }
+        },
+        "borderRadius": {
+          "type": "object",
+          "properties": {
+            "sm": { "type": "string" },
+            "md": { "type": "string" },
+            "lg": { "type": "string" },
+            "xl": { "type": "string" }
+          }
+        },
+        "animations": {
+          "type": "object",
+          "properties": {
+            "fast": { "type": "string" },
+            "normal": { "type": "string" },
+            "slow": { "type": "string" },
+            "easing": { "type": "string" }
+          }
+        }
+      }
+    },
+    "colorScale": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "50": { "type": "string" },
+            "100": { "type": "string" },
+            "200": { "type": "string" },
+            "300": { "type": "string" },
+            "400": { "type": "string" },
+            "500": { "type": "string" },
+            "600": { "type": "string" },
+            "700": { "type": "string" },
+            "800": { "type": "string" },
+            "900": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "category": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "color": { "type": "string" },
+        "description": { "type": "string" },
+        "parent": { "type": "string" },
+        "order": { "type": "number" },
+        "attributes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/attribute" }
+        },
+        "searchFields": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "displayTemplate": { "type": "string" },
+        "filters": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/filter" }
+        },
+        "wizard": { "$ref": "#/definitions/wizardConfig" }
+      }
+    },
+    "attribute": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "type": { "enum": ["text", "number", "dropdown", "multi-select", "date", "boolean", "json", "hierarchy"] },
+        "required": { "type": "boolean" },
+        "unique": { "type": "boolean" },
+        "values": { "type": "array", "items": { "type": "string" } },
+        "hierarchySource": { "type": "string" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "pattern": { "type": "string" },
+        "default": {},
+        "placeholder": { "type": "string" },
+        "helpText": { "type": "string" }
+      }
+    },
+    "filter": {
+      "type": "object",
+      "required": ["field", "type"],
+      "properties": {
+        "field": { "type": "string" },
+        "label": { "type": "string" },
+        "type": { "enum": ["dropdown", "range", "search", "checkbox", "hierarchy"] },
+        "options": { "type": "array" }
+      }
+    },
+    "wizardConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "steps": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/wizardStep" }
+        }
+      }
+    },
+    "wizardStep": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "fields": { "type": "array", "items": { "type": "string" } },
+        "dependsOn": { "type": "string" },
+        "filterBy": { "type": "string" }
+      }
+    },
+    "navigation": {
+      "type": "object",
+      "properties": {
+        "main": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/navItem" }
+        },
+        "quickActions": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/quickAction" }
+        },
+        "sidebar": {
+          "type": "object",
+          "properties": {
+            "width": { "enum": ["narrow", "medium", "wide"] },
+            "collapsible": { "type": "boolean" },
+            "showLabels": { "type": "boolean" }
+          }
+        },
+        "header": {
+          "type": "object",
+          "properties": {
+            "showSearch": { "type": "boolean" },
+            "showNotifications": { "type": "boolean" },
+            "showSync": { "type": "boolean" },
+            "showUser": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "navItem": {
+      "type": "object",
+      "required": ["id", "label", "route"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "icon": { "type": "string" },
+        "route": { "type": "string" },
+        "permission": { "type": "string" },
+        "order": { "type": "number" },
+        "badge": { "type": "string" },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/navItem" }
+        }
+      }
+    },
+    "quickAction": {
+      "type": "object",
+      "required": ["label", "action"],
+      "properties": {
+        "label": { "type": "string" },
+        "icon": { "type": "string" },
+        "action": { "type": "string" },
+        "permission": { "type": "string" }
+      }
+    },
+    "widgets": {
+      "type": "object",
+      "properties": {
+        "dashboard": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/widget" }
+        },
+        "available": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/widget" }
+        }
+      }
+    },
+    "widget": {
+      "type": "object",
+      "required": ["id", "type", "title"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "enum": ["stat-card", "line-chart", "bar-chart", "pie-chart", "table", "list", "custom"] },
+        "title": { "type": "string" },
+        "query": { "type": "string" },
+        "endpoint": { "type": "string" },
+        "format": { "type": "string" },
+        "size": { "type": "string", "pattern": "^\\d+x\\d+$" },
+        "position": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          }
+        },
+        "refreshInterval": { "type": "number" },
+        "permission": { "type": "string" }
+      }
+    },
+    "modules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["enabled"],
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "settings": { "type": "object" }
+        }
+      }
+    },
+    "localization": {
+      "type": "object",
+      "properties": {
+        "language": { "type": "string" },
+        "dateFormat": { "type": "string" },
+        "timeFormat": { "enum": ["12h", "24h"] },
+        "numberFormat": {
+          "type": "object",
+          "properties": {
+            "decimal": { "type": "string" },
+            "thousands": { "type": "string" }
+          }
+        },
+        "currency": {
+          "type": "object",
+          "properties": {
+            "code": { "type": "string" },
+            "symbol": { "type": "string" },
+            "position": { "enum": ["before", "after"] }
+          }
+        },
+        "timezone": { "type": "string" },
+        "firstDayOfWeek": { "type": "number", "minimum": 0, "maximum": 6 },
+        "measurementUnits": { "enum": ["metric", "imperial"] }
+      }
+    },
+    "layouts": {
+      "type": "object",
+      "properties": {
+        "sell": { "$ref": "#/definitions/pageLayout" },
+        "lookup": { "$ref": "#/definitions/pageLayout" },
+        "dashboard": { "$ref": "#/definitions/pageLayout" },
+        "settings": { "$ref": "#/definitions/pageLayout" }
+      }
+    },
+    "pageLayout": {
+      "type": "object",
+      "properties": {
+        "type": { "enum": ["split", "full", "sidebar", "grid"] },
+        "panels": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/panel" }
+        },
+        "responsive": {
+          "type": "object",
+          "properties": {
+            "mobile": { "type": "string" },
+            "tablet": { "type": "string" },
+            "desktop": { "type": "string" }
+          }
+        }
+      }
+    },
+    "panel": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "width": { "type": "string" },
+        "minWidth": { "type": "string" },
+        "maxWidth": { "type": "string" },
+        "collapsible": { "type": "boolean" }
+      }
+    },
+    "wizards": {
+      "type": "object",
+      "properties": {
+        "hierarchies": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/hierarchy" }
+        },
+        "importMappings": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/importMapping" }
+        }
+      }
+    },
+    "hierarchy": {
+      "type": "object",
+      "required": ["id", "name", "levels"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "placeholder": { "type": "string" }
+            }
+          }
+        },
+        "data": { "type": "array" }
+      }
+    },
+    "importMapping": {
+      "type": "object",
+      "required": ["id", "name", "fields"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "supportedFormats": {
+          "type": "array",
+          "items": { "enum": ["csv", "xlsx", "json"] }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["target"],
+            "properties": {
+              "target": { "type": "string" },
+              "label": { "type": "string" },
+              "required": { "type": "boolean" },
+              "transform": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "properties": {
+        "customTables": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/customTable" }
+        },
+        "customColumns": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/customColumn" }
+          }
+        }
+      }
+    },
+    "customTable": {
+      "type": "object",
+      "required": ["name", "columns"],
+      "properties": {
+        "name": { "type": "string" },
+        "columns": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/customColumn" }
+        }
+      }
+    },
+    "customColumn": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "label": { "type": "string" },
+        "type": { "enum": ["string", "number", "boolean", "date", "json", "enum"] },
+        "required": { "type": "boolean" },
+        "unique": { "type": "boolean" },
+        "default": {},
+        "values": { "type": "array" }
+      }
+    }
+  }
+}

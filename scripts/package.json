@@ -1,0 +1,17 @@
+{
+  "name": "@EasySale/scripts",
+  "version": "1.0.0",
+  "description": "Build and utility scripts for EasySale",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "convert-brand": "node convert-brand-assets.js"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

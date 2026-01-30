@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 8dedf55a4caf1754eb3dd6465f71771763722b7c0171c3c1c41fc64e53764a6f # shrinks to role = "manager", username = "aaa", email = "aaa@aaa.com", password = "a0AaaaA0", store_id = None, station_id = "station-aaaa00aa", policy = "any"
+cc a3cff7446149ca161949545f70f958e4f4d0706c8fee5ee4462d37b7d164d401 # shrinks to role = "manager", username = "aaa", email = "aaa@aaa.com", password = "Aa00aaa0", store_id = None

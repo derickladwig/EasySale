@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc df6a355c65ef916d1e24126420cb9178f9edd0d8a8fff214c81ac9f434e10621 # shrinks to backup_type = "full", store_id = "store-000", tenant_id = "test-tenant", destination_name = "A A a"

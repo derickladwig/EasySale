@@ -1,0 +1,127 @@
+{
+  "version": "1.1.0",
+  "description": "Production readiness policy for forbidden patterns and allowlists",
+  "scanPaths": [
+    "backend/crates/server/src/handlers",
+    "backend/crates/server/src/config",
+    "backend/crates/server/src/middleware",
+    "backend/crates/server/src/services",
+    "backend/crates/server/src/main.rs",
+    "frontend/src/auth",
+    "frontend/src/admin",
+    "frontend/src/sell",
+    "frontend/src/lookup",
+    "frontend/src/warehouse",
+    "frontend/src/customers",
+    "frontend/src/reporting",
+    "frontend/src/review",
+    "frontend/src/settings",
+    "frontend/src/setup",
+    "frontend/src/documents",
+    "frontend/src/exports",
+    "frontend/src/sales",
+    "frontend/src/templates",
+    "frontend/src/preferences",
+    "frontend/src/home",
+    "frontend/src/forms",
+    "frontend/src/features",
+    "frontend/src/common/components",
+    "frontend/src/config",
+    "frontend/src/nav",
+    "frontend/src/components/review"
+  ],
+  "exclusions": [
+    "archive/",
+    "**/tests/",
+    "**/test/",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.stories.tsx",
+    "**/fixtures/",
+    "configs/examples/",
+    "configs/presets/",
+    "**/node_modules/",
+    "**/target/",
+    "**/.git/",
+    "**/unused-components-review/"
+  ],
+  "forbiddenPatterns": [
+    {
+      "id": "demo-credentials",
+      "pattern": "(username|password)\\s*[:=]\\s*['\"]demo",
+      "message": "Hardcoded demo credentials found",
+      "severity": "error"
+    },
+    {
+      "id": "caps-branding",
+      "pattern": "\\b(CAPS|caps-pos|caps-pos\\.local)\\b",
+      "message": "CAPS branding token found in core runtime",
+      "severity": "error"
+    },
+    {
+      "id": "vehicle-terms",
+      "pattern": "\\b(VIN|vehicle_fitment|automotive)\\b",
+      "message": "Automotive-specific term found (should be in optional pack)",
+      "severity": "warning"
+    },
+    {
+      "id": "mock-arrays",
+      "pattern": "const\\s+\\w+\\s*=\\s*\\[\\s*\\{[^}]*\\},\\s*\\{[^}]*\\}",
+      "message": "Potential hardcoded mock data array",
+      "severity": "warning"
+    },
+    {
+      "id": "localhost-oauth",
+      "pattern": "redirect_uri.*localhost",
+      "message": "Hardcoded localhost OAuth redirect URI",
+      "severity": "error"
+    },
+    {
+      "id": "sql-injection",
+      "pattern": "format!\\(.*SELECT.*\\{",
+      "message": "Potential SQL injection via string formatting",
+      "severity": "error"
+    },
+    {
+      "id": "nav-without-capability",
+      "pattern": "NavLink.*to=.*(?!.*capabilityKey)",
+      "message": "Navigation link without capability gating",
+      "severity": "warning"
+    },
+    {
+      "id": "cleanup-api-old-path",
+      "pattern": "/api/masks/(?!.*deprecated)",
+      "message": "Using deprecated /api/masks/ endpoint instead of /api/cleanup/",
+      "severity": "warning"
+    }
+  ],
+  "allowedExceptions": {
+    "caps-branding": [
+      "configs/examples/",
+      "configs/presets/",
+      "archive/",
+      "*.test.ts",
+      "*.test.tsx"
+    ],
+    "vehicle-terms": [
+      "configs/examples/",
+      "archive/",
+      "*.test.ts",
+      "backend/crates/server/src/handlers/product.rs"
+    ],
+    "mock-arrays": [
+      "*.stories.tsx",
+      "*.test.ts",
+      "*.test.tsx"
+    ],
+    "nav-without-capability": [
+      "frontend/src/nav/navConfig.ts",
+      "frontend/src/nav/NavItem.tsx"
+    ],
+    "cleanup-api-old-path": [
+      "backend/crates/server/src/handlers/cleanup.rs"
+    ]
+  }
+}

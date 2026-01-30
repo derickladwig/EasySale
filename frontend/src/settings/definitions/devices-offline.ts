@@ -1,0 +1,91 @@
+/**
+ * Devices & Offline Settings Definitions
+ * Group: Hardware devices and offline operation settings
+ */
+
+import { SettingDefinition } from '../types';
+
+export const devicesOfflineSettings: SettingDefinition[] = [
+  {
+    key: 'devices.receipt_printer_type',
+    label: 'Receipt Printer Type',
+    description: 'Type of receipt printer (ESC/POS, Star, etc.)',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: 'escpos',
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'devices.receipt_printer_port',
+    label: 'Receipt Printer Port',
+    description: 'Port or connection string for receipt printer',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: '',
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'devices.barcode_scanner_enabled',
+    label: 'Barcode Scanner Enabled',
+    description: 'Enable barcode scanner support',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'devices.cash_drawer_enabled',
+    label: 'Cash Drawer Enabled',
+    description: 'Enable cash drawer support',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'offline.sync_enabled',
+    label: 'Sync Enabled',
+    description: 'Enable automatic synchronization with other stores',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'offline.sync_interval_minutes',
+    label: 'Sync Interval (Minutes)',
+    description: 'How often to sync data with other stores',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: 5,
+    allowedScopes: ['store', 'default'],
+    validator: (value: number) => value >= 1 && value <= 60,
+    schemaVersion: 1,
+  },
+  {
+    key: 'offline.auto_resolve_conflicts',
+    label: 'Auto Resolve Conflicts',
+    description: 'Automatically resolve sync conflicts using last-write-wins',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'offline.max_queue_size',
+    label: 'Maximum Queue Size',
+    description: 'Maximum number of pending sync operations',
+    type: 'policy',
+    group: 'devices-offline',
+    defaultValue: 10000,
+    allowedScopes: ['store', 'default'],
+    validator: (value: number) => value >= 100 && value <= 100000,
+    schemaVersion: 1,
+  },
+];

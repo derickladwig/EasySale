@@ -1,0 +1,125 @@
+{
+  "mapping_id": "woo-to-supabase-order",
+  "source_connector": "woocommerce",
+  "target_connector": "supabase",
+  "entity_type": "order",
+  "description": "Map WooCommerce orders to Supabase orders table for analytics",
+  "mappings": [
+    {
+      "source_field": "id",
+      "target_field": "source_id",
+      "required": true,
+      "description": "WooCommerce order ID"
+    },
+    {
+      "source_field": "order_key",
+      "target_field": "order_key",
+      "required": true,
+      "description": "Unique order key"
+    },
+    {
+      "source_field": "status",
+      "target_field": "status",
+      "required": true,
+      "description": "Order status (completed, processing, etc.)"
+    },
+    {
+      "source_field": "currency",
+      "target_field": "currency",
+      "required": true,
+      "description": "Order currency code"
+    },
+    {
+      "source_field": "date_created",
+      "target_field": "order_date",
+      "required": true,
+      "description": "Order creation date"
+    },
+    {
+      "source_field": "date_modified",
+      "target_field": "updated_at",
+      "required": false,
+      "description": "Last modification date"
+    },
+    {
+      "source_field": "total",
+      "target_field": "total_amount",
+      "required": true,
+      "description": "Order total"
+    },
+    {
+      "source_field": "subtotal",
+      "target_field": "subtotal",
+      "required": false,
+      "description": "Order subtotal before tax and shipping"
+    },
+    {
+      "source_field": "total_tax",
+      "target_field": "tax_amount",
+      "required": false,
+      "description": "Total tax amount"
+    },
+    {
+      "source_field": "shipping_total",
+      "target_field": "shipping_amount",
+      "required": false,
+      "description": "Shipping cost"
+    },
+    {
+      "source_field": "discount_total",
+      "target_field": "discount_amount",
+      "required": false,
+      "description": "Total discount amount"
+    },
+    {
+      "source_field": "customer_id",
+      "target_field": "customer_id",
+      "required": false,
+      "description": "WooCommerce customer ID"
+    },
+    {
+      "source_field": "billing.email",
+      "target_field": "customer_email",
+      "required": false,
+      "description": "Customer email"
+    },
+    {
+      "source_field": "billing.first_name",
+      "target_field": "customer_first_name",
+      "required": false,
+      "description": "Customer first name"
+    },
+    {
+      "source_field": "billing.last_name",
+      "target_field": "customer_last_name",
+      "required": false,
+      "description": "Customer last name"
+    },
+    {
+      "source_field": "payment_method",
+      "target_field": "payment_method",
+      "required": false,
+      "description": "Payment method code"
+    },
+    {
+      "source_field": "payment_method_title",
+      "target_field": "payment_method_title",
+      "required": false,
+      "description": "Payment method display name"
+    },
+    {
+      "source_field": "transaction_id",
+      "target_field": "transaction_id",
+      "required": false,
+      "description": "Payment transaction ID"
+    }
+  ],
+  "transformations": [],
+  "notes": [
+    "source_system is automatically set to 'woocommerce'",
+    "raw_data field stores complete JSON for reference",
+    "Upsert is based on (source_system, source_id) unique constraint",
+    "Line items are stored in separate order_lines table",
+    "This mapping is for the main orders table only"
+  ]
+}

@@ -1,0 +1,1760 @@
+cargo : warning: 
+unused variable: 
+`created_at`
+At line:1 char:52
++ ... "sqlite:data/pos
+_test_fresh.db"; 
+cargo check 
+--workspace 2>&1 | 
+Out-F ...
++                     
+                 ~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (warning: u   
+ nused variable: `    
+created_at`:Strin    
+g) [], RemoteExce    
+ption
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+   --> crates\accounti
+ng_snapshots\src\repos
+itory.rs:132:13
+    |
+132 |         let 
+created_at = DateTime:
+:parse_from_rfc3339(&c
+reated_at_str)
+    |             
+^^^^^^^^^^ help: if 
+this is intentional, 
+prefix it with an 
+underscore: 
+`_created_at`
+    |
+    = note: `#[warn(un
+used_variables)]` 
+(part of 
+`#[warn(unused)]`) on 
+by default
+
+warning: `accounting_s
+napshots` (lib) 
+generated 1 warning
+warning: unexpected 
+`cfg` condition 
+value: `sync`
+  --> crates\server\sr
+c\handlers\capabilitie
+s.rs:85:35
+   |
+85 |     let 
+accounting_mode = if 
+cfg!(feature = 
+"sync") {
+   |                  
+                 
+^^^^^^^^^^^^^^^^
+   |
+   = note: expected 
+values for `feature` 
+are: 
+`csv_export_pack`, 
+`default`, and 
+`export`
+   = help: consider 
+adding `sync` as a 
+feature in 
+`Cargo.toml`
+   = note: see <https:
+//doc.rust-lang.org/ni
+ghtly/rustc/check-cfg/
+cargo-specifics.html> 
+for more information 
+about checking 
+conditional 
+configuration
+   = note: `#[warn(une
+xpected_cfgs)]` on by 
+default
+
+warning: unexpected 
+`cfg` condition 
+value: `sync`
+  --> crates\server\sr
+c\handlers\capabilitie
+s.rs:95:20
+   |
+95 |         sync: 
+cfg!(feature = 
+"sync"),
+   |                  
+  ^^^^^^^^^^^^^^^^
+   |
+   = note: expected 
+values for `feature` 
+are: 
+`csv_export_pack`, 
+`default`, and 
+`export`
+   = help: consider 
+adding `sync` as a 
+feature in 
+`Cargo.toml`
+   = note: see <https:
+//doc.rust-lang.org/ni
+ghtly/rustc/check-cfg/
+cargo-specifics.html> 
+for more information 
+about checking 
+conditional 
+configuration
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\export.rs:3
+1:5
+   |
+31 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+   |
+   = note: `#[warn(unu
+sed_variables)]` 
+(part of 
+`#[warn(unused)]`) on 
+by default
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\handlers\export.rs:3
+3:9
+   |
+33 |     let case_id 
+= path.into_inner();
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\ocr_ingest.
+rs:27:5
+   |
+27 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\reporting.
+rs:311:5
+    |
+311 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `query`
+   --> crates\server\s
+rc\handlers\reporting.
+rs:312:5
+    |
+312 |     query: web::
+Json<SalesReportParams
+>,
+    |     ^^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_query`
+
+warning: unused 
+variable: `request`
+  --> crates\server\sr
+c\handlers\reocr.rs:57
+:5
+   |
+57 |     request: web:
+:Json<ReOcrRequest>,
+   |     ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_request`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\reocr.rs:58
+:5
+   |
+58 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\handlers\reocr.rs:60
+:9
+   |
+60 |     let case_id 
+= path.into_inner();
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `request`
+  --> crates\server\sr
+c\handlers\reocr.rs:73
+:5
+   |
+73 |     request: web:
+:Json<MaskRequest>,
+   |     ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_request`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\reocr.rs:74
+:5
+   |
+74 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\handlers\reocr.rs:76
+:9
+   |
+76 |     let case_id 
+= path.into_inner();
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\review_case
+s.rs:85:5
+   |
+85 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:100:5
+    |
+100 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:102:9
+    |
+102 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `request`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:113:5
+    |
+113 |     request: web
+::Json<DecideFieldRequ
+est>,
+    |     ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_request`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:114:5
+    |
+114 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:116:9
+    |
+116 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:132:5
+    |
+132 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `req`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:133:5
+    |
+133 |     req: 
+HttpRequest,
+    |     ^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_req`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:135:9
+    |
+135 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:148:5
+    |
+148 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:150:9
+    |
+150 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `mode`
+   --> crates\server\s
+rc\handlers\theme.rs:2
+17:25
+    |
+217 |             if 
+let Some(mode) = 
+theme.get("mode") {
+    |                 
+        ^^^^ help: if 
+this is intentional, 
+prefix it with an 
+underscore: `_mode`
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\services\inventory_i
+ntegration_service.rs:
+57:9
+   |
+57 |         case_id: 
+&str,
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `tenant_id`
+   --> crates\server\s
+rc\services\inventory_
+integration_service.rs
+:249:9
+    |
+249 |         
+tenant_id: &str,
+    |         
+^^^^^^^^^ help: if 
+this is intentional, 
+prefix it with an 
+underscore: 
+`_tenant_id`
+
+warning: variable 
+does not need to be 
+mutable
+   --> crates\server\s
+rc\services\mask_engin
+e.rs:459:13
+    |
+459 |         let mut 
+img = image::open(imag
+e_path)
+    |             
+----^^^
+    |             |
+    |             
+help: remove this 
+`mut`
+    |
+    = note: 
+`#[warn(unused_mut)]` 
+(part of 
+`#[warn(unused)]`) on 
+by default
+
+warning: function 
+`generate_csv_export` 
+is never used
+  --> crates\server\sr
+c\handlers\export.rs:5
+4:4
+   |
+54 | fn 
+generate_csv_export(
+   |    
+^^^^^^^^^^^^^^^^^^^
+   |
+   = note: 
+`#[warn(dead_code)]` 
+(part of 
+`#[warn(unused)]`) on 
+by default
+
+warning: function `gen
+erate_json_export` is 
+never used
+  --> crates\server\sr
+c\handlers\export.rs:6
+3:4
+   |
+63 | fn 
+generate_json_export(
+   |    
+^^^^^^^^^^^^^^^^^^^^
+
+warning: struct 
+`VendorCalibration` 
+is never constructed
+  --> crates\server\sr
+c\services\confidence_
+calibrator.rs:42:8
+   |
+42 | struct 
+VendorCalibration {
+   |        
+^^^^^^^^^^^^^^^^^
+
+warning: field 
+`consensus_threshold` 
+is never read
+  --> crates\server\sr
+c\services\field_resol
+ver.rs:83:5
+   |
+82 | pub struct 
+FieldResolver {
+   |            
+------------- field 
+in this struct
+83 |     
+consensus_threshold: 
+f64,
+   |     
+^^^^^^^^^^^^^^^^^^^
+
+warning: 
+`EasySale-server` 
+(lib) generated 32 
+warnings (run `cargo 
+fix --lib -p 
+EasySale-server` to 
+apply 1 suggestion)
+    Checking 
+EasySale-server 
+v0.1.0 (C:\Users\CAPS\
+Documents\GitHub\dynam
+ous-kiro-hackathon\bac
+kend\crates\server)
+error[E0432]: 
+unresolved import 
+`crate::security`
+ --> crates\server\src
+\handlers\reporting.rs
+:4:12
+  |
+4 | use crate::securit
+y::sql_allowlist;
+  |            
+^^^^^^^^
+  |            |
+  |            
+unresolved import
+  |            help: 
+a similar path 
+exists: `EasySale_serv
+er::security`
+
+error[E0425]: cannot 
+find value `get_sales_
+by_category` in 
+module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:401:43
+    |
+401 |             .ser
+vice(handlers::reporti
+ng::get_sales_by_categ
+ory)
+    |                 
+                      
+    
+^^^^^^^^^^^^^^^^^^^^^ 
+not found in 
+`handlers::reporting`
+
+error[E0425]: cannot 
+find value 
+`get_sales_by_tier` 
+in module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:403:43
+    |
+403 |             .ser
+vice(handlers::reporti
+ng::get_sales_by_tier)
+    |                 
+                      
+    ^^^^^^^^^^^^^^^^^ 
+not found in 
+`handlers::reporting`
+
+error[E0425]: cannot 
+find value 
+`get_customer_report` 
+in module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:404:43
+    |
+404 |             .ser
+vice(handlers::reporti
+ng::get_customer_repor
+t)
+    |                 
+                      
+    
+^^^^^^^^^^^^^^^^^^^ 
+help: a unit struct 
+with a similar name 
+exists: 
+`get_sales_report`
+    |
+   ::: crates\server\s
+rc\handlers\reporting.
+rs:26:1
+    |
+ 26 | #[get("/api/repo
+rts/sales")]
+    | ----------------
+------------ 
+similarly named unit 
+struct 
+`get_sales_report` 
+defined here
+
+error[E0425]: cannot 
+find value 
+`get_employee_report` 
+in module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:405:43
+    |
+405 |             .ser
+vice(handlers::reporti
+ng::get_employee_repor
+t)
+    |                 
+                      
+    
+^^^^^^^^^^^^^^^^^^^ 
+help: a unit struct 
+with a similar name 
+exists: 
+`get_sales_report`
+    |
+   ::: crates\server\s
+rc\handlers\reporting.
+rs:26:1
+    |
+ 26 | #[get("/api/repo
+rts/sales")]
+    | ----------------
+------------ 
+similarly named unit 
+struct 
+`get_sales_report` 
+defined here
+
+error[E0425]: cannot 
+find value 
+`get_layaway_report` 
+in module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:406:43
+    |
+406 |             .ser
+vice(handlers::reporti
+ng::get_layaway_report
+)
+    |                 
+                      
+    
+^^^^^^^^^^^^^^^^^^ 
+help: a unit struct 
+with a similar name 
+exists: 
+`get_sales_report`
+    |
+   ::: crates\server\s
+rc\handlers\reporting.
+rs:26:1
+    |
+ 26 | #[get("/api/repo
+rts/sales")]
+    | ----------------
+------------ 
+similarly named unit 
+struct 
+`get_sales_report` 
+defined here
+
+error[E0425]: cannot 
+find value `get_work_o
+rder_report` in 
+module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:407:43
+    |
+407 |             .ser
+vice(handlers::reporti
+ng::get_work_order_rep
+ort)
+    |                 
+                      
+    
+^^^^^^^^^^^^^^^^^^^^^ 
+not found in 
+`handlers::reporting`
+
+error[E0425]: cannot 
+find value `get_promot
+ion_report` in module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:408:43
+    |
+408 |             .ser
+vice(handlers::reporti
+ng::get_promotion_repo
+rt)
+    |                 
+                      
+    
+^^^^^^^^^^^^^^^^^^^^ 
+help: a unit struct 
+with a similar name 
+exists: `get_commissio
+n_report`
+    |
+   ::: crates\server\s
+rc\handlers\reporting.
+rs:235:1
+    |
+235 | #[get("/api/repo
+rts/commissions")]
+    | ----------------
+------------------ 
+similarly named unit 
+struct `get_commission
+_report` defined here
+
+error[E0425]: cannot 
+find value `get_dashbo
+ard_metrics` in 
+module 
+`handlers::reporting`
+   --> crates\server\s
+rc\main.rs:409:43
+    |
+409 |             .ser
+vice(handlers::reporti
+ng::get_dashboard_metr
+ics)
+    |                 
+                      
+    
+^^^^^^^^^^^^^^^^^^^^^ 
+not found in 
+`handlers::reporting`
+
+warning: unused 
+import: `actix_web::ht
+tp::Method`
+ --> crates\server\src
+\config\cors_config.rs
+:2:5
+  |
+2 | use actix_web::htt
+p::Method;
+  |     ^^^^^^^^^^^^^^
+^^^^^^^^^
+  |
+  = note: `#[warn(unus
+ed_imports)]` (part 
+of `#[warn(unused)]`) 
+on by default
+
+warning: unused 
+imports: 
+`CorsConfigError`, 
+`CorsConfig`, and `bui
+ld_cors_from_config`
+  --> crates\server\sr
+c\config\mod.rs:17:23
+   |
+17 | pub use cors_conf
+ig::{CorsConfig, 
+CorsConfigError, build
+_cors_from_config};
+   |                  
+     ^^^^^^^^^^  
+^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`OAuthConfigError`, 
+`OAuthConfig`, and `va
+lidate_oauth_redirect_
+uri`
+  --> crates\server\sr
+c\config\mod.rs:18:24
+   |
+18 | pub use oauth_con
+fig::{OAuthConfig, 
+OAuthConfigError, vali
+date_oauth_redirect_ur
+i};
+   |                  
+      ^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  ^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^
+
+warning: unused 
+import: `DatabasePool`
+ --> crates\server\src
+\db\mod.rs:7:39
+  |
+7 | pub use pos_core_s
+torage::{init_pool, 
+DatabasePool};
+  |                   
+                    
+^^^^^^^^^^^^
+
+warning: unused 
+import: `sqlx::sqlite:
+:SqlitePool`
+  --> crates\server\sr
+c\db\mod.rs:10:9
+   |
+10 | pub use sqlx::sql
+ite::SqlitePool;
+   |         ^^^^^^^^^
+^^^^^^^^^^^^^^^
+
+warning: unused 
+import: `ColorValue`
+   --> crates\server\s
+rc\handlers\config.rs:
+373:29
+    |
+373 | use crate::confi
+g::models::{ColorValue
+, CompanyBranding, 
+LoginBranding, 
+ReceiptBranding, 
+StoreBranding};
+    |                 
+            ^^^^^^^^^^
+
+warning: unused 
+import: `Deserialize`
+ --> crates\server\src
+\handlers\ocr_ingest.r
+s:7:13
+  |
+7 | use 
+serde::{Deserialize, 
+Serialize};
+  |             
+^^^^^^^^^^^
+
+warning: unused 
+import: 
+`std::path::Path`
+  --> crates\server\sr
+c\handlers\ocr_ingest.
+rs:10:5
+   |
+10 | use 
+std::path::Path;
+   |     
+^^^^^^^^^^^^^^^
+
+warning: unused 
+import: 
+`ValidationError`
+ --> crates\server\src
+\handlers\reporting.rs
+:5:45
+  |
+5 | use crate::validat
+ors::{ValidatedDateRan
+ge, ValidationError};
+  |                   
+                      
+    ^^^^^^^^^^^^^^^
+
+warning: unused 
+import: `chrono::Utc`
+  --> crates\server\sr
+c\handlers\theme.rs:17
+:5
+   |
+17 | use chrono::Utc;
+   |     ^^^^^^^^^^^
+
+warning: unused 
+import: `crate::servic
+es::audit_logger::Audi
+tLogger`
+  --> crates\server\sr
+c\handlers\theme.rs:18
+:5
+   |
+18 | use crate::servic
+es::audit_logger::Audi
+tLogger;
+   |     ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+
+warning: unused 
+import: `HttpMessage`
+ --> crates\server\src
+\middleware\profile_ga
+te.rs:8:12
+  |
+8 |     Error, 
+HttpMessage,
+  |            
+^^^^^^^^^^^
+
+warning: unused 
+imports: `BackupJob`, 
+`BackupMode`, and 
+`BackupSettings`
+  --> crates\server\sr
+c\models\mod.rs:39:18
+   |
+39 | pub use 
+backup::{BackupJob, 
+BackupMode, 
+BackupSettings};
+   |                  
+^^^^^^^^^  ^^^^^^^^^^ 
+ ^^^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`CandidateValue`, 
+`DocumentConfidence`, 
+`ExtractionMethod`, 
+`FieldConfidence`, 
+and `SourceEvidence`
+  --> crates\server\sr
+c\models\mod.rs:40:22
+   |
+40 | pub use confidenc
+e::{CandidateValue, 
+DocumentConfidence, 
+ExtractionMethod, 
+FieldConfidence, 
+SourceEvidence};
+   |                  
+    ^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`ConfidenceBoosters`, 
+`LexiconError`, 
+`LexiconSettings`, 
+`Lexicon`, 
+`ProximityRules`, and 
+`ZonePriors`
+  --> crates\server\sr
+c\models\mod.rs:61:19
+   |
+61 | pub use 
+lexicon::{Lexicon, 
+LexiconError, 
+LexiconSettings, 
+ProximityRules, 
+ZonePriors, 
+ConfidenceBoosters};
+   |                  
+ ^^^^^^^  
+^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^  
+^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`OcrProfileConfig`, 
+`OcrProfileDef`, 
+`OcrProfileError`, 
+`OcrSettings`, and 
+`ZoneDefaults`
+  --> crates\server\sr
+c\models\mod.rs:63:23
+   |
+63 | pub use ocr_profi
+le::{OcrProfileConfig,
+ OcrProfileDef, 
+OcrProfileError, 
+OcrSettings, 
+ZoneDefaults};
+   |                  
+     ^^^^^^^^^^^^^^^^ 
+ ^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^  
+^^^^^^^^^^^  
+^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`AuditAction`, 
+`AuditLog`, 
+`DecisionSource`, 
+`FieldDecision`, 
+`InvoiceExtraction`, 
+`ReviewCase`, 
+`ReviewSession`, and 
+`ReviewState`
+  --> crates\server\sr
+c\models\mod.rs:73:18
+   |
+73 | pub use 
+review::{AuditAction, 
+AuditLog, 
+DecisionSource, 
+FieldDecision, 
+InvoiceExtraction, 
+ReviewCase, 
+ReviewSession, 
+ReviewState};
+   |                  
+^^^^^^^^^^^  ^^^^^^^^ 
+ ^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^  
+^^^^^^^^^^^^^  
+^^^^^^^^^^^
+
+warning: unused 
+imports: `ConfidenceTh
+resholds`, 
+`ReviewMode`, 
+`ReviewPolicy`, and 
+`TenantReviewPolicy`
+  --> crates\server\sr
+c\models\mod.rs:74:25
+   |
+74 | pub use review_po
+licy::{ReviewMode, 
+ReviewPolicy, 
+ConfidenceThresholds, 
+TenantReviewPolicy};
+   |                  
+       ^^^^^^^^^^  
+^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: `FixAction`, 
+`FlagSeverity`, 
+`HardRule`, 
+`SoftRule`, 
+`SuggestedFix`, 
+`ToleranceConfig`, 
+`ValidationEngine`, 
+`ValidationFlag`, and 
+`ValidationResult`
+  --> crates\server\sr
+c\models\mod.rs:82:22
+   |
+82 | 
+...n::{FlagSeverity, 
+FixAction, HardRule, 
+SoftRule, 
+SuggestedFix, 
+ToleranceConfig, 
+ValidationEngine, 
+ValidationFlag, 
+ValidationResult};
+   |        
+^^^^^^^^^^^^  
+^^^^^^^^^  ^^^^^^^^  
+^^^^^^^^  
+^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^
+
+warning: unused 
+import: `Path`
+  --> crates\server\sr
+c\services\artifact_st
+orage.rs:11:17
+   |
+11 | use 
+std::path::{Path, 
+PathBuf};
+   |                 
+^^^^
+
+warning: unused 
+import: `crate::models
+::confidence::FieldCon
+fidence`
+ --> crates\server\src
+\services\candidate_ge
+nerator.rs:6:5
+  |
+6 | use crate::models:
+:confidence::FieldConf
+idence;
+  |     ^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+
+warning: unused 
+import: `chrono::Utc`
+ --> crates\server\src
+\services\document_ing
+est_service.rs:5:5
+  |
+5 | use chrono::Utc;
+  |     ^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`DynamicImage` and 
+`ImageFormat`
+ --> crates\server\src
+\services\document_ing
+est_service.rs:6:13
+  |
+6 | use 
+image::{DynamicImage, 
+ImageFormat};
+  |             
+^^^^^^^^^^^^  
+^^^^^^^^^^^
+
+warning: unused 
+import: `Duration`
+ --> crates\server\src
+\services\early_stop_c
+hecker.rs:7:17
+  |
+7 | use 
+std::time::{Duration, 
+Instant};
+  |                 
+^^^^^^^^
+
+warning: unused 
+imports: 
+`ImageBuffer` and 
+`Luma`
+ --> crates\server\src
+\services\mask_engine.
+rs:6:45
+  |
+6 | use 
+image::{DynamicImage, 
+GenericImageView, 
+ImageBuffer, Luma};
+  |                   
+                      
+    ^^^^^^^^^^^  ^^^^
+
+warning: unused 
+import: `BoundingBox`
+ --> crates\server\src
+\services\orientation_
+service.rs:4:35
+  |
+4 | use crate::models:
+:{PageArtifact, 
+BoundingBox};
+  |                   
+                
+^^^^^^^^^^^
+
+warning: unused 
+import: `Luma`
+ --> crates\server\src
+\services\orientation_
+service.rs:5:70
+  |
+5 | use 
+image::{DynamicImage, 
+GenericImage, 
+GenericImageView, 
+GrayImage, Luma};
+  |                   
+                      
+                      
+       ^^^^
+
+warning: unused 
+import: `DateTime`
+ --> crates\server\src
+\services\validation_e
+ngine.rs:6:14
+  |
+6 | use 
+chrono::{DateTime, 
+Utc};
+  |              
+^^^^^^^^
+
+warning: unused 
+import: `ImageBuffer`
+ --> crates\server\src
+\services\variant_gene
+rator.rs:6:56
+  |
+6 | use 
+image::{DynamicImage, 
+GenericImageView, 
+GrayImage, 
+ImageBuffer, Luma};
+  |                   
+                      
+               
+^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`ImageBuffer` and 
+`Rgba`
+ --> crates\server\src
+\services\zone_cropper
+.rs:9:45
+  |
+9 | use 
+image::{DynamicImage, 
+GenericImageView, 
+ImageBuffer, Rgba};
+  |                   
+                      
+    ^^^^^^^^^^^  ^^^^
+
+warning: unused 
+import: `Path`
+  --> crates\server\sr
+c\services\zone_croppe
+r.rs:11:17
+   |
+11 | use 
+std::path::{Path, 
+PathBuf};
+   |                 
+^^^^
+
+warning: unused 
+imports: `ApError`, `A
+pIntegrationService`, 
+`BillResult`, and 
+`InvoiceData`
+  --> crates\server\sr
+c\services\mod.rs:72:3
+4
+   |
+72 | pub use ap_integr
+ation_service::{ApInte
+grationService, 
+InvoiceData, 
+BillResult, ApError};
+   |                  
+                
+^^^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^  
+^^^^^^^^^^  ^^^^^^^
+
+warning: unused 
+imports: 
+`AccountingError`, `Ac
+countingIntegrationSer
+vice`, 
+`JournalEntryData`, 
+`JournalLine`, and 
+`JournalResult`
+  --> crates\server\sr
+c\services\mod.rs:73:4
+2
+   |
+73 | pub use accountin
+g_integration_service:
+:{AccountingIntegratio
+nService, 
+JournalEntryData, 
+JournalLine, 
+JournalResult, 
+AccountingError};
+   |                  
+                      
+  ^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^  
+^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`ArtifactStorage`, 
+`StorageConfig`, and 
+`StorageError`
+  --> crates\server\sr
+c\services\mod.rs:76:2
+8
+   |
+76 | pub use artifact_
+storage::{ArtifactStor
+age, StorageConfig, 
+StorageError};
+   |                  
+          
+^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^  
+^^^^^^^^^^^^
+
+warning: unused 
+imports: `CandidateGen
+erationResult`, `Candi
+dateGeneratorError`, 
+`CandidateGenerator`, 
+and `FieldCandidate`
+  --> crates\server\sr
+c\services\mod.rs:81:3
+1
+   |
+81 | pub use candidate
+_generator::{Candidate
+Generator, 
+FieldCandidate, Candid
+ateGenerationResult, C
+andidateGeneratorError
+};
+   |                  
+             
+^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^  ^^^^^^
+^^^^^^^^^^^^^^^^^^^  ^
+^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: `CalibrationD
+ataPoint`, 
+`CalibrationStats`, `C
+onfidenceCalibratorErr
+or`, and 
+`ConfidenceCalibrator`
+  --> crates\server\sr
+c\services\mod.rs:82:3
+3
+   |
+82 | pub use confidenc
+e_calibrator::{Confide
+nceCalibrator, 
+CalibrationDataPoint, 
+CalibrationStats, Conf
+idenceCalibratorError}
+;
+   |                  
+               
+^^^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  ^^^^
+^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: `DocumentInge
+stService`, 
+`IngestConfig`, 
+`IngestError`, and 
+`IngestResult`
+  --> crates\server\sr
+c\services\mod.rs:85:3
+5
+   |
+85 | pub use document_
+ingest_service::{Docum
+entIngestService, 
+IngestConfig, 
+IngestError, 
+IngestResult};
+   |                  
+                 
+^^^^^^^^^^^^^^^^^^^^^ 
+ ^^^^^^^^^^^^  
+^^^^^^^^^^^  
+^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`BudgetStatus`, 
+`EarlyStopChecker`, 
+`EarlyStopDecision`, 
+and `ProcessingBudget`
+  --> crates\server\sr
+c\services\mod.rs:86:3
+0
+   |
+86 | pub use early_sto
+p_checker::{EarlyStopC
+hecker, 
+ProcessingBudget, 
+EarlyStopDecision, 
+BudgetStatus};
+   |                  
+            
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^
+
+warning: unused 
+imports: `Contradictio
+nSeverity`, 
+`Contradiction`, `Cros
+sFieldValidation`, 
+`FieldResolverError`, 
+`FieldResolver`, 
+`FieldValue`, 
+`ResolutionResult`, 
+and `ValidationType`
+  --> crates\server\sr
+c\services\mod.rs:87:2
+6
+   |
+87 | 
+...::{FieldResolver, 
+FieldValue, 
+ResolutionResult, 
+FieldResolverError, 
+CrossFieldValidation, 
+ValidationType, 
+Contradiction, Contrad
+ictionSeverity};
+   |       
+^^^^^^^^^^^^^  
+^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`IntegrationError`, 
+`IntegrationResult`, `
+InventoryIntegrationSe
+rvice`, and 
+`LineItemData`
+  --> crates\server\sr
+c\services\mod.rs:91:4
+1
+   |
+91 | pub use inventory
+_integration_service::
+{InventoryIntegrationS
+ervice, LineItemData, 
+IntegrationResult, 
+IntegrationError};
+   |                  
+                      
+ ^^^^^^^^^^^^^^^^^^^^^
+^^^^^^  ^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: `MaskDetectio
+nResult`, 
+`MaskEngineConfig`, 
+`MaskEngineError`, 
+`MaskEngine`, 
+`MaskType`, and `Mask`
+  --> crates\server\sr
+c\services\mod.rs:92:2
+3
+   |
+92 | pub use mask_engi
+ne::{MaskEngine, 
+MaskEngineConfig, 
+MaskEngineError, 
+Mask, MaskType, 
+MaskDetectionResult};
+   |                  
+     ^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^  ^^^^ 
+ ^^^^^^^^  
+^^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: `OcrEngine`, 
+`OcrError`, 
+`OcrProfile`, 
+`OcrResult`, and 
+`TesseractEngine`
+  --> crates\server\sr
+c\services\mod.rs:93:2
+2
+   |
+93 | pub use ocr_engin
+e::{OcrEngine, 
+OcrProfile, 
+OcrResult, OcrError, 
+TesseractEngine};
+   |                  
+    ^^^^^^^^^  
+^^^^^^^^^^  ^^^^^^^^^ 
+ ^^^^^^^^  
+^^^^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`OrientationConfig`, 
+`OrientationError`, 
+`OrientationResult`, 
+`OrientationService`, 
+`RotationEvidence`, 
+and `RotationScore`
+  --> crates\server\sr
+c\services\mod.rs:97:3
+1
+   |
+97 | pub use orientati
+on_service::{Orientati
+onService, 
+OrientationConfig, 
+OrientationResult, 
+OrientationError, 
+RotationEvidence, 
+RotationScore};
+   |                  
+             
+^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^
+
+warning: unused 
+import: 
+`PasswordError`
+  --> crates\server\sr
+c\services\mod.rs:98:4
+5
+   |
+98 | pub use password_
+service::{PasswordServ
+ice, PasswordError};
+   |                  
+                      
+     ^^^^^^^^^^^^^
+
+warning: unused 
+import: `settings_scop
+e_enforcement::Setting
+sScopeEnforcement`
+   --> crates\server\s
+rc\services\mod.rs:109
+:9
+    |
+109 | pub use settings
+_scope_enforcement::Se
+ttingsScopeEnforcement
+;
+    |         ^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused 
+import: `validation_en
+gine::ValidationEngine
+Service`
+   --> crates\server\s
+rc\services\mod.rs:115
+:9
+    |
+115 | pub use validati
+on_engine::ValidationE
+ngineService;
+    |         ^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`RankedVariant`, 
+`ScoreBreakdown`, 
+`VariantConfig`, 
+`VariantError`, `Varia
+ntGenerationResult`, 
+and `VariantGenerator`
+   --> crates\server\s
+rc\services\mod.rs:118
+:29
+    |
+118 | pub use variant_
+generator::{VariantGen
+erator, 
+VariantConfig, Variant
+GenerationResult, 
+RankedVariant, 
+ScoreBreakdown, 
+VariantError};
+    |                 
+            
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^  ^^^^^^^
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^  
+^^^^^^^^^^^^
+
+warning: unused 
+imports: 
+`DetectedZone`, `ZoneD
+etectionResult`, 
+`ZoneDetectorConfig`, 
+`ZoneDetectorError`, `
+ZoneDetectorService`, 
+and `ZoneMap`
+   --> crates\server\s
+rc\services\mod.rs:121
+:33
+    |
+121 | pub use zone_det
+ector_service::{ZoneDe
+tectorService, 
+ZoneDetectorConfig, 
+ZoneDetectorError, 
+DetectedZone, 
+ZoneDetectionResult, 
+ZoneMap};
+    |                 
+                
+^^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^^^  
+^^^^^^^
+
+warning: unused 
+imports: 
+`CoordinateMapping`, 
+`ZoneCropResult`, 
+`ZoneCropperConfig`, 
+`ZoneCropperError`, 
+and `ZoneCropper`
+   --> crates\server\s
+rc\services\mod.rs:122
+:24
+    |
+122 | pub use zone_cro
+pper::{ZoneCropper, 
+ZoneCropperConfig, 
+ZoneCropperError, 
+ZoneCropResult, 
+CoordinateMapping};
+    |                 
+       ^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^  
+^^^^^^^^^^^^^^^^^
+
+warning: unused 
+import: 
+`validate_date_input`
+ --> crates\server\src
+\validators\mod.rs:3:2
+6
+  |
+3 | pub use date_valid
+ator::{validate_date_i
+nput, 
+ValidatedDateRange, 
+ValidationError};
+  |                   
+       
+^^^^^^^^^^^^^^^^^^^
+
+Some errors have 
+detailed 
+explanations: E0425, 
+E0432.
+For more information 
+about an error, try 
+`rustc --explain 
+E0425`.
+warning: 
+`EasySale-server` 
+(bin 
+"EasySale-server") 
+generated 78 warnings 
+(28 duplicates)
+error: could not 
+compile 
+`EasySale-server` 
+(bin 
+"EasySale-server") 
+due to 9 previous 
+errors; 78 warnings 
+emitted

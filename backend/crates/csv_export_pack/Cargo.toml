@@ -1,0 +1,47 @@
+[package]
+name = "csv_export_pack"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+accounting_snapshots = { path = "../accounting_snapshots" }
+export_batches = { path = "../export_batches" }
+
+# CSV generation
+csv = "1.3"
+
+# Serialization
+serde = { workspace = true }
+
+# Date/Time
+chrono = { workspace = true }
+
+# UUID
+uuid = { workspace = true }
+
+# Decimal arithmetic
+rust_decimal = "1.33"
+
+# Error handling
+thiserror = "1.0"
+
+# Logging
+tracing = { workspace = true }
+
+# ZIP packaging
+zip = { workspace = true }
+
+[dev-dependencies]
+rust_decimal_macros = "1.33"
+tempfile = { workspace = true }
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+enum_glob_use = "deny"
+pedantic = "warn"
+nursery = "warn"
+unwrap_used = "warn"

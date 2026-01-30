@@ -1,0 +1,92 @@
+/**
+ * Users & Security Settings Definitions
+ * Group: User management and security settings
+ */
+
+import { SettingDefinition } from '../types';
+
+export const usersSecuritySettings: SettingDefinition[] = [
+  {
+    key: 'security.password_min_length',
+    label: 'Minimum Password Length',
+    description: 'Minimum number of characters required for passwords',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: 8,
+    allowedScopes: ['store', 'default'],
+    validator: (value: number) => value >= 6 && value <= 128,
+    schemaVersion: 1,
+  },
+  {
+    key: 'security.password_require_uppercase',
+    label: 'Require Uppercase',
+    description: 'Require at least one uppercase letter in passwords',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'security.password_require_lowercase',
+    label: 'Require Lowercase',
+    description: 'Require at least one lowercase letter in passwords',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'security.password_require_number',
+    label: 'Require Number',
+    description: 'Require at least one number in passwords',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'security.password_require_special',
+    label: 'Require Special Character',
+    description: 'Require at least one special character in passwords',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: false,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+  {
+    key: 'security.session_timeout_minutes',
+    label: 'Session Timeout (Minutes)',
+    description: 'Automatically log out users after this many minutes of inactivity',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: 60,
+    allowedScopes: ['store', 'default'],
+    validator: (value: number) => value >= 5 && value <= 1440,
+    schemaVersion: 1,
+  },
+  {
+    key: 'security.max_login_attempts',
+    label: 'Maximum Login Attempts',
+    description: 'Lock account after this many failed login attempts',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: 5,
+    allowedScopes: ['store', 'default'],
+    validator: (value: number) => value >= 3 && value <= 10,
+    schemaVersion: 1,
+  },
+  {
+    key: 'security.audit_log_enabled',
+    label: 'Audit Log Enabled',
+    description: 'Log all user actions for security auditing',
+    type: 'policy',
+    group: 'users-security',
+    defaultValue: true,
+    allowedScopes: ['store', 'default'],
+    schemaVersion: 1,
+  },
+];

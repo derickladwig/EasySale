@@ -1,0 +1,281 @@
+/**
+ * Design Tokens - Single Source of Truth
+ * 
+ * This is the ONLY file that should contain raw color values.
+ * All components must use these CSS custom properties.
+ */
+
+:root {
+  /* ============================================
+   * SEMANTIC COLOR TOKENS
+   * ============================================ */
+  
+  /* Primary Brand Colors */
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;  /* Base brand color */
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
+  
+  /* Neutral Colors */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+  
+  /* Status Colors */
+  --color-success-500: #059669;
+  --color-warning-500: #d97706;
+  --color-error-500: #dc2626;
+  --color-info-500: #2563eb;
+  
+  /* ============================================
+   * FUNCTIONAL TOKENS (Light Theme Default)
+   * ============================================ */
+  
+  /* Backgrounds */
+  --color-background: var(--color-slate-50);
+  --color-surface: var(--color-slate-100);
+  --color-surface-elevated: var(--color-slate-200);
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Text */
+  --color-text-primary: var(--color-slate-900);
+  --color-text-secondary: var(--color-slate-600);
+  --color-text-muted: var(--color-slate-400);
+  --color-text-inverse: var(--color-slate-50);
+  
+  /* Borders */
+  --color-border: var(--color-slate-200);
+  --color-border-subtle: var(--color-slate-100);
+  --color-divider: var(--color-slate-200);
+  
+  /* Interactive */
+  --color-focus-ring: var(--color-primary-500);
+  --color-hover: var(--color-slate-100);
+  --color-active: var(--color-slate-200);
+  
+  /* ============================================
+   * COMPONENT TOKENS
+   * ============================================ */
+  
+  /* Layout Variables - AppShell */
+  --appHeaderH: 52px;
+  --appSidebarW: 200px;
+  --pageGutter: 12px;
+  
+  /* Input Components */
+  --input-padding-left: 2.5rem;
+  --input-padding-right: 1rem;
+  --input-padding-y: 0.75rem;
+  --input-border-radius: 0.375rem;
+  --input-border-width: 1px;
+  --input-focus-ring-width: 2px;
+  
+  /* Icon Positioning */
+  --icon-left: 0.75rem;
+  --icon-right: 0.75rem;
+  --icon-size: 1rem;
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Typography */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Animation */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+  
+  /* ============================================
+   * CLEANUP SHIELD TOKENS
+   * Document Cleanup Engine overlay colors
+   * ============================================ */
+  
+  /* Shield Type Colors (semi-transparent for overlays) */
+  --cleanup-logo: rgba(59, 130, 246, 0.5);        /* Blue */
+  --cleanup-watermark: rgba(234, 179, 8, 0.5);    /* Yellow */
+  --cleanup-header: rgba(107, 114, 128, 0.5);     /* Gray */
+  --cleanup-footer: rgba(107, 114, 128, 0.5);     /* Gray */
+  --cleanup-stamp: rgba(249, 115, 22, 0.5);       /* Orange */
+  --cleanup-user: rgba(34, 197, 94, 0.5);         /* Green */
+  --cleanup-vendor: rgba(168, 85, 247, 0.5);      /* Purple */
+  --cleanup-template: rgba(6, 182, 212, 0.5);     /* Cyan */
+  
+  /* Shield Border Colors (solid for bounding boxes) */
+  --cleanup-logo-border: rgb(59, 130, 246);
+  --cleanup-watermark-border: rgb(234, 179, 8);
+  --cleanup-header-border: rgb(107, 114, 128);
+  --cleanup-footer-border: rgb(107, 114, 128);
+  --cleanup-stamp-border: rgb(249, 115, 22);
+  --cleanup-user-border: rgb(34, 197, 94);
+  --cleanup-vendor-border: rgb(168, 85, 247);
+  --cleanup-template-border: rgb(6, 182, 212);
+  
+  /* Shield Status Colors */
+  --cleanup-applied: rgba(34, 197, 94, 0.3);      /* Green tint for applied */
+  --cleanup-suggested: rgba(234, 179, 8, 0.3);    /* Yellow tint for suggested */
+  --cleanup-disabled: rgba(107, 114, 128, 0.2);   /* Gray tint for disabled */
+  
+  /* Critical Zone Warning */
+  --cleanup-critical-zone: rgba(239, 68, 68, 0.4);  /* Red for critical zone overlap */
+  --cleanup-critical-zone-border: rgb(239, 68, 68);
+  
+  /* Zone Boundary Colors */
+  --cleanup-zone-line-items: rgba(139, 92, 246, 0.3);  /* Violet */
+  --cleanup-zone-totals: rgba(236, 72, 153, 0.3);      /* Pink */
+  --cleanup-zone-header: rgba(14, 165, 233, 0.3);      /* Sky */
+  --cleanup-zone-footer: rgba(20, 184, 166, 0.3);      /* Teal */
+}
+
+/* ============================================
+ * DARK THEME OVERRIDES
+ * Background: #222224 (charcoal gray - easier on eyes)
+ * ============================================ */
+
+[data-theme="dark"] {
+  /* Custom dark theme colors - #222224 base */
+  --color-dark-bg: #222224;
+  --color-dark-surface: #2a2a2c;
+  --color-dark-elevated: #333336;
+  --color-dark-border: #404044;
+  --color-dark-border-subtle: #333336;
+  
+  /* Functional Tokens - Dark Mode */
+  --color-background: var(--color-dark-bg);
+  --color-surface: var(--color-dark-surface);
+  --color-surface-elevated: var(--color-dark-elevated);
+  --color-overlay: rgba(0, 0, 0, 0.8);
+  
+  /* Text - Dark Mode (high contrast against #222224) */
+  --color-text-primary: #f5f5f7;
+  --color-text-secondary: #d1d1d6;
+  --color-text-muted: #8e8e93;
+  --color-text-inverse: #222224;
+  
+  /* Borders - Dark Mode */
+  --color-border: var(--color-dark-border);
+  --color-border-subtle: var(--color-dark-border-subtle);
+  --color-divider: var(--color-dark-border);
+  
+  /* Interactive - Dark Mode */
+  --color-hover: var(--color-dark-surface);
+  --color-active: var(--color-dark-elevated);
+  
+  /* ============================================
+   * CLEANUP SHIELD TOKENS - Dark Mode
+   * Higher contrast for visibility
+   * ============================================ */
+  
+  /* Shield Type Colors (higher opacity for dark backgrounds) */
+  --cleanup-logo: rgba(96, 165, 250, 0.6);
+  --cleanup-watermark: rgba(250, 204, 21, 0.6);
+  --cleanup-header: rgba(156, 163, 175, 0.6);
+  --cleanup-footer: rgba(156, 163, 175, 0.6);
+  --cleanup-stamp: rgba(251, 146, 60, 0.6);
+  --cleanup-user: rgba(74, 222, 128, 0.6);
+  --cleanup-vendor: rgba(192, 132, 252, 0.6);
+  --cleanup-template: rgba(34, 211, 238, 0.6);
+  
+  /* Shield Border Colors - brighter for dark mode */
+  --cleanup-logo-border: rgb(96, 165, 250);
+  --cleanup-watermark-border: rgb(250, 204, 21);
+  --cleanup-header-border: rgb(156, 163, 175);
+  --cleanup-footer-border: rgb(156, 163, 175);
+  --cleanup-stamp-border: rgb(251, 146, 60);
+  --cleanup-user-border: rgb(74, 222, 128);
+  --cleanup-vendor-border: rgb(192, 132, 252);
+  --cleanup-template-border: rgb(34, 211, 238);
+  
+  /* Shield Status Colors - adjusted for dark mode */
+  --cleanup-applied: rgba(74, 222, 128, 0.35);
+  --cleanup-suggested: rgba(250, 204, 21, 0.35);
+  --cleanup-disabled: rgba(156, 163, 175, 0.25);
+  
+  /* Critical Zone Warning - brighter for dark mode */
+  --cleanup-critical-zone: rgba(248, 113, 113, 0.5);
+  --cleanup-critical-zone-border: rgb(248, 113, 113);
+  
+  /* Zone Boundary Colors - adjusted for dark mode */
+  --cleanup-zone-line-items: rgba(167, 139, 250, 0.35);
+  --cleanup-zone-totals: rgba(244, 114, 182, 0.35);
+  --cleanup-zone-header: rgba(56, 189, 248, 0.35);
+  --cleanup-zone-footer: rgba(45, 212, 191, 0.35);
+}
+
+/* ============================================
+ * SYSTEM THEME (Auto-detect)
+ * ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    /* Apply dark theme tokens when system prefers dark */
+    --color-background: #222224;
+    --color-surface: #2a2a2c;
+    --color-surface-elevated: #333336;
+    --color-overlay: rgba(0, 0, 0, 0.8);
+    
+    --color-text-primary: #f5f5f7;
+    --color-text-secondary: #d1d1d6;
+    --color-text-muted: #8e8e93;
+    --color-text-inverse: #222224;
+    
+    --color-border: #404044;
+    --color-border-subtle: #333336;
+    --color-divider: #333336;
+    
+    --color-hover: #2a2a2c;
+    --color-active: #333336;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    /* Apply light theme tokens when system prefers light */
+    --color-background: var(--color-slate-50);
+    --color-surface: var(--color-slate-100);
+    --color-surface-elevated: var(--color-slate-200);
+    --color-overlay: rgba(0, 0, 0, 0.5);
+    
+    --color-text-primary: var(--color-slate-900);
+    --color-text-secondary: var(--color-slate-600);
+    --color-text-muted: var(--color-slate-400);
+    --color-text-inverse: var(--color-slate-50);
+    
+    --color-border: var(--color-slate-200);
+    --color-border-subtle: var(--color-slate-100);
+    --color-divider: var(--color-slate-200);
+    
+    --color-hover: var(--color-slate-100);
+    --color-active: var(--color-slate-200);
+  }
+}

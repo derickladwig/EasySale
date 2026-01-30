@@ -1,0 +1,64 @@
+# EasySale Configuration Template for Windows Installer
+# This TOML file is used by the installer to generate the production configuration
+
+[profile]
+name = "${RUNTIME_PROFILE}"
+strict_validation = true
+enable_demo = false
+
+[database]
+# Canonical key: DATABASE_PATH
+path = "${DATABASE_PATH}"
+
+[server]
+host = "${API_HOST}"
+port = ${API_PORT}
+public_base_url = "${PUBLIC_BASE_URL}"
+enable_dev_endpoints = false
+
+[security]
+require_secrets = true
+reject_placeholder_secrets = true
+jwt_secret = "${JWT_SECRET}"
+jwt_expiration_hours = 8
+
+[oauth]
+quickbooks_redirect_uri = "${QUICKBOOKS_REDIRECT_URI}"
+google_drive_redirect_uri = "${GOOGLE_DRIVE_REDIRECT_URI}"
+reject_localhost_in_prod = true
+
+[branding]
+source = "runtime"
+tenant_id = "${TENANT_ID}"
+
+[integrations]
+quickbooks_enabled = ${QUICKBOOKS_ENABLED}
+woocommerce_enabled = ${WOOCOMMERCE_ENABLED}
+supabase_enabled = ${SUPABASE_ENABLED}
+
+[logging]
+level = "info"
+output = "file"
+path = "${LOG_PATH}"
+
+[features]
+enable_demo_mode = false
+enable_preset_packs = false
+enable_automotive_pack = false
+
+[validation]
+fail_on_placeholder_secrets = true
+fail_on_demo_mode = true
+fail_on_dev_endpoints = true
+fail_on_localhost_oauth = true
+fail_on_missing_required_fields = true
+
+[backup]
+enabled = true
+interval_hours = 24
+retention_days = 30
+path = "${BACKUP_PATH}"
+
+[store]
+id = "${STORE_ID}"
+name = "${STORE_NAME}"

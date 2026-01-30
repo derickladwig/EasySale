@@ -1,0 +1,119 @@
+name: OCR Regression Test
+
+on:
+  pull_request:
+    paths:
+      - 'backend/crates/server/src/services/ocr_*.rs'
+      - 'backend/crates/server/src/services/multi_pass_ocr.rs'
+      - 'backend/crates/server/src/services/image_preprocessing.rs'
+      - 'backend/crates/server/src/services/validation_engine.rs'
+      - 'backend/crates/server/tests/golden_set.rs'
+      - 'backend/crates/server/tests/metrics_runner.rs'
+      - 'backend/crates/server/tests/fixtures/**'
+  workflow_dispatch:
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  regression-test:
+    name: OCR Accuracy Regression Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for baseline comparison
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend/crates/server
+      
+      - name: Install Tesseract OCR
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng
+      
+      - name: Run regression tests
+        working-directory: backend/crates/server
+        run: |
+          cargo test --test golden_set --test metrics_runner -- --nocapture > regression_output.txt 2>&1 || true
+          cat regression_output.txt
+      
+      - name: Extract metrics
+        id: metrics
+        working-directory: backend/crates/server
+        run: |
+          # Extract overall accuracy from test output
+          ACCURACY=$(grep -oP 'Overall Accuracy: \K[0-9.]+' regression_output.txt || echo "0")
+          echo "accuracy=$ACCURACY" >> $GITHUB_OUTPUT
+          echo "Current accuracy: $ACCURACY%"
+      
+      - name: Check regression threshold
+        env:
+          BASELINE_ACCURACY: 70.0  # Current baseline
+          REGRESSION_THRESHOLD: 2.0  # Max allowed regression in percentage points
+        run: |
+          CURRENT_ACCURACY=${{ steps.metrics.outputs.accuracy }}
+          
+          # Calculate if regression exceeds threshold
+          REGRESSION=$(echo "$BASELINE_ACCURACY - $CURRENT_ACCURACY" | bc)
+          EXCEEDS=$(echo "$REGRESSION > $REGRESSION_THRESHOLD" | bc)
+          
+          echo "Baseline accuracy: $BASELINE_ACCURACY%"
+          echo "Current accuracy: $CURRENT_ACCURACY%"
+          echo "Regression: $REGRESSION percentage points"
+          echo "Threshold: $REGRESSION_THRESHOLD percentage points"
+          
+          if [ "$EXCEEDS" -eq 1 ]; then
+            echo "❌ REGRESSION DETECTED: Accuracy dropped by $REGRESSION percentage points"
+            echo "This exceeds the allowed threshold of $REGRESSION_THRESHOLD percentage points"
+            exit 1
+          else
+            echo "✅ No significant regression detected"
+          fi
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const accuracy = '${{ steps.metrics.outputs.accuracy }}';
+            const baseline = '70.0';
+            const regression = (parseFloat(baseline) - parseFloat(accuracy)).toFixed(2);
+            
+            const body = `## OCR Regression Test Results
+            
+            | Metric | Value |
+            |--------|-------|
+            | Baseline Accuracy | ${baseline}% |
+            | Current Accuracy | ${accuracy}% |
+            | Regression | ${regression} percentage points |
+            | Threshold | 2.0 percentage points |
+            | Status | ${Math.abs(regression) <= 2.0 ? '✅ PASS' : '❌ FAIL'} |
+            
+            ${Math.abs(regression) > 2.0 ? '⚠️ **Warning**: Accuracy regression exceeds threshold!' : '✅ No significant regression detected'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Upload regression report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report
+          path: backend/crates/server/regression_output.txt
+          retention-days: 30

@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 722b196070b6c394d2936886328551317442e4690f24f15f099581468a7c0c15 # shrinks to access_token = "ya29.aAAaAAA-_0Aa_A_--AA_aAA_--0aa0A-a-AAaA00_aaa0AaaaaA_-a_0-0aaaAa00a-00-0_0a-a-0aaA-Aa_aA00AaaA_aa-a0A", refresh_token = "1//-0_000_-aa_AAAaAaAAZO2_8zZVyb_lO31IXzi7_-_k-D--u4E", expires_at = 1769390015, tenant_id = "test-tenant", destination_name = "yqzGeD", folder_path = None
+cc 2352d23d3030827945153c44ec2c6aa35d9daa7e7461e41541bcf1c3044c093c # shrinks to access_token = "ya29.aaAaA0A00AAa0A0A-A00_-a_00a-a0aa-a0aa-0_aaaa0aAA0A_aA_A-0aaaa-a-AA0Aa00-__---_-a-a-_-aaAa_-A0aaAAA_-", refresh_token = "1//-aa-A-_A0a-A__a_aa_a-Aa_A_0aaAA0A-a0--_AE-_GMe_4uB", expires_at = 1769382500

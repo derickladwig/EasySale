@@ -1,0 +1,168 @@
+{
+  "name": "Ambient Photo",
+  "version": "1.0.0",
+  "layout": {
+    "template": "leftStatusRightAuthCardPhoto",
+    "slots": {
+      "header": {
+        "enabled": true,
+        "components": ["logo", "environmentSelector"]
+      },
+      "left": {
+        "variant": "status"
+      },
+      "main": {
+        "variant": "card"
+      },
+      "footer": {
+        "enabled": true,
+        "components": ["version", "copyright"]
+      }
+    },
+    "responsive": {
+      "breakpoints": {
+        "mobile": 320,
+        "tablet": 768,
+        "desktop": 1024,
+        "kiosk": 1920
+      },
+      "stackOnMobile": true
+    }
+  },
+  "tokens": {
+    "colors": {
+      "surface": {
+        "primary": "rgba(15, 23, 42, 0.85)",
+        "secondary": "rgba(30, 41, 59, 0.9)",
+        "tertiary": "rgba(51, 65, 85, 0.8)"
+      },
+      "text": {
+        "primary": "#ffffff",
+        "secondary": "#e2e8f0",
+        "tertiary": "#cbd5e1",
+        "inverse": "#0f172a"
+      },
+      "border": {
+        "default": "rgba(226, 232, 240, 0.2)",
+        "focus": "#3b82f6",
+        "error": "#ef4444"
+      },
+      "accent": {
+        "primary": "#3b82f6",
+        "hover": "#2563eb",
+        "active": "#1d4ed8"
+      },
+      "status": {
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "error": "#ef4444",
+        "info": "#3b82f6"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "primary": "Inter, system-ui, -apple-system, sans-serif",
+        "monospace": "Fira Code, Consolas, monospace"
+      },
+      "fontSize": {
+        "xs": "0.75rem",
+        "sm": "0.875rem",
+        "base": "1rem",
+        "lg": "1.125rem",
+        "xl": "1.25rem",
+        "xxl": "1.5rem"
+      },
+      "fontWeight": {
+        "normal": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "lineHeight": {
+        "tight": 1.25,
+        "normal": 1.5,
+        "relaxed": 1.75
+      }
+    },
+    "spacing": {
+      "scale": {
+        "xs": "0.25rem",
+        "sm": "0.5rem",
+        "md": "1rem",
+        "lg": "1.5rem",
+        "xl": "2rem",
+        "xxl": "3rem"
+      },
+      "density": "comfortable"
+    },
+    "shadows": {
+      "elevation": {
+        "none": "none",
+        "sm": "0 1px 2px rgba(0, 0, 0, 0.05)",
+        "md": "0 4px 6px rgba(0, 0, 0, 0.1)",
+        "lg": "0 10px 15px rgba(0, 0, 0, 0.3)",
+        "xl": "0 20px 25px rgba(0, 0, 0, 0.4)"
+      }
+    },
+    "blur": {
+      "backdrop": {
+        "none": "none",
+        "sm": "blur(4px)",
+        "md": "blur(12px)",
+        "lg": "blur(16px)"
+      },
+      "enabled": true
+    },
+    "radius": {
+      "card": "20px",
+      "input": "10px",
+      "button": "10px",
+      "pill": "9999px"
+    }
+  },
+  "components": {
+    "authCard": {
+      "methods": ["password", "pin", "badge"],
+      "showStorePicker": true,
+      "showStationPicker": true,
+      "showDeviceIdentity": true,
+      "showDemoAccounts": false,
+      "glassmorphism": true,
+      "elevation": "lg"
+    },
+    "statusCard": {
+      "variant": "locationForward",
+      "showDatabaseStatus": true,
+      "showSyncStatus": true,
+      "showLastSync": true,
+      "showStoreInfo": true,
+      "showStationInfo": true
+    },
+    "header": {
+      "showLogo": true,
+      "showEnvironmentSelector": true,
+      "showHelpMenu": false,
+      "companyName": "EasySale"
+    },
+    "footer": {
+      "showVersion": true,
+      "showBuild": true,
+      "showCopyright": true,
+      "copyrightText": "© 2026 EasySale"
+    },
+    "errorCallout": {
+      "presentation": "callout",
+      "showRetryAction": true,
+      "showDiagnosticsAction": false
+    }
+  },
+  "background": {
+    "type": "photo",
+    "photo": {
+      "url": "/assets/backgrounds/register-ambient.jpg",
+      "blur": 4,
+      "overlayOpacity": 0.6,
+      "position": "center"
+    }
+  }
+}

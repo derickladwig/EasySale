@@ -1,0 +1,4 @@
+[env]
+# Enable SQLX offline mode to use cached query metadata from .sqlx/ folder
+# This allows compilation without a live database connection
+SQLX_OFFLINE = "true"

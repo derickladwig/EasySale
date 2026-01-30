@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT key, value, scope, scope_id\n        FROM settings\n        WHERE key LIKE 'theme.%'\n        AND (\n            (scope = 'global' AND scope_id IS NULL)\n            OR (scope = 'store' AND scope_id = ?)\n            OR (scope = 'user' AND scope_id = ?)\n        )\n        ORDER BY \n            CASE scope\n                WHEN 'user' THEN 1\n                WHEN 'store' THEN 2\n                WHEN 'global' THEN 3\n            END\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "key",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "value",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "scope",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "scope_id",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "fce4d626960fb82d6a5335f1b8e5aadeb95ca2f6ebfc7c702a9234ecc5a1bf8b"
+}

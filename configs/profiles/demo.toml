@@ -1,0 +1,70 @@
+# Demo Profile Configuration
+# Preset pack enabled, demo indicators shown, moderate validation
+
+[profile]
+name = "demo"
+strict_validation = false
+enable_demo = true
+
+[database]
+# Canonical key: DATABASE_PATH
+# For demo, use a separate database to avoid mixing with real data
+path = "./data/demo-pos.db"
+
+[server]
+host = "127.0.0.1"
+port = 8923
+# Public base URL for OAuth callbacks and webhooks
+public_base_url = "http://localhost:8923"
+# Dev endpoints can be enabled for demo/training purposes
+enable_dev_endpoints = true
+
+[security]
+# Demo profile allows placeholder secrets but warns about them
+require_secrets = false
+reject_placeholder_secrets = false
+# IMPORTANT: This is a demo secret - change in production!
+jwt_secret = "demo-secret-key-for-evaluation-only"
+jwt_expiration_hours = 8
+
+[oauth]
+# OAuth redirect URIs for integrations
+# In demo, localhost is acceptable for evaluation
+quickbooks_redirect_uri = "http://localhost:8923/api/integrations/quickbooks/callback"
+google_drive_redirect_uri = "http://localhost:8923/api/integrations/google-drive/callback"
+# Demo profile allows localhost OAuth
+reject_localhost_in_prod = false
+
+[branding]
+# Branding source: "runtime" loads from tenant config
+source = "runtime"
+# Demo tenant with example branding
+tenant_id = "demo-tenant"
+
+[integrations]
+# Integrations disabled by default in demo
+# Can be enabled for demonstration purposes
+quickbooks_enabled = false
+woocommerce_enabled = false
+supabase_enabled = false
+
+[logging]
+level = "info"
+# Log to file for demo sessions
+output = "file"
+path = "./logs/demo-pos.log"
+
+[features]
+# Feature flags for optional functionality
+enable_demo_mode = true
+enable_preset_packs = true
+enable_automotive_pack = false
+
+[demo]
+# Demo-specific configuration
+# Path to preset pack JSON file with demo data
+preset_pack_path = "./configs/presets/demo-retail.json"
+# Show demo mode indicator in UI
+show_demo_indicator = true
+# Demo mode banner message
+demo_banner_message = "Demo Mode - Data is for demonstration purposes only"

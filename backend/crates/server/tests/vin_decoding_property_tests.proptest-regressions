@@ -1,0 +1,12 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 2c5057267a5cd2b5324d6da989946ba4cde247c8a9dbd7a02c6ee4770700de4c # shrinks to vin = "1FAA0A0001000AAAAA"
+cc 1ac1dcca2eae866ab2cb52af3d60f797af5433c3e67dce5963d5a4d307b086e3 # shrinks to wmi = "1FA", model = "0A0", engine = "00", check = '0', year_char = '1', trim = "00", plant_seq = "0000AA"
+cc be570fbca61cbe69bec3dc0a213516505e454f3d1bd366c55f7796fc52276557 # shrinks to vin = "1FA0AA000100AA00A0"
+cc 300f44de9649af6c9119ca196a77491a0b01da947bde18ab5af058d262afe176 # shrinks to wmi = "1FA", model = "000", engine = "00", check = '0', year_char = 'U', plant = '0', sequential = "000000"
+cc 73467443bcea6fbc7e225a05a6d0202bc8451ed6ad9d09beab788b4d5d4b4cc2 # shrinks to vin = "1FA000000U0000000"
+cc 5d67b57c0c98eb8a0c3e571c3f683e635fdfc39d6e0ba6c4bf89c7475ea15116 # shrinks to vin = "1FA000000U0000000"

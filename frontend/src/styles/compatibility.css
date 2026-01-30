@@ -1,0 +1,280 @@
+/**
+ * Compatibility Layer for Legacy Pages
+ * 
+ * This file provides CSS classes to ensure legacy pages render correctly
+ * under the new AppShell layout system while maintaining their existing styling.
+ * 
+ * Usage:
+ * - Add .legacy-page to the root element of unmigrated pages
+ * - Add .legacy-page--with-padding for pages that need default padding
+ * 
+ * This layer will be removed once all pages are migrated to the design system.
+ */
+
+/* ============================================
+ * Base Legacy Page Styles
+ * ============================================ */
+
+.legacy-page {
+  /* Typography mappings from old system */
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  
+  /* Background */
+  background: var(--color-bg-primary);
+  
+  /* Ensure proper box-sizing */
+  box-sizing: border-box;
+}
+
+.legacy-page *,
+.legacy-page *::before,
+.legacy-page *::after {
+  box-sizing: border-box;
+}
+
+/* ============================================
+ * Legacy Page with Padding
+ * ============================================ */
+
+.legacy-page--with-padding {
+  padding: var(--pageGutter);
+}
+
+/* ============================================
+ * Legacy Typography Mappings
+ * ============================================ */
+
+.legacy-page h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.legacy-page h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.legacy-page h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.legacy-page h4 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.legacy-page p {
+  margin-bottom: var(--space-3);
+}
+
+/* ============================================
+ * Legacy Color Mappings
+ * ============================================ */
+
+.legacy-page .text-primary {
+  color: var(--color-text-primary);
+}
+
+.legacy-page .text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.legacy-page .text-muted {
+  color: var(--color-text-muted);
+}
+
+.legacy-page .bg-primary {
+  background-color: var(--color-bg-primary);
+}
+
+.legacy-page .bg-secondary {
+  background-color: var(--color-bg-secondary);
+}
+
+.legacy-page .border-color {
+  border-color: var(--color-border);
+}
+
+/* ============================================
+ * Legacy Button Mappings
+ * ============================================ */
+
+.legacy-page button,
+.legacy-page .button {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: var(--border-1) solid var(--color-border);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--duration-1);
+  min-height: 40px;
+}
+
+.legacy-page button:hover,
+.legacy-page .button:hover {
+  background: var(--color-surface-2);
+}
+
+.legacy-page button:focus-visible,
+.legacy-page .button:focus-visible {
+  outline: var(--ring-2) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.legacy-page button:disabled,
+.legacy-page .button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+ * Legacy Input Mappings
+ * ============================================ */
+
+.legacy-page input,
+.legacy-page select,
+.legacy-page textarea {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-1) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: all var(--duration-1);
+  min-height: 40px;
+}
+
+.legacy-page input:focus,
+.legacy-page select:focus,
+.legacy-page textarea:focus {
+  outline: var(--ring-2) solid var(--color-focus-ring);
+  outline-offset: 0;
+  border-color: var(--color-accent);
+}
+
+.legacy-page input:disabled,
+.legacy-page select:disabled,
+.legacy-page textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-surface-2);
+}
+
+/* ============================================
+ * Legacy Table Mappings
+ * ============================================ */
+
+.legacy-page table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg-primary);
+}
+
+.legacy-page th {
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  padding: var(--space-3);
+  background: var(--color-surface-2);
+  border-bottom: var(--border-1) solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.legacy-page td {
+  padding: var(--space-3);
+  border-bottom: var(--border-1) solid var(--color-border-subtle);
+  color: var(--color-text-primary);
+}
+
+.legacy-page tr:hover {
+  background: var(--color-surface-2);
+}
+
+/* ============================================
+ * Legacy Card/Panel Mappings
+ * ============================================ */
+
+.legacy-page .card,
+.legacy-page .panel {
+  background: var(--color-surface-2);
+  border: var(--border-1) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================
+ * Legacy Spacing Utilities
+ * ============================================ */
+
+.legacy-page .mb-1 { margin-bottom: var(--space-1); }
+.legacy-page .mb-2 { margin-bottom: var(--space-2); }
+.legacy-page .mb-3 { margin-bottom: var(--space-3); }
+.legacy-page .mb-4 { margin-bottom: var(--space-4); }
+
+.legacy-page .mt-1 { margin-top: var(--space-1); }
+.legacy-page .mt-2 { margin-top: var(--space-2); }
+.legacy-page .mt-3 { margin-top: var(--space-3); }
+.legacy-page .mt-4 { margin-top: var(--space-4); }
+
+.legacy-page .p-1 { padding: var(--space-1); }
+.legacy-page .p-2 { padding: var(--space-2); }
+.legacy-page .p-3 { padding: var(--space-3); }
+.legacy-page .p-4 { padding: var(--space-4); }
+
+/* ============================================
+ * Legacy Layout Fixes
+ * ============================================ */
+
+/* Ensure legacy pages work correctly under AppShell */
+.legacy-page {
+  /* Prevent content from being hidden under fixed elements */
+  position: relative;
+  z-index: 1;
+  
+  /* Ensure proper scrolling */
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Fix for legacy pages with fixed positioning */
+.legacy-page [style*="position: fixed"],
+.legacy-page [style*="position:fixed"] {
+  /* Convert fixed positioning to absolute within the page */
+  position: absolute !important;
+}
+
+/* ============================================
+ * Theme Compatibility
+ * ============================================ */
+
+/* Ensure legacy pages work in both light and dark themes */
+[data-theme="dark"] .legacy-page {
+  /* Dark theme adjustments are handled by design tokens */
+  /* No additional overrides needed */
+}
+
+[data-theme="light"] .legacy-page {
+  /* Light theme adjustments are handled by design tokens */
+  /* No additional overrides needed */
+}

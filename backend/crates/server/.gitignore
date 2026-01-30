@@ -1,0 +1,46 @@
+# Rust Backend
+
+# Build output
+target/
+Cargo.lock
+
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*.db.backup*
+data/test_*/
+
+# Logs
+*.log
+
+# Build/check output files
+build_output.txt
+build-errors.txt
+check-output.txt
+check*.txt
+errors*.txt
+warnings*.txt
+test-results.txt
+
+# Temporary fix scripts
+fix_*.py
+
+# Node modules (if any JS tooling is used)
+node_modules/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

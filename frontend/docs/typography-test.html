@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typography Tokens Test - Task 1.3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontSize: {
+            'xs': ['0.75rem', { lineHeight: '1.125rem' }],
+            'sm': ['0.875rem', { lineHeight: '1.3125rem' }],
+            'base': ['1rem', { lineHeight: '1.5rem' }],
+            'lg': ['1.125rem', { lineHeight: '1.6875rem' }],
+            'h4': ['1.25rem', { lineHeight: '1.5rem' }],
+            'h3': ['1.5rem', { lineHeight: '1.8rem' }],
+            'h2': ['1.875rem', { lineHeight: '2.25rem' }],
+            'h1': ['2.25rem', { lineHeight: '2.7rem' }],
+          },
+          fontWeight: {
+            normal: '400',
+            semibold: '600',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .font-tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+    .font-proportional-nums {
+      font-variant-numeric: proportional-nums;
+      font-feature-settings: "pnum";
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 p-8">
+  <div class="max-w-6xl mx-auto space-y-12">
+    <header>
+      <h1 class="text-h1 font-semibold mb-2">Typography Tokens Test</h1>
+      <p class="text-base text-slate-400">Task 1.3 - UI Enhancement Spec</p>
+    </header>
+
+    <!-- Heading Hierarchy -->
+    <section class="bg-slate-800 p-6 rounded-lg">
+      <h2 class="text-h2 font-semibold mb-6">Heading Hierarchy (Req 16.2)</h2>
+      <div class="space-y-4">
+        <div>
+          <h1 class="text-h1 font-semibold">Heading 1 - 36px (2.25rem)</h1>
+          <p class="text-sm text-slate-400">Line-height: 1.2 (2.7rem / 43.2px)</p>
+        </div>
+        <div>
+          <h2 class="text-h2 font-semibold">Heading 2 - 30px (1.875rem)</h2>
+          <p class="text-sm text-slate-400">Line-height: 1.2 (2.25rem / 36px)</p>
+        </div>
+        <div>
+          <h3 class="text-h3 font-semibold">Heading 3 - 24px (1.5rem)</h3>
+          <p class="text-sm text-slate-400">Line-height: 1.2 (1.8rem / 28.8px)</p>
+        </div>
+        <div>
+          <h4 class="text-h4 font-semibold">Heading 4 - 20px (1.25rem)</h4>
+          <p class="text-sm text-slate-400">Line-height: 1.2 (1.5rem / 24px)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Body Text -->
+    <section class="bg-slate-800 p-6 rounded-lg">
+      <h2 class="text-h2 font-semibold mb-6">Body Text Sizes (Req 16.3)</h2>
+      <div class="space-y-4">
+        <div>
+          <p class="text-xs font-normal">Extra Small - 12px (0.75rem)</p>
+          <p class="text-sm text-slate-400">Line-height: 1.5 (1.125rem / 18px)</p>
+        </div>
+        <div>
+          <p class="text-sm font-normal">Small - 14px (0.875rem)</p>
+          <p class="text-sm text-slate-400">Line-height: 1.5 (1.3125rem / 21px)</p>
+        </div>
+        <div>
+          <p class="text-base font-normal">Base - 16px (1rem) - Default body text</p>
+          <p class="text-sm text-slate-400">Line-height: 1.5 (1.5rem / 24px)</p>
+        </div>
+        <div>
+          <p class="text-lg font-normal">Large - 18px (1.125rem)</p>
+          <p class="text-sm text-slate-400">Line-height: 1.5 (1.6875rem / 27px)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Font Weights -->
+    <section class="bg-slate-800 p-6 rounded-lg">
+      <h2 class="text-h2 font-semibold mb-6">Font Weights (Req 16.4)</h2>
+      <div class="space-y-2">
+        <p class="text-base font-normal">Normal (400) - Body text default</p>
+        <p class="text-base font-medium">Medium (500)</p>
+        <p class="text-base font-semibold">Semibold (600) - Heading default</p>
+        <p class="text-base font-bold">Bold (700)</p>
+      </div>
+    </section>
+
+    <!-- Tabular Numbers -->
+    <section class="bg-slate-800 p-6 rounded-lg">
+      <h2 class="text-h2 font-semibold mb-6">Tabular Numbers (Req 16.7)</h2>
+      <div class="grid grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-h4 font-semibold mb-4">Without Tabular Numbers</h3>
+          <div class="space-y-2 font-mono">
+            <div class="flex justify-between">
+              <span>Product A</span>
+              <span>$1,234.56</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Product B</span>
+              <span>$89.99</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Product C</span>
+              <span>$12,345.67</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Product D</span>
+              <span>$1.00</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-h4 font-semibold mb-4">With Tabular Numbers ✓</h3>
+          <div class="space-y-2 font-mono">
+            <div class="flex justify-between">
+              <span>Product A</span>
+              <span class="font-tabular-nums">$1,234.56</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Product B</span>
+              <span class="font-tabular-nums">$89.99</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Product C</span>
+              <span class="font-tabular-nums">$12,345.67</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Product D</span>
+              <span class="font-tabular-nums">$1.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-400 mt-4">
+        Notice how the numbers align perfectly in the right column with tabular numbers.
+      </p>
+    </section>
+
+    <!-- Real-world Example -->
+    <section class="bg-slate-800 p-6 rounded-lg">
+      <h2 class="text-h2 font-semibold mb-6">Real-world Example: Product Card</h2>
+      <div class="bg-slate-700 p-6 rounded-lg max-w-md">
+        <h3 class="text-h3 font-semibold mb-2">Premium Wireless Headphones</h3>
+        <p class="text-base font-normal text-slate-300 mb-4">
+          High-quality audio with active noise cancellation and 30-hour battery life.
+        </p>
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-normal text-slate-400">Price:</span>
+            <span class="text-h4 font-semibold text-blue-400 font-tabular-nums">$299.99</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-normal text-slate-400">In Stock:</span>
+            <span class="text-base font-medium text-green-400 font-tabular-nums">42 units</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-normal text-slate-400">SKU:</span>
+            <span class="text-base font-normal font-tabular-nums">WH-1000XM5</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Requirements Summary -->
+    <section class="bg-slate-800 p-6 rounded-lg">
+      <h2 class="text-h2 font-semibold mb-6">Requirements Satisfied</h2>
+      <ul class="space-y-2 text-base">
+        <li class="flex items-start">
+          <span class="text-green-400 mr-2">✓</span>
+          <span><strong>Requirement 16.2:</strong> Clear heading hierarchy (h1: 36px, h2: 30px, h3: 24px, h4: 20px)</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-green-400 mr-2">✓</span>
+          <span><strong>Requirement 16.3:</strong> Consistent line heights (1.5 for body, 1.2 for headings)</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-green-400 mr-2">✓</span>
+          <span><strong>Requirement 16.4:</strong> Appropriate font weights (400 for body, 600 for headings)</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-green-400 mr-2">✓</span>
+          <span><strong>Requirement 16.7:</strong> Tabular numbers for prices and quantities</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

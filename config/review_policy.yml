@@ -1,0 +1,115 @@
+# Review Policy Configuration
+# Defines review policies with fast/balanced/strict modes
+
+version: "1.0"
+
+# Default mode (fast | balanced | strict)
+default_mode: balanced
+
+# Mode Definitions
+modes:
+  fast:
+    description: "Fast review - lower thresholds, allows soft flags"
+    thresholds:
+      document_confidence: 90
+      critical_field_confidence: 85
+      auto_approve_threshold: 90
+      field_threshold: 80
+    critical_fields:
+      - invoice_number
+      - total
+    allow_soft_flags: true
+    allow_any_flags: false
+    auto_approve_enabled: true
+    
+  balanced:
+    description: "Balanced review - standard thresholds"
+    thresholds:
+      document_confidence: 95
+      critical_field_confidence: 92
+      auto_approve_threshold: 95
+      field_threshold: 85
+    critical_fields:
+      - invoice_number
+      - invoice_date
+      - vendor_name
+      - total
+    allow_soft_flags: true
+    allow_any_flags: false
+    auto_approve_enabled: true
+    
+  strict:
+    description: "Strict review - high thresholds, no auto-approve"
+    thresholds:
+      document_confidence: 98
+      critical_field_confidence: 95
+      auto_approve_threshold: 98
+      field_threshold: 90
+    critical_fields:
+      - invoice_number
+      - invoice_date
+      - vendor_name
+      - subtotal
+      - tax
+      - total
+    allow_soft_flags: false
+    allow_any_flags: false
+    auto_approve_enabled: false
+
+# Tenant-specific overrides
+tenant_overrides:
+  tenant_default:
+    mode: balanced
+    
+  tenant_strict:
+    mode: strict
+    
+  tenant_fast:
+    mode: fast
+
+# Vendor-specific overrides (within tenant)
+vendor_overrides:
+  # Example: Trusted vendor with fast mode
+  acme-corp:
+    mode: fast
+    thresholds:
+      document_confidence: 85
+      auto_approve_threshold: 85
+      
+  # Example: New vendor with strict mode
+  new-vendor:
+    mode: strict
+    auto_approve_enabled: false
+
+# Auto-approval rules
+auto_approval:
+  enabled: true
+  min_document_confidence: 95
+  min_critical_field_confidence: 92
+  block_on_hard_flags: true
+  block_on_soft_flags: false
+  require_all_critical_fields: true
+  
+# Review queue prioritization
+queue_priority:
+  high:
+    - document_confidence < 80
+    - has_hard_flags: true
+    - total > 10000
+  medium:
+    - document_confidence < 90
+    - has_soft_flags: true
+  low:
+    - document_confidence >= 90
+    - no_flags: true
+
+# Escalation rules
+escalation:
+  enabled: true
+  rules:
+    - condition: "total > 50000"
+      action: "require_manager_approval"
+    - condition: "document_confidence < 70"
+      action: "require_manual_review"
+    - condition: "has_contradictions: true"
+      action: "require_expert_review"

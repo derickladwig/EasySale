@@ -1,0 +1,35 @@
+[package]
+name = "pos_core_domain"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+pos_core_models = { path = "../pos_core_models" }
+
+# Decimal arithmetic
+rust_decimal = "1.33"
+rust_decimal_macros = "1.33"
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Date/Time
+chrono = { workspace = true }
+
+# UUID
+uuid = { workspace = true }
+
+# Error handling
+thiserror = "1.0"
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+enum_glob_use = "deny"
+pedantic = "warn"
+nursery = "warn"
+unwrap_used = "warn"

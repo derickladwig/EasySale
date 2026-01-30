@@ -1,0 +1,175 @@
+# OCR Profiles Configuration
+# Defines OCR profiles for different document zones and scenarios
+# Requirements: 2.1 (OCR Profiles)
+
+profiles:
+  # Full page with default settings
+  - name: full-page-default
+    psm: 3  # Fully automatic page segmentation
+    oem: 3  # Default OCR Engine Mode
+    dpi: 300
+    language: eng
+    timeout_seconds: 30
+    zone_types:
+      - HeaderFields
+      - FooterNotes
+
+  # Numbers-only for totals and amounts
+  - name: numbers-only-totals
+    psm: 7  # Single line
+    oem: 3
+    dpi: 300
+    language: eng
+    whitelist: "0123456789.$,"
+    timeout_seconds: 15
+    zone_types:
+      - TotalsBox
+
+  # Dense table data
+  - name: table-dense
+    psm: 6  # Uniform block of text
+    oem: 3
+    language: eng
+    timeout_seconds: 30
+    zone_types:
+      - LineItemsTable
+
+  # Header fields (sparse text)
+  - name: header-fields
+    psm: 11  # Sparse text
+    oem: 3
+    dpi: 300
+    language: eng
+    timeout_seconds: 20
+    zone_types:
+      - HeaderFields
+
+  # Single word recognition
+  - name: single-word
+    psm: 8  # Single word
+    oem: 3
+    dpi: 300
+    language: eng
+    timeout_seconds: 10
+    zone_types:
+      - HeaderFields
+      - TotalsBox
+
+  # Barcode area (sparse text with numbers)
+  - name: barcode-area
+    psm: 11  # Sparse text
+    oem: 3
+    dpi: 300
+    language: eng
+    whitelist: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    timeout_seconds: 10
+    zone_types:
+      - BarcodeArea
+
+  # Footer notes (paragraph text)
+  - name: footer-notes
+    psm: 3  # Fully automatic
+    oem: 3
+    dpi: 300
+    language: eng
+    timeout_seconds: 20
+    zone_types:
+      - FooterNotes
+
+  # High DPI for small text
+  - name: high-dpi-small-text
+    psm: 6  # Uniform block
+    oem: 3
+    dpi: 400
+    language: eng
+    timeout_seconds: 40
+    zone_types:
+      - LineItemsTable
+      - FooterNotes
+
+  # Fast mode (lower quality, faster processing)
+  - name: fast-mode
+    psm: 3
+    oem: 1  # LSTM only (faster)
+    dpi: 200
+    language: eng
+    timeout_seconds: 15
+    zone_types:
+      - HeaderFields
+      - FooterNotes
+
+  # High accuracy mode (slower, better quality)
+  - name: high-accuracy
+    psm: 3
+    oem: 2  # Legacy + LSTM
+    dpi: 400
+    language: eng
+    timeout_seconds: 60
+    zone_types:
+      - TotalsBox
+      - LineItemsTable
+
+# Zone type mappings
+# Defines which profiles to use for each zone type
+zone_defaults:
+  HeaderFields:
+    - header-fields
+    - full-page-default
+    - single-word
+  
+  TotalsBox:
+    - numbers-only-totals
+    - high-accuracy
+    - single-word
+  
+  LineItemsTable:
+    - table-dense
+    - high-dpi-small-text
+    - full-page-default
+  
+  FooterNotes:
+    - footer-notes
+    - full-page-default
+  
+  BarcodeArea:
+    - barcode-area
+    - single-word
+  
+  LogoArea:
+    # Logos typically don't need OCR
+    []
+
+# Global settings
+settings:
+  # Maximum concurrent OCR processes
+  max_concurrent: 4
+  
+  # Default timeout if not specified in profile
+  default_timeout_seconds: 30
+  
+  # Retry failed OCR with different profile
+  retry_on_failure: true
+  
+  # Maximum retries per zone
+  max_retries: 2
+  
+  # Minimum confidence threshold (0-1)
+  min_confidence_threshold: 0.5
+  
+  # Enable word-level confidence tracking
+  track_word_confidence: true
+  
+  # Cache OCR results
+  cache_results: true
+  
+  # Cache TTL in seconds
+  cache_ttl_seconds: 3600
+
+# Vendor-specific overrides (optional)
+vendor_overrides:
+  # Example: vendor-specific profile for a known vendor
+  # vendor-abc:
+  #   HeaderFields:
+  #     - custom-vendor-abc-header
+  #   TotalsBox:
+  #     - numbers-only-totals

@@ -1,0 +1,110 @@
+/**
+ * Settings Layout Styles
+ * Uses design tokens for consistent styling
+ */
+
+.settingsLayout {
+  display: grid;
+  grid-template-columns: var(--settings-sidebar-w) 1fr;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-2);
+  border-right: var(--border-1) solid var(--color-border);
+  overflow-y: auto;
+}
+
+.searchContainer {
+  padding: var(--space-4);
+  border-bottom: var(--border-1) solid var(--color-border-subtle);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2);
+  gap: var(--space-1);
+}
+
+.navItem {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--duration-1);
+  color: var(--color-text-primary);
+  min-height: var(--row-h-comfortable); /* Accessibility: minimum touch target */
+}
+
+.navItem:hover {
+  background: var(--color-surface-3);
+}
+
+.navItem:focus-visible {
+  outline: var(--ring-2) solid var(--color-focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.navItem.active {
+  background: var(--color-accent);
+  color: white;
+}
+
+.navItem.active:hover {
+  background: var(--color-accent-hover);
+}
+
+.navItemContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.navItemLabel {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+}
+
+.navItemDescription {
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+}
+
+.navItem.active .navItemDescription {
+  opacity: 0.9;
+}
+
+.content {
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+  .settingsLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-sidebar);
+    transform: translateX(-100%);
+    transition: transform var(--duration-2);
+  }
+
+  .sidebar[data-open='true'] {
+    transform: translateX(0);
+  }
+}

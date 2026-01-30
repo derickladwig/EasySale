@@ -1,0 +1,34 @@
+# Build output
+target/
+**/*.rs.bk
+
+# Cargo lock (we want to include this)
+# Cargo.lock
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Test data
+*.db
+*.db-shm
+*.db-wal

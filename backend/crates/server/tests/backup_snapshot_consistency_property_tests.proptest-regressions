@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 848cc6b079933f9e25ce7a2ce49c8a6c6ce2f612306d8a77d0a54c15b207a86b # shrinks to product_count = 0, customer_count = 0, sales_count = 0, snapshot_method = "vacuum_into"
+cc 23a2af9ba7eb3a6f229a96b04605f47c6914c04f934295aa0cda03405d3382c6 # shrinks to product_count = 0, customer_count = 0, sales_count = 1, snapshot_method = "vacuum_into"

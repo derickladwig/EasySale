@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 2b4cb448bb2a59fdbf1a777b21de82fdc325b5dbbb6a3cef787035906a758fa8 # shrinks to entity_type = "layaway_payment", amount = 1.0

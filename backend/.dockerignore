@@ -1,0 +1,25 @@
+# Ignore build artifacts
+target/
+
+# Ignore test databases
+*.db
+*.db-shm
+*.db-wal
+data/
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignore logs
+*.log
+*.txt
+
+# Ignore git
+.git/
+
+# Ignore documentation
+*.md
+docs/

@@ -1,0 +1,171 @@
+[package]
+name = "easysale-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+default-run = "easysale-server"
+
+[[bin]]
+name = "easysale-server"
+path = "src/main.rs"
+
+[[bin]]
+name = "migrate-snapshots"
+path = "src/bin/migrate-snapshots.rs"
+
+[features]
+default = ["document-processing"]
+
+# Document processing (PDF, images) - gates heavy deps
+document-processing = ["dep:image", "dep:lopdf"]
+
+# OCR and image enhancement - requires document-processing
+ocr = ["document-processing", "dep:imageproc"]
+
+# Document cleanup engine - requires document-processing
+document-cleanup = ["document-processing"]
+
+# Accounting CSV export - gates csv_export_pack crate
+export = ["dep:csv_export_pack"]
+
+# Sync (runtime detection via sidecar healthcheck, no compile-time deps)
+sync = []
+
+# Integration management (Stripe, Square, Clover, Supabase)
+integrations = []
+
+# Payment processing (Stripe Checkout)
+payments = ["integrations"]
+
+# Lite build - core POS only
+lite = []
+
+# Email notifications
+notifications = ["dep:lettre"]
+
+# Full build with all features
+full = ["export", "ocr", "document-cleanup", "integrations", "payments", "notifications"]
+
+[dependencies]
+# Workspace crates (core - always included)
+pos_core_domain = { path = "../pos_core_domain" }
+pos_core_models = { path = "../pos_core_models" }
+pos_core_storage = { path = "../pos_core_storage" }
+accounting_snapshots = { path = "../accounting_snapshots" }
+export_batches = { path = "../export_batches" }
+capabilities = { path = "../capabilities" }
+
+# Workspace crates (optional - feature-gated)
+csv_export_pack = { path = "../csv_export_pack", optional = true }
+
+# Web framework
+actix-web = { workspace = true }
+actix-cors = { workspace = true }
+actix-files = { workspace = true }
+
+# Database
+sqlx = { workspace = true }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+
+# Environment variables
+dotenv = { workspace = true }
+
+# Authentication
+jsonwebtoken = { workspace = true }
+bcrypt = { workspace = true }
+rand_core = { workspace = true }
+
+# Date/Time
+chrono = { workspace = true }
+
+# UUID
+uuid = { workspace = true }
+
+# Backup & Archive
+zip = { workspace = true }
+sha2 = { workspace = true }
+hmac = { workspace = true }
+hex = { workspace = true }
+
+# Scheduler
+tokio-cron-scheduler = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+log = { workspace = true }
+once_cell = { workspace = true }
+
+# Validation
+regex = { workspace = true }
+
+# CSV parsing
+csv = "1.3"
+
+# Error handling
+thiserror = { workspace = true }
+
+# Random number generation
+rand = { workspace = true }
+
+# HTTP client for external API integrations
+reqwest = { workspace = true }
+
+# Async trait support
+async-trait = { workspace = true }
+
+# URL encoding
+urlencoding = { workspace = true }
+url = "2.4"
+
+# Encryption for credential storage
+aes-gcm = { workspace = true }
+base64 = { workspace = true }
+
+# Multipart form data
+actix-multipart = { workspace = true }
+futures-util = { workspace = true }
+
+# Image processing for OCR enhancement (optional - feature-gated)
+image = { workspace = true, optional = true }
+imageproc = { workspace = true, optional = true }
+
+# PDF processing for text layer extraction (optional - feature-gated)
+lopdf = { workspace = true, optional = true }
+
+# Email sending (optional - feature-gated)
+lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "tokio1-rustls-tls", "builder"], optional = true }
+
+# Platform-specific disk space APIs
+[target.'cfg(windows)'.dependencies]
+winapi = { workspace = true }
+
+[target.'cfg(not(windows))'.dependencies]
+nix = { workspace = true }
+
+# Pin home crate to avoid edition 2024 requirement
+home = { workspace = true }
+
+[dev-dependencies]
+actix-rt = { workspace = true }
+tempfile = { workspace = true }
+proptest = { workspace = true }
+wiremock = { workspace = true }
+rust_decimal = "1.33"
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+enum_glob_use = "deny"
+pedantic = "warn"
+nursery = "warn"
+unwrap_used = "warn"

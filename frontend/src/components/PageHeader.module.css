@@ -1,0 +1,121 @@
+/**
+ * PageHeader Styles
+ * 
+ * Provides consistent styling for page headers with breadcrumbs and actions.
+ * Uses design tokens for all spacing, typography, and colors.
+ */
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+/* ============================================
+ * BREADCRUMBS
+ * ============================================ */
+
+.breadcrumbs {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.breadcrumbList {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumbItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.breadcrumbLink {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--duration-1);
+}
+
+.breadcrumbLink:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+.breadcrumbLink:focus-visible {
+  outline: var(--ring-2) solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.breadcrumbText {
+  color: var(--color-text-secondary);
+}
+
+.breadcrumbSeparator {
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+/* ============================================
+ * TITLE ROW
+ * ============================================ */
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+/* ============================================
+ * RESPONSIVE BEHAVIOR
+ * ============================================ */
+
+@media (max-width: 768px) {
+  .titleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  
+  .actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .title {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* ============================================
+ * ACCESSIBILITY
+ * ============================================ */
+
+/* Support for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .breadcrumbLink {
+    transition: none;
+  }
+}

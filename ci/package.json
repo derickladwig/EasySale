@@ -1,0 +1,27 @@
+{
+  "name": "@EasySale/ci-tests",
+  "version": "0.1.0",
+  "description": "CI/CD property-based tests for EasySale",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "ci",
+    "property-based-testing",
+    "build-integrity"
+  ],
+  "author": "EasySale Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@vitest/ui": "^4.0.16",
+    "fast-check": "^4.5.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  }
+}

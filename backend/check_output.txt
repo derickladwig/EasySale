@@ -1,0 +1,2202 @@
+cargo : warning: 
+unused variable: 
+`created_at`
+At line:1 char:1
++ cargo check 
+--workspace 2>&1 | 
+Out-File -FilePath 
+check_output.txt; G 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (warning: u   
+ nused variable: `    
+created_at`:Strin    
+g) [], RemoteExce    
+ption
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+   --> crates\accounti
+ng_snapshots\src\repos
+itory.rs:132:13
+    |
+132 |         let 
+created_at = DateTime:
+:parse_from_rfc3339(&c
+reated_at_str)
+    |             
+^^^^^^^^^^ help: if 
+this is intentional, 
+prefix it with an 
+underscore: 
+`_created_at`
+    |
+    = note: `#[warn(un
+used_variables)]` 
+(part of 
+`#[warn(unused)]`) on 
+by default
+
+warning: `accounting_s
+napshots` (lib) 
+generated 1 warning
+    Checking 
+EasySale-server 
+v0.1.0 (C:\Users\CAPS\
+Documents\GitHub\dynam
+ous-kiro-hackathon\bac
+kend\crates\server)
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\customers.r
+s:24:21
+   |
+24 |       let 
+customers = 
+sqlx::query_as!(
+   |  
+_____________________^
+25 | |         
+Customer,
+26 | |         r#"
+27 | |         SELECT 
+...  |
+41 | |         "#
+42 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\data_manage
+ment.rs:55:18
+   |
+55 |       let result 
+= sqlx::query!(
+   |  
+__________________^
+56 | |         r#"
+57 | |         INSERT 
+INTO backups 
+(file_path, 
+file_size, status, 
+location, created_at)
+58 | |         VALUES 
+(?, ?, ?, ?, ?)
+...  |
+64 | |         now
+65 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\data_manage
+ment.rs:84:19
+   |
+84 |       let 
+backups = 
+sqlx::query_as!(
+   |  
+___________________^
+85 | |         
+BackupInfo,
+86 | |         r#"
+87 | |         SELECT 
+...  |
+97 | |         "#
+98 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\data_manag
+ement.rs:180:26
+    |
+180 |               
+let result = 
+sqlx::query!(
+    |  _______________
+___________^
+181 | |               
+  r#"
+182 | |               
+  DELETE FROM sessions
+183 | |               
+  WHERE created_at < 
+datetime('now', '-' 
+|| ? || ' days')
+184 | |               
+  "#,
+185 | |               
+  days_old
+186 | |             )
+    | |_____________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\data_manag
+ement.rs:202:26
+    |
+202 |               
+let result = 
+sqlx::query!(
+    |  _______________
+___________^
+203 | |               
+  r#"
+204 | |               
+  UPDATE layaways
+205 | |               
+  SET archived = 1, 
+archived_at = 
+CURRENT_TIMESTAMP
+...   |
+210 | |               
+  days_old
+211 | |             )
+    | |_____________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\feature_fla
+gs.rs:26:17
+   |
+26 |       let flags 
+= sqlx::query_as!(
+   |  
+_________________^
+27 | |         
+FeatureFlag,
+28 | |         
+r#"SELECT name, 
+enabled as "enabled: 
+bool", description 
+FROM feature_flags 
+WHERE tenant_id = ?"#,
+29 | |         
+context.tenant_id
+30 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\feature_fla
+gs.rs:49:19
+   |
+49 |       let 
+current = 
+sqlx::query!(
+   |  
+___________________^
+50 | |         
+r#"SELECT enabled as 
+"enabled: bool" FROM 
+feature_flags WHERE 
+name = ? AND 
+tenant_id = ?"#,
+51 | |         
+flag_name,
+52 | |         
+context.tenant_id
+53 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\feature_fla
+gs.rs:62:5
+   |
+62 | /     
+sqlx::query!(
+63 | |         
+"UPDATE feature_flags 
+SET enabled = ?, 
+updated_at = 
+CURRENT_TIMESTAMP 
+64 | |          WHERE 
+name = ? AND 
+tenant_id = ?",
+65 | |         
+enabled_i32,
+66 | |         
+flag_name,
+67 | |         
+context.tenant_id
+68 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\inventory.r
+s:21:17
+   |
+21 |       let items 
+= sqlx::query_as!(
+   |  
+_________________^
+22 | |         
+InventoryItem,
+23 | |         r#"
+24 | |         SELECT 
+...  |
+41 | |         "#
+42 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\products.rs
+:19:20
+   |
+19 |       let 
+products = 
+sqlx::query_as!(
+   |  
+____________________^
+20 | |         
+Product,
+21 | |         r#"
+22 | |         SELECT 
+...  |
+33 | |         "#
+34 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\settings.r
+s:352:16
+    |
+352 |       let user 
+= sqlx::query!(
+    |  
+________________^
+353 | |         
+"SELECT password_hash 
+FROM users WHERE id = 
+? AND tenant_id = ?",
+354 | |         
+context.user_id,
+355 | |         
+context.tenant_id
+356 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\settings.r
+s:375:5
+    |
+375 | /     
+sqlx::query!(
+376 | |         
+"UPDATE users SET 
+password_hash = ?, 
+updated_at = 
+CURRENT_TIMESTAMP 
+WHERE id = ? AND 
+tenant_id = ?",
+377 | |         
+new_hash,
+378 | |         
+context.user_id,
+379 | |         
+context.tenant_id
+380 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\settings_cr
+ud.rs:35:19
+   |
+35 |       let 
+setting = 
+sqlx::query_as!(
+   |  
+___________________^
+36 | |         
+SettingResponse,
+37 | |         r#"
+38 | |         SELECT 
+id as "id!: i64", 
+key, value, scope, 
+scope_id, data_type, 
+created_at, updated_at
+...  |
+52 | |         
+scope.scope_id
+53 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\settings_cr
+ud.rs:74:9
+   |
+74 | /         
+sqlx::query_as!(
+75 | |             
+SettingResponse,
+76 | |             r#"
+77 | |             
+SELECT id as "id!: 
+i64", key, value, 
+scope, scope_id, 
+data_type, 
+created_at, updated_at
+...  |
+83 | |             
+scope.scope_id
+84 | |         )
+   | |_________^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\settings_cr
+ud.rs:88:9
+   |
+88 | /         
+sqlx::query_as!(
+89 | |             
+SettingResponse,
+90 | |             r#"
+91 | |             
+SELECT id as "id!: 
+i64", key, value, 
+scope, scope_id, 
+data_type, 
+created_at, updated_at
+...  |
+94 | |             "#
+95 | |         )
+   | |_________^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\settings_c
+rud.rs:134:20
+    |
+134 |       let 
+existing = 
+sqlx::query!(
+    |  
+____________________^
+135 | |         r#"
+136 | |         
+SELECT id as "id!: 
+i64", value
+137 | |         FROM 
+settings
+...   |
+143 | |         
+req.scope_id
+144 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\settings_c
+rud.rs:153:26
+    |
+153 |               
+let result = 
+sqlx::query!(
+    |  _______________
+___________^
+154 | |               
+  r#"
+155 | |               
+  UPDATE settings
+156 | |               
+  SET value = ?, 
+data_type = ?, 
+updated_at = ?
+...   |
+162 | |               
+  existing.id
+163 | |             )
+    | |_____________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\settings_c
+rud.rs:209:26
+    |
+209 |               
+let result = 
+sqlx::query!(
+    |  _______________
+___________^
+210 | |               
+  r#"
+211 | |               
+  INSERT INTO 
+settings (key, value, 
+scope, scope_id, 
+data_type, 
+created_at, 
+updated_at)
+212 | |               
+  VALUES (?, ?, ?, ?, 
+?, ?, ?)
+...   |
+220 | |               
+  now
+221 | |             )
+    | |_____________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\settings_c
+rud.rs:277:19
+    |
+277 |       let 
+setting = 
+sqlx::query!(
+    |  
+___________________^
+278 | |         r#"
+279 | |         
+SELECT id as "id!: 
+i64", value, scope, 
+scope_id
+280 | |         FROM 
+settings
+...   |
+286 | |         
+scope.scope_id
+287 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\settings_c
+rud.rs:314:18
+    |
+314 |       let 
+result = sqlx::query!(
+    |  
+__________________^
+315 | |         r#"
+316 | |         
+DELETE FROM settings
+317 | |         WHERE 
+id = ?
+318 | |         "#,
+319 | |         
+setting_id
+320 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\user_handl
+ers.rs:118:18
+    |
+118 |       let 
+result = sqlx::query!(
+    |  
+__________________^
+119 | |         r#"
+120 | |         
+INSERT INTO users (
+121 | |             
+username, email, 
+password_hash, 
+display_name, role,
+...   |
+137 | |         now
+138 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\user_handl
+ers.rs:194:16
+    |
+194 |       let user 
+= sqlx::query_as!(
+    |  
+________________^
+195 | |         
+UserResponse,
+196 | |         r#"
+197 | |         
+SELECT 
+...   |
+209 | |         
+user_id_value
+210 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\user_handl
+ers.rs:229:17
+    |
+229 |       let users 
+= sqlx::query_as!(
+    |  
+_________________^
+230 | |         
+UserResponse,
+231 | |         r#"
+232 | |         
+SELECT 
+...   |
+243 | |         "#
+244 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\user_handl
+ers.rs:267:24
+    |
+267 |       let 
+current_user = 
+sqlx::query!(
+    |  _______________
+_________^
+268 | |         r#"
+269 | |         
+SELECT username, 
+email, display_name, 
+role, store_id, 
+station_policy, 
+station_id, is_active
+270 | |         FROM 
+users
+...   |
+273 | |         
+user_id
+274 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\user_handl
+ers.rs:400:16
+    |
+400 |       let user 
+= sqlx::query!(
+    |  
+________________^
+401 | |         r#"
+402 | |         
+SELECT username, 
+email, role
+403 | |         FROM 
+users
+...   |
+406 | |         
+user_id
+407 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\user_handl
+ers.rs:431:18
+    |
+431 |       let 
+result = sqlx::query!(
+    |  
+__________________^
+432 | |         r#"
+433 | |         
+UPDATE users
+434 | |         SET 
+is_active = 0, 
+updated_at = ?
+...   |
+438 | |         
+user_id
+439 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+  --> crates\server\sr
+c\handlers\users.rs:19
+:17
+   |
+19 |       let users 
+= sqlx::query_as!(
+   |  
+_________________^
+20 | |         User,
+21 | |         r#"
+22 | |         SELECT 
+...  |
+33 | |         "#
+34 | |     )
+   | |_____^
+   |
+   = note: this error 
+originates in the 
+macro `$crate::sqlx_ma
+cros::expand_query` 
+which comes from the 
+expansion of the 
+macro 
+`sqlx::query_as` (in 
+Nightly builds, run 
+with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\theme.rs:1
+19:16
+    |
+119 |       let rows 
+= sqlx::query!(
+    |  
+________________^
+120 | |         r#"
+121 | |         
+SELECT key, value, 
+scope, scope_id
+122 | |         FROM 
+settings
+...   |
+137 | |         
+user_id
+138 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\theme.rs:2
+60:13
+    |
+260 | /             
+sqlx::query!(
+261 | |               
+  r#"
+262 | |               
+  INSERT INTO 
+settings (key, value, 
+scope, scope_id, 
+data_type, 
+created_at, 
+updated_at)
+263 | |               
+  VALUES (?, ?, ?, ?, 
+?, datetime('now'), 
+datetime('now'))
+...   |
+273 | |               
+  data_type
+274 | |             )
+    | |_____________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\theme.rs:2
+87:5
+    |
+287 | /     
+sqlx::query!(
+288 | |         r#"
+289 | |         
+INSERT INTO 
+sync_queue (
+290 | |             
+id, entity_type, 
+entity_id, operation, 
+payload, 
+...   |
+298 | |         
+body.store_id
+299 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\handlers\theme.rs:4
+13:17
+    |
+413 |       let locks 
+= sqlx::query!(
+    |  
+_________________^
+414 | |         r#"
+415 | |         
+SELECT key, value
+416 | |         FROM 
+settings
+...   |
+421 | |         
+store_id
+422 | |     )
+    | |_____^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\ap_integra
+tion_service.rs:82:9
+    |
+ 82 | /         
+sqlx::query!(
+ 83 | |             
+r#"
+ 84 | |             
+INSERT INTO 
+vendor_bills (
+ 85 | |               
+  id, tenant_id, 
+vendor_id, invoice_no,
+...   |
+102 | |             
+now
+103 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\ap_integra
+tion_service.rs:154:22
+    |
+154 |           let 
+result = sqlx::query!(
+    |  _______________
+_______^
+155 | |             
+r#"
+156 | |             
+SELECT id
+157 | |             
+FROM vendors
+...   |
+161 | |             
+tenant_id
+162 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\ap_integra
+tion_service.rs:175:9
+    |
+175 | /         
+sqlx::query!(
+176 | |             
+r#"
+177 | |             
+INSERT INTO vendors (
+178 | |               
+  id, tenant_id, 
+name, balance,
+...   |
+187 | |             
+now
+188 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\ap_integra
+tion_service.rs:206:9
+    |
+206 | /         
+sqlx::query!(
+207 | |             
+r#"
+208 | |             
+UPDATE vendors
+209 | |             
+SET balance = balance 
++ ?,
+...   |
+216 | |             
+tenant_id
+217 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\ap_integra
+tion_service.rs:236:20
+    |
+236 |           let 
+bill = sqlx::query!(
+    |  
+____________________^
+237 | |             
+r#"
+238 | |             
+SELECT vendor_id, 
+total
+239 | |             
+FROM vendor_bills
+...   |
+243 | |             
+tenant_id
+244 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\ap_integra
+tion_service.rs:254:9
+    |
+254 | /         
+sqlx::query!(
+255 | |             
+r#"
+256 | |             
+DELETE FROM 
+vendor_bills
+257 | |             
+WHERE id = ? AND 
+tenant_id = ?
+...   |
+260 | |             
+tenant_id
+261 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\accounting
+_integration_service.r
+s:137:9
+    |
+137 | /         
+sqlx::query!(
+138 | |             
+r#"
+139 | |             
+INSERT INTO 
+journal_entries (
+140 | |               
+  id, tenant_id, 
+entry_date, 
+description,
+...   |
+151 | |             
+now
+152 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\accounting
+_integration_service.r
+s:164:13
+    |
+164 | /             
+sqlx::query!(
+165 | |               
+  r#"
+166 | |               
+  INSERT INTO 
+journal_entry_lines (
+167 | |               
+      id, entry_id, 
+tenant_id, account,
+...   |
+179 | |               
+  now
+180 | |             )
+    | |_____________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\accounting
+_integration_service.r
+s:238:22
+    |
+238 |           let 
+result = sqlx::query!(
+    |  _______________
+_______^
+239 | |             
+r#"
+240 | |             
+SELECT COUNT(*) as 
+count
+241 | |             
+FROM chart_of_accounts
+...   |
+245 | |             
+tenant_id
+246 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\accounting
+_integration_service.r
+s:271:9
+    |
+271 | /         
+sqlx::query!(
+272 | |             
+r#"
+273 | |             
+DELETE FROM 
+journal_entry_lines
+274 | |             
+WHERE entry_id = ? 
+AND tenant_id = ?
+...   |
+277 | |             
+tenant_id
+278 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\accounting
+_integration_service.r
+s:284:9
+    |
+284 | /         
+sqlx::query!(
+285 | |             
+r#"
+286 | |             
+DELETE FROM 
+journal_entries
+287 | |             
+WHERE id = ? AND 
+tenant_id = ?
+...   |
+290 | |             
+tenant_id
+291 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\inventory_
+integration_service.rs
+:138:22
+    |
+138 |           let 
+result = sqlx::query!(
+    |  _______________
+_______^
+139 | |             
+r#"
+140 | |             
+SELECT internal_sku
+141 | |             
+FROM 
+vendor_sku_aliases
+...   |
+145 | |             
+tenant_id
+146 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\inventory_
+integration_service.rs
+:161:22
+    |
+161 |           let 
+result = sqlx::query!(
+    |  _______________
+_______^
+162 | |             
+r#"
+163 | |             
+SELECT COUNT(*) as 
+count
+164 | |             
+FROM products
+...   |
+168 | |             
+tenant_id
+169 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\inventory_
+integration_service.rs
+:188:9
+    |
+188 | /         
+sqlx::query!(
+189 | |             
+r#"
+190 | |             
+INSERT INTO products (
+191 | |               
+  id, tenant_id, sku, 
+name, category, cost, 
+unit_price, 
+quantity_on_hand,
+...   |
+204 | |             
+now
+205 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+error: error returned 
+from database: (code: 
+14) unable to open 
+database file
+   --> crates\server\s
+rc\services\inventory_
+integration_service.rs
+:224:9
+    |
+224 | /         
+sqlx::query!(
+225 | |             
+r#"
+226 | |             
+UPDATE products
+227 | |             
+SET cost = ?,
+...   |
+236 | |             
+tenant_id
+237 | |         )
+    | |_________^
+    |
+    = note: this 
+error originates in 
+the macro `$crate::sql
+x_macros::expand_query
+` which comes from 
+the expansion of the 
+macro `sqlx::query` 
+(in Nightly builds, 
+run with -Z 
+macro-backtrace for 
+more info)
+
+warning: unexpected 
+`cfg` condition 
+value: `sync`
+  --> crates\server\sr
+c\handlers\capabilitie
+s.rs:85:35
+   |
+85 |     let 
+accounting_mode = if 
+cfg!(feature = 
+"sync") {
+   |                  
+                 
+^^^^^^^^^^^^^^^^
+   |
+   = note: expected 
+values for `feature` 
+are: 
+`csv_export_pack`, 
+`default`, and 
+`export`
+   = help: consider 
+adding `sync` as a 
+feature in 
+`Cargo.toml`
+   = note: see <https:
+//doc.rust-lang.org/ni
+ghtly/rustc/check-cfg/
+cargo-specifics.html> 
+for more information 
+about checking 
+conditional 
+configuration
+   = note: `#[warn(une
+xpected_cfgs)]` on by 
+default
+
+warning: unexpected 
+`cfg` condition 
+value: `sync`
+  --> crates\server\sr
+c\handlers\capabilitie
+s.rs:95:20
+   |
+95 |         sync: 
+cfg!(feature = 
+"sync"),
+   |                  
+  ^^^^^^^^^^^^^^^^
+   |
+   = note: expected 
+values for `feature` 
+are: 
+`csv_export_pack`, 
+`default`, and 
+`export`
+   = help: consider 
+adding `sync` as a 
+feature in 
+`Cargo.toml`
+   = note: see <https:
+//doc.rust-lang.org/ni
+ghtly/rustc/check-cfg/
+cargo-specifics.html> 
+for more information 
+about checking 
+conditional 
+configuration
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\export.rs:3
+1:5
+   |
+31 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+   |
+   = note: `#[warn(unu
+sed_variables)]` 
+(part of 
+`#[warn(unused)]`) on 
+by default
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\handlers\export.rs:3
+3:9
+   |
+33 |     let case_id 
+= path.into_inner();
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\ocr_ingest.
+rs:27:5
+   |
+27 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\reporting.
+rs:311:5
+    |
+311 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `query`
+   --> crates\server\s
+rc\handlers\reporting.
+rs:312:5
+    |
+312 |     query: web::
+Json<SalesReportParams
+>,
+    |     ^^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_query`
+
+warning: unused 
+variable: `request`
+  --> crates\server\sr
+c\handlers\reocr.rs:57
+:5
+   |
+57 |     request: web:
+:Json<ReOcrRequest>,
+   |     ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_request`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\reocr.rs:58
+:5
+   |
+58 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\handlers\reocr.rs:60
+:9
+   |
+60 |     let case_id 
+= path.into_inner();
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `request`
+  --> crates\server\sr
+c\handlers\reocr.rs:73
+:5
+   |
+73 |     request: web:
+:Json<MaskRequest>,
+   |     ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_request`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\reocr.rs:74
+:5
+   |
+74 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\handlers\reocr.rs:76
+:9
+   |
+76 |     let case_id 
+= path.into_inner();
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+  --> crates\server\sr
+c\handlers\review_case
+s.rs:85:5
+   |
+85 |     pool: 
+web::Data<SqlitePool>,
+   |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:100:5
+    |
+100 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:102:9
+    |
+102 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `request`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:113:5
+    |
+113 |     request: web
+::Json<DecideFieldRequ
+est>,
+    |     ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_request`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:114:5
+    |
+114 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:116:9
+    |
+116 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:132:5
+    |
+132 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `req`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:133:5
+    |
+133 |     req: 
+HttpRequest,
+    |     ^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_req`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:135:9
+    |
+135 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `pool`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:148:5
+    |
+148 |     pool: 
+web::Data<SqlitePool>,
+    |     ^^^^ help: 
+if this is 
+intentional, prefix 
+it with an 
+underscore: `_pool`
+
+warning: unused 
+variable: `case_id`
+   --> crates\server\s
+rc\handlers\review_cas
+es.rs:150:9
+    |
+150 |     let case_id 
+= path.into_inner();
+    |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `case_id`
+  --> crates\server\sr
+c\services\inventory_i
+ntegration_service.rs:
+57:9
+   |
+57 |         case_id: 
+&str,
+   |         ^^^^^^^ 
+help: if this is 
+intentional, prefix 
+it with an 
+underscore: `_case_id`
+
+warning: unused 
+variable: `tenant_id`
+   --> crates\server\s
+rc\services\inventory_
+integration_service.rs
+:249:9
+    |
+249 |         
+tenant_id: &str,
+    |         
+^^^^^^^^^ help: if 
+this is intentional, 
+prefix it with an 
+underscore: 
+`_tenant_id`
+
+warning: variable 
+does not need to be 
+mutable
+   --> crates\server\s
+rc\services\mask_engin
+e.rs:459:13
+    |
+459 |         let mut 
+img = image::open(imag
+e_path)
+    |             
+----^^^
+    |             |
+    |             
+help: remove this 
+`mut`
+    |
+    = note: 
+`#[warn(unused_mut)]` 
+(part of 
+`#[warn(unused)]`) on 
+by default
+
+warning: 
+`EasySale-server` 
+(lib) generated 27 
+warnings
+error: could not 
+compile 
+`EasySale-server` 
+(lib) due to 46 
+previous errors; 27 
+warnings emitted

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                INSERT INTO settings (key, value, scope, scope_id, data_type, created_at, updated_at)\n                VALUES (?, ?, ?, ?, ?, ?, ?)\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "c249d83be363fac2c72a5d367d507abd0a7f85d9a92ca988bd8b86c0c82e1ec1"
+}

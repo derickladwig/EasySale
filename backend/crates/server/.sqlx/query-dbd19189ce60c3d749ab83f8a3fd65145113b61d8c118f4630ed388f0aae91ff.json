@@ -1,0 +1,80 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT \n            id as \"id!\",\n            name as \"name!\",\n            email as \"email?\",\n            phone as \"phone?\",\n            'individual' as \"customer_type!\",\n            pricing_tier as \"tier!\",\n            0.0 as \"total_spent!\",\n            0 as \"order_count!\",\n            datetime('now') as \"last_order!\",\n            CAST(NULL AS TEXT) as \"address?\",\n            CAST(NULL AS TEXT) as \"company?\"\n        FROM customers\n        ORDER BY name\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "email?",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "phone?",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "customer_type!",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "tier!",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "total_spent!",
+        "ordinal": 6,
+        "type_info": "Float"
+      },
+      {
+        "name": "order_count!",
+        "ordinal": 7,
+        "type_info": "Int"
+      },
+      {
+        "name": "last_order!",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "address?",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "company?",
+        "ordinal": 10,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "dbd19189ce60c3d749ab83f8a3fd65145113b61d8c118f4630ed388f0aae91ff"
+}

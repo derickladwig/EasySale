@@ -1,0 +1,106 @@
+{
+  "mapping_id": "woo-to-qbo-customer",
+  "source_connector": "woocommerce",
+  "target_connector": "quickbooks",
+  "entity_type": "customer",
+  "description": "Map WooCommerce customers to QuickBooks Online customers",
+  "mappings": [
+    {
+      "source_field": "billing.first_name",
+      "target_field": "GivenName",
+      "required": true,
+      "description": "Customer first name"
+    },
+    {
+      "source_field": "billing.last_name",
+      "target_field": "FamilyName",
+      "required": true,
+      "description": "Customer last name"
+    },
+    {
+      "source_field": "billing.email",
+      "target_field": "PrimaryEmailAddr.Address",
+      "required": true,
+      "description": "Customer email address"
+    },
+    {
+      "source_field": "billing.phone",
+      "target_field": "PrimaryPhone.FreeFormNumber",
+      "required": false,
+      "description": "Customer phone number"
+    },
+    {
+      "source_field": "billing.address_1",
+      "target_field": "BillAddr.Line1",
+      "required": false,
+      "description": "Billing address line 1"
+    },
+    {
+      "source_field": "billing.address_2",
+      "target_field": "BillAddr.Line2",
+      "required": false,
+      "description": "Billing address line 2"
+    },
+    {
+      "source_field": "billing.city",
+      "target_field": "BillAddr.City",
+      "required": false,
+      "description": "Billing city"
+    },
+    {
+      "source_field": "billing.state",
+      "target_field": "BillAddr.CountrySubDivisionCode",
+      "required": false,
+      "description": "Billing state/province"
+    },
+    {
+      "source_field": "billing.postcode",
+      "target_field": "BillAddr.PostalCode",
+      "required": false,
+      "description": "Billing postal code"
+    },
+    {
+      "source_field": "billing.country",
+      "target_field": "BillAddr.Country",
+      "required": false,
+      "description": "Billing country"
+    },
+    {
+      "source_field": "shipping.address_1",
+      "target_field": "ShipAddr.Line1",
+      "required": false,
+      "description": "Shipping address line 1"
+    },
+    {
+      "source_field": "shipping.city",
+      "target_field": "ShipAddr.City",
+      "required": false,
+      "description": "Shipping city"
+    },
+    {
+      "source_field": "shipping.state",
+      "target_field": "ShipAddr.CountrySubDivisionCode",
+      "required": false,
+      "description": "Shipping state/province"
+    },
+    {
+      "source_field": "shipping.postcode",
+      "target_field": "ShipAddr.PostalCode",
+      "required": false,
+      "description": "Shipping postal code"
+    },
+    {
+      "source_field": "shipping.country",
+      "target_field": "ShipAddr.Country",
+      "required": false,
+      "description": "Shipping country"
+    }
+  ],
+  "transformations": [],
+  "notes": [
+    "DisplayName is auto-generated from GivenName + FamilyName",
+    "Email is used as unique identifier for customer lookup",
+    "QuickBooks requires unique DisplayName - system will append suffix if duplicate",
+    "All address fields are optional but recommended for invoicing"
+  ]
+}

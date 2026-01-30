@@ -1,0 +1,158 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run weekly on Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  # Automated security fixes for npm
+  npm-security-fixes:
+    name: npm Security Fixes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Check for vulnerabilities
+        id: audit
+        working-directory: ./frontend
+        continue-on-error: true
+        run: |
+          npm audit --omit=dev --audit-level=high > audit-result.txt 2>&1
+          if [ $? -ne 0 ]; then
+            echo "has_vulnerabilities=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_vulnerabilities=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Apply safe fixes
+        if: steps.audit.outputs.has_vulnerabilities == 'true'
+        working-directory: ./frontend
+        run: |
+          npm audit fix --omit=dev || true
+          npm audit --omit=dev --audit-level=high || echo "Some vulnerabilities remain"
+      
+      - name: Create PR for fixes
+        if: steps.audit.outputs.has_vulnerabilities == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "security(deps): auto-fix npm vulnerabilities"
+          title: "🔒 Security: Auto-fix npm vulnerabilities"
+          body: |
+            ## Automated Security Fix
+            
+            This PR was automatically generated to fix npm security vulnerabilities.
+            
+            ### Changes
+            - Applied `npm audit fix` to resolve known vulnerabilities
+            
+            ### Verification
+            - [ ] CI passes
+            - [ ] No breaking changes
+            - [ ] Manual review of dependency changes
+          branch: security/npm-audit-fix
+          labels: |
+            security
+            dependencies
+            automated
+
+  # Check for outdated npm packages
+  check-npm-updates:
+    name: Check npm Updates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Check for outdated packages
+        working-directory: ./frontend
+        run: |
+          npm outdated || true
+          echo "## 📦 Frontend Dependency Updates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          npm outdated || echo "All packages are up to date!" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # Check for outdated Rust crates
+  check-cargo-updates:
+    name: Check Cargo Updates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      
+      - name: Install cargo-outdated
+        run: cargo install cargo-outdated
+      
+      - name: Check for outdated crates
+        working-directory: ./backend
+        run: |
+          cargo outdated || true
+          echo "## 📦 Backend Dependency Updates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cargo outdated || echo "All crates are up to date!" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # Check for outdated Python packages
+  check-python-updates:
+    name: Check Python Updates
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service: [backup]  # Add 'sync' when implemented
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install pip-check
+        run: pip install pip-check
+      
+      - name: Check for outdated packages
+        working-directory: ./${{ matrix.service }}
+        run: |
+          pip install -r requirements.txt
+          pip list --outdated || true
+          echo "## 📦 ${{ matrix.service }} Dependency Updates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          pip list --outdated || echo "All packages are up to date!" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

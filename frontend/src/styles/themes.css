@@ -1,0 +1,220 @@
+/**
+ * Theme Definitions
+ * 
+ * This file defines theme-specific color values.
+ * This is the ONLY file (along with tokens.css) that may define raw color values.
+ */
+
+/* ============================================
+ * LIGHT THEME
+ * Clean white with blue accent (#0756d9) as default
+ * ============================================ */
+
+[data-theme="light"] {
+  --theme-bg-primary: #ffffff;
+  --theme-bg-secondary: #f5f5f5;
+  --theme-text-primary: #1a1a1a;
+  --theme-text-secondary: #666666;
+  --theme-text-muted: #999999;
+  --theme-border: #e0e0e0;
+  --theme-border-subtle: #f0f0f0;
+  --theme-divider: #e5e5e5;
+  --theme-focus-ring: #0756d9;
+  --theme-surface-1: #ffffff;
+  --theme-surface-2: #f9f9f9;
+  --theme-surface-3: #f5f5f5;
+  --theme-success: #059669;
+  --theme-warning: #d97706;
+  --theme-error: #dc2626;
+  --theme-info: #2563eb;
+  
+  /* Primary color scale (Blue - default accent #0756d9) */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #0756d9;
+  --color-primary-600: #0548b8;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+}
+
+/* ============================================
+ * DARK THEME
+ * Charcoal gray (#222224) with proper contrast
+ * ============================================ */
+
+[data-theme="dark"] {
+  --theme-bg-primary: #222224;
+  --theme-bg-secondary: #2a2a2c;
+  --theme-text-primary: #f5f5f7;
+  --theme-text-secondary: #d1d1d6;
+  --theme-text-muted: #8e8e93;
+  --theme-border: #404044;
+  --theme-border-subtle: #333336;
+  --theme-divider: #333336;
+  --theme-focus-ring: #0756d9;
+  --theme-surface-1: #222224;
+  --theme-surface-2: #2a2a2c;
+  --theme-surface-3: #333336;
+  --theme-success: #34d399;
+  --theme-warning: #fbbf24;
+  --theme-error: #f87171;
+  --theme-info: #3b82f6;
+  
+  /* Primary color scale (Blue - default accent) */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #0756d9;
+  --color-primary-600: #0548b8;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+}
+
+/* ============================================
+ * ACCENT COLORS
+ * When an accent color is selected, update both --theme-accent and --color-primary-* variables
+ * This ensures Tailwind's bg-primary-*, text-primary-* classes use the accent color
+ * ============================================ */
+
+[data-accent="blue"] {
+  --theme-accent: #3b82f6;
+  --theme-accent-hover: #2563eb;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+}
+
+[data-accent="green"] {
+  --theme-accent: #10b981;
+  --theme-accent-hover: #059669;
+  --color-primary-50: #ecfdf5;
+  --color-primary-100: #d1fae5;
+  --color-primary-200: #a7f3d0;
+  --color-primary-300: #6ee7b7;
+  --color-primary-400: #34d399;
+  --color-primary-500: #10b981;
+  --color-primary-600: #059669;
+  --color-primary-700: #047857;
+  --color-primary-800: #065f46;
+  --color-primary-900: #064e3b;
+  --color-primary-950: #022c22;
+}
+
+[data-accent="teal"] {
+  --theme-accent: #14b8a6;
+  --theme-accent-hover: #0d9488;
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
+}
+
+[data-accent="purple"] {
+  --theme-accent: #a855f7;
+  --theme-accent-hover: #9333ea;
+  --color-primary-50: #faf5ff;
+  --color-primary-100: #f3e8ff;
+  --color-primary-200: #e9d5ff;
+  --color-primary-300: #d8b4fe;
+  --color-primary-400: #c084fc;
+  --color-primary-500: #a855f7;
+  --color-primary-600: #9333ea;
+  --color-primary-700: #7e22ce;
+  --color-primary-800: #6b21a8;
+  --color-primary-900: #581c87;
+  --color-primary-950: #3b0764;
+}
+
+[data-accent="orange"] {
+  --theme-accent: #f97316;
+  --theme-accent-hover: #ea580c;
+  --color-primary-50: #fff7ed;
+  --color-primary-100: #ffedd5;
+  --color-primary-200: #fed7aa;
+  --color-primary-300: #fdba74;
+  --color-primary-400: #fb923c;
+  --color-primary-500: #f97316;
+  --color-primary-600: #ea580c;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+  --color-primary-900: #7c2d12;
+  --color-primary-950: #431407;
+}
+
+[data-accent="red"] {
+  --theme-accent: #ef4444;
+  --theme-accent-hover: #dc2626;
+  --color-primary-50: #fef2f2;
+  --color-primary-100: #fee2e2;
+  --color-primary-200: #fecaca;
+  --color-primary-300: #fca5a5;
+  --color-primary-400: #f87171;
+  --color-primary-500: #ef4444;
+  --color-primary-600: #dc2626;
+  --color-primary-700: #b91c1c;
+  --color-primary-800: #991b1b;
+  --color-primary-900: #7f1d1d;
+  --color-primary-950: #450a0a;
+}
+
+/* Default accent is blue (#0756d9) for professional look */
+:root {
+  --theme-accent: #0756d9;
+  --theme-accent-hover: #0548b8;
+  
+  /* Default primary color scale (Blue) - ensures colors work even without data-theme */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #0756d9;
+  --color-primary-600: #0548b8;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+}
+
+/* ============================================
+ * DENSITY MODES
+ * ============================================ */
+
+[data-density="compact"] {
+  --density-padding: var(--space-2);
+  --density-gap: var(--space-2);
+}
+
+[data-density="comfortable"] {
+  --density-padding: var(--space-4);
+  --density-gap: var(--space-4);
+}
+
+[data-density="spacious"] {
+  --density-padding: var(--space-6);
+  --density-gap: var(--space-6);
+}

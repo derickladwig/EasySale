@@ -1,0 +1,38 @@
+# Development Dockerfile for Rust Backend
+# Using Rust nightly for edition 2024 support (required by base64ct dependency)
+FROM rustlang/rust:nightly-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Note: Skipping cargo-watch due to edition 2024 dependency conflicts
+# Hot reload not available in Docker, but backend will run normally
+
+# Set working directory
+WORKDIR /app
+
+# Create data directory for SQLite database and backups
+RUN mkdir -p /data/backups && chmod -R 777 /data
+
+# Copy Cargo files (Cargo.lock will be generated)
+COPY Cargo.toml ./
+
+# Skip dependency caching due to edition 2024 conflicts in dependency tree
+# Dependencies will be built on first run
+
+# Copy source code (will be overridden by volume mount)
+COPY . .
+
+# Set SQLx to offline mode to skip compile-time verification
+ENV SQLX_OFFLINE=true
+
+# Expose API port
+EXPOSE 8923
+
+# Start development server (without hot reload due to cargo-watch compatibility issues)
+CMD ["cargo", "run"]
