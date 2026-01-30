@@ -952,6 +952,29 @@ This section documents a production-grade audit of the POS checkout flow.
 - `frontend/src/common/utils/apiClient.ts` - Uses `credentials: 'include'` + CSRF headers
 - `frontend/src/services/*.ts` - Migrated to `withCredentials: true` + CSRF
 
+### Code Quality Audit (Jan 30, 2026)
+
+**Full audit documented in:** `audit/CODE_QUALITY_AUDIT.md`
+
+**Critical Issues Found:**
+| Issue | Count | Priority |
+|-------|-------|----------|
+| Hardcoded test secrets in production | 7 | **CRITICAL** |
+| `.unwrap()` calls in production | 894 | High |
+| TODO/FIXME in production code | ~40 | Medium |
+| TypeScript `any` types | ~178 | Medium |
+| Dead code annotations | 59 | Low |
+| console.log in production | 7 | Low |
+
+**Most Critical Files:**
+- `connectors/woocommerce/webhooks.rs:104` - Hardcoded `"test_secret"`
+- `connectors/quickbooks/webhooks.rs:307,324` - Hardcoded `"test_secret"`
+- `handlers/setup.rs:33` - Default password `"admin123"`
+
+**Build Warning (Docker):**
+- `ReceiptLineItem.product_name` field never read (warning only, not error)
+- Location: `handlers/sales.rs:630`
+
 **Code Quality Issues:**
 - 8 files with console.log in production review components
 - 20+ files with TypeScript `any` types
