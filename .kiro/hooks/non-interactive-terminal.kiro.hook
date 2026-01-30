@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "name": "Non-Interactive Terminal",
+  "description": "Sets env vars in a CMD-safe way to reduce interactive blockers (pagers).",
+  "version": "2",
+  "when": { "type": "promptSubmit" },
+  "then": {
+    "type": "runCommand",
+    "command": "cmd /d /c \"set PAGER=cat & set GIT_PAGER=cat & set \\\"LESS=-FRSX\\\" & set CI=1 & set NPM_CONFIG_YES=true\""
+  }
+}

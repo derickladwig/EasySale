@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "name": "Exit Watch Mode On Stop",
+  "description": "On agentStop, if terminal is waiting for input (watch/pager/press-any-key), exit and rerun one-shot.",
+  "version": "2",
+  "when": { "type": "agentStop" },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before stopping, scan recent terminal output for interactive blockers: \"Watching for file changes\", \"press q to quit\", \"press any key\", \"--More--\", \"q to quit\", \"waiting for input\". If present, do NOT stop: exit immediately (q then Enter; else Ctrl+C), rerun the last test in one-shot/CI mode (vitest: `npx vitest run ...` or ensure CI=1; jest: `--watch=false`). Then continue remaining tasks in order without asking for confirmation."
+  }
+}

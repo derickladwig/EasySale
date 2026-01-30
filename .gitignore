@@ -176,10 +176,12 @@ volumes/
 audit/
 sync/
 backup/
-.kiro/
 .agents/
 runtime/
 mcps/
+
+# Hackathon required folders (INCLUDED - do not ignore)
+# .kiro/        <- INCLUDED for hackathon (required)
 
 # Hackathon folders (INCLUDED - do not ignore)
 # archive/    <- INCLUDED for hackathon

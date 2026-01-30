@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "name": "Test Runner — CI Mode Only",
+  "description": "Forces one-shot test execution; never leaves watch mode running.",
+  "version": "2",
+  "when": { "type": "promptSubmit" },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Hard rule: never run tests in watch/interactive mode.\n\nIf you are about to run a test command, rewrite it to one-shot:\n- If command contains \"npm test\" or \"pnpm test\" or \"yarn test\": add CI and disable watch. Prefer a dedicated script if present.\n- Vitest: use `npx vitest run <args>` (NOT `vitest` watch). If using npm scripts, prefer `npm run test:ci -- <args>` if it exists.\n- Jest: `npm test -- --watch=false <args>` (or `--runInBand` if needed), ensure CI=1.\n- If you see output: \"Watching for file changes\" OR \"press q to quit\" OR \"watch\": immediately exit (send q then Enter, else Ctrl+C), then rerun with one-shot.\n\nAfter tests finish (pass or fail), continue remaining tasks without asking for confirmation. Only ask a question if absolutely blocked."
+  }
+}

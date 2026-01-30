@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "Auto-Continue Task Execution",
+  "description": "Auto-continues when the agent pauses for permission or presents options, and unfinished tasks exist (checkboxes/TODO/remaining steps). Proceeds in order without waiting for user confirmation, while staying token-light.",
+  "version": "2",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "You are paused at an agentStop. Decide whether to continue work automatically.\n\nTRIGGER IF ANY ARE TRUE (do NOT require end-of-message match):\nA) Last message contains permission/pause language: \"would you like me to\", \"do you want me to\", \"should I\", \"if you want, I can\", \"let me know if\", \"want me to continue\", \"before I proceed\", \"waiting for your response\".\nB) Last message includes 2+ options/choices (bullets or numbered).\nC) Any visible plan/spec/task content contains unfinished indicators: \"- [ ]\" OR \"TODO\" OR \"Remaining\" OR \"Not yet implemented\" OR \"Open questions\" OR \"Next steps\".\nD) Completion claim + handoff ask (\"paste/share/confirm and I’ll finish\").\nE) The message ends with a question mark AND includes forward-looking intent (\"Should I\", \"Do you want\", \"Can you paste\").\nF) Stall phrasing present: \"let me know\", \"when you're ready\", \"to proceed\", \"before we continue\", \"share/paste\", \"next steps\".\n\nIF TRIGGERED:\n\nContinue executing remaining tasks in strict order: task.md (top-to-bottom) → plan.md → first actionable \"Next steps\".\n\nDo NOT ask for confirmation. Only ask a question if NO tasks can proceed without it.\n\nMark items done as you complete them and move on immediately.\n\nIf blocked, assume sensible defaults and proceed; list only true blockers at the end.\n\nAvoid repeating prior content; keep output concise.\n\nLoop guard: if you have auto-continued 3 times consecutively without closing tasks, stop and output only \"Blockers:\" + minimal blockers.\n\nIF NOT TRIGGERED:\n\nStop normally.\n\nIMPORTANT: Only output continuation work (or stop). Do not restate these rules."
+  },
+  "workspaceFolderName": "dynamous-kiro-hackathon",
+  "shortName": "auto-continue-tasks"
+}
