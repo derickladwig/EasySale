@@ -1,12 +1,35 @@
 use actix_web::{post, web, HttpResponse, Responder};
+use serde::Deserialize;
 use sqlx::SqlitePool;
 use crate::auth::hash_password;
+
+/// Request body for system initialization
+#[derive(Debug, Deserialize)]
+pub struct InitializeRequest {
+    /// Admin username (defaults to "admin" if not provided)
+    pub username: Option<String>,
+    /// Admin email (defaults to "admin@easysale.local" if not provided)
+    pub email: Option<String>,
+    /// Admin password - REQUIRED, must be at least 8 characters
+    pub password: String,
+}
 
 /// POST /setup/init
 /// Initialize the system with a default admin user
 /// This endpoint can only be called once - if an admin already exists, it returns an error
 #[post("/setup/init")]
-pub async fn initialize_system(pool: web::Data<SqlitePool>) -> impl Responder {
+pub async fn initialize_system(
+    pool: web::Data<SqlitePool>,
+    body: web::Json<InitializeRequest>,
+) -> impl Responder {
+    // Validate password strength
+    if body.password.len() < 8 {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Password too weak",
+            "message": "Password must be at least 8 characters"
+        }));
+    }
+
     // Check if any users exist
     let user_count: (i64,) = match sqlx::query_as("SELECT COUNT(*) FROM users")
         .fetch_one(pool.get_ref())
@@ -28,9 +51,8 @@ pub async fn initialize_system(pool: web::Data<SqlitePool>) -> impl Responder {
         }));
     }
 
-    // Create default admin user
-    // Password: admin123
-    let password_hash = match hash_password("admin123") {
+    // Hash the provided password
+    let password_hash = match hash_password(&body.password) {
         Ok(hash) => hash,
         Err(e) => {
             tracing::error!("Failed to hash password: {:?}", e);
@@ -39,6 +61,9 @@ pub async fn initialize_system(pool: web::Data<SqlitePool>) -> impl Responder {
             }));
         }
     };
+
+    let username = body.username.as_deref().unwrap_or("admin");
+    let email = body.email.as_deref().unwrap_or("admin@easysale.local");
 
     let result = sqlx::query(
         r#"
@@ -51,8 +76,8 @@ pub async fn initialize_system(pool: web::Data<SqlitePool>) -> impl Responder {
         "#
     )
     .bind("admin-default")
-    .bind("admin")
-    .bind("admin@capspos.local")
+    .bind(username)
+    .bind(email)
     .bind(&password_hash)
     .bind("admin")
     .bind("System")
@@ -66,12 +91,10 @@ pub async fn initialize_system(pool: web::Data<SqlitePool>) -> impl Responder {
 
     match result {
         Ok(_) => {
-            tracing::info!("Default admin user created successfully");
+            tracing::info!("Admin user '{}' created successfully", username);
             HttpResponse::Ok().json(serde_json::json!({
                 "message": "System initialized successfully",
-                "username": "admin",
-                "password": "admin123",
-                "warning": "Please change the default password immediately!"
+                "username": username
             }))
         }
         Err(e) => {

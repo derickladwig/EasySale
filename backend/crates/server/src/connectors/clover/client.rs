@@ -147,6 +147,7 @@ pub struct CloverSummary {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct CloverMerchantResponse {
     id: String,
     name: Option<String>,
@@ -154,6 +155,7 @@ struct CloverMerchantResponse {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct CloverAddress {
     address1: Option<String>,
     city: Option<String>,

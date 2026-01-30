@@ -159,6 +159,7 @@ struct SquareLocationResponse {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct SquareLocation {
     id: String,
     name: Option<String>,
@@ -167,6 +168,7 @@ struct SquareLocation {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct SquareAddress {
     address_line_1: Option<String>,
     locality: Option<String>,

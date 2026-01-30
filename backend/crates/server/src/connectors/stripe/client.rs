@@ -177,6 +177,7 @@ pub struct StripeSummary {
 
 /// Stripe account API response
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct StripeAccountResponse {
     id: String,
     country: Option<String>,
