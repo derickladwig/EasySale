@@ -175,7 +175,7 @@ volumes/
 # Internal folders (excluded)
 # audit/      <- INCLUDED for hackathon (shows audit process)
 sync/
-backup/
+# backup/ - REMOVED: Python backup service deleted, Rust backend handles backups
 .agents/
 runtime/
 mcps/
