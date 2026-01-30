@@ -10,12 +10,7 @@
 
 <p align="center">
   A flexible, configuration-driven POS system that adapts to any retail business.<br>
-  Built offline-first to ensure continuous operation regardless of connectivity.
-</p>
-
-<p align="center">
-  <a href="https://github.com/derickladwig/EasySale/actions/workflows/ci.yml"><img src="https://github.com/derickladwig/EasySale/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
-  <a href="https://github.com/derickladwig/EasySale/actions/workflows/cd.yml"><img src="https://github.com/derickladwig/EasySale/actions/workflows/cd.yml/badge.svg" alt="CD Status"></a>
+  Built offline-first to ensure continuous operation regardless of connectivity.<br>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
 </p>
 
