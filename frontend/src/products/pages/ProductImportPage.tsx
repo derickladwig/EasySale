@@ -32,23 +32,25 @@ interface ImportResult {
 }
 
 // Field definitions with metadata
+// Backend requires: sku, name, category, unit_price (or price), cost
+// store_id defaults to "default-store" if not provided
 const PRODUCT_FIELDS = {
   required: [
-    { name: 'sku', label: 'SKU', description: 'Unique product identifier', example: 'PROD-001' },
+    { name: 'sku', label: 'SKU', description: 'Unique product identifier', example: 'WIDGET-001' },
     { name: 'name', label: 'Product Name', description: 'Display name', example: 'Blue Widget' },
     { name: 'category', label: 'Category', description: 'Product category', example: 'Electronics' },
     { name: 'unit_price', label: 'Price', description: 'Selling price', example: '29.99' },
     { name: 'cost', label: 'Cost', description: 'Purchase cost', example: '15.00' },
-    { name: 'store_id', label: 'Store ID', description: 'Store identifier', example: 'store-001' },
   ],
   optional: [
+    { name: 'store_id', label: 'Store ID', description: 'Store identifier (defaults to default-store)' },
     { name: 'description', label: 'Description', description: 'Product description' },
     { name: 'subcategory', label: 'Subcategory', description: 'Product subcategory' },
     { name: 'quantity', label: 'Quantity', description: 'Initial stock quantity' },
     { name: 'reorder_point', label: 'Reorder Point', description: 'Low stock threshold' },
     { name: 'barcode', label: 'Barcode', description: 'UPC/EAN barcode' },
     { name: 'barcode_type', label: 'Barcode Type', description: 'UPC-A, EAN-13, Code128' },
-    { name: 'is_active', label: 'Active', description: 'true/false' },
+    { name: 'is_active', label: 'Active', description: 'true/false (defaults to true)' },
   ],
 };
 
@@ -140,31 +142,31 @@ export function ProductImportPage() {
     ];
 
     // Sample rows with proper demo data matching header order exactly:
-    // Required: sku*, name*, category*, unit_price*, cost*, store_id*
-    // Optional: description, subcategory, quantity, reorder_point, barcode, barcode_type, is_active
+    // Required: sku*, name*, category*, unit_price*, cost*
+    // Optional: store_id, description, subcategory, quantity, reorder_point, barcode, barcode_type, is_active
     // Cross-link: alt_sku_manufacturer, alt_sku_upc, alt_sku_ean, alt_sku_vendor_1, alt_sku_vendor_2, alt_sku_vendor_3
     // Vendor: vendor_1_name, vendor_1_sku, vendor_1_cost, vendor_2_name, vendor_2_sku, vendor_2_cost
     const sampleRows = [
       // Row 1: Complete example with all fields
       [
-        'WIDGET-001', 'Blue Widget', 'Electronics', '29.99', '15.00', 'main-store',
-        'High-quality blue widget for everyday use', 'Gadgets', '100', '10', '012345678905', 'UPC-A', 'true',
+        'WIDGET-001', 'Blue Widget', 'Electronics', '29.99', '15.00',
+        'main-store', 'High-quality blue widget for everyday use', 'Gadgets', '100', '10', '012345678905', 'UPC-A', 'true',
         'MFG-BW001', '012345678905', '5901234123457', 'VEND1-BW001', 'VEND2-BW001', '',
         'Acme Supplies', 'ACME-001', '12.00', 'Widget Co', 'WC-001', '13.50',
         ...customAttributes.map((attr) => attr === 'color' ? 'Blue' : attr === 'size' ? 'Medium' : attr === 'brand' ? 'Acme' : ''),
       ],
-      // Row 2: Minimal example with only required fields
+      // Row 2: Minimal example with only required fields (store_id will default)
       [
-        'GADGET-002', 'Red Gadget', 'Electronics', '19.99', '8.50', 'main-store',
-        'Compact red gadget', 'Gadgets', '50', '5', '', '', 'true',
+        'GADGET-002', 'Red Gadget', 'Electronics', '19.99', '8.50',
+        '', 'Compact red gadget', 'Gadgets', '50', '5', '', '', 'true',
         '', '', '', '', '', '',
         '', '', '', '', '', '',
         ...customAttributes.map(() => ''),
       ],
       // Row 3: Another category example
       [
-        'TOOL-003', 'Precision Screwdriver Set', 'Tools', '45.00', '22.00', 'main-store',
-        '12-piece precision screwdriver set', 'Hand Tools', '25', '5', '098765432109', 'UPC-A', 'true',
+        'TOOL-003', 'Precision Screwdriver Set', 'Tools', '45.00', '22.00',
+        'main-store', '12-piece precision screwdriver set', 'Hand Tools', '25', '5', '098765432109', 'UPC-A', 'true',
         'MFG-PSD12', '098765432109', '', '', '', '',
         'Tool Masters', 'TM-PSD12', '20.00', '', '', '',
         ...customAttributes.map((attr) => attr === 'brand' ? 'ToolPro' : ''),

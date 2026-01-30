@@ -21,8 +21,10 @@ export const defaultConfig: TenantConfig = {
       name: 'EasySale',
       shortName: 'ES',
       tagline: 'Your Flexible Point of Sale Solution',
-      logo: '/logo.svg',
-      favicon: '/assets/icons/favicon.png',
+      logo: '/assets/logos/logo-light.png',
+      logoLight: '/assets/logos/logo-light.png',
+      logoDark: '/assets/logos/logo-dark.png',
+      favicon: '/assets/icons/icon-64.png',
       icon: '/assets/icons/icon.png',
     },
     login: {

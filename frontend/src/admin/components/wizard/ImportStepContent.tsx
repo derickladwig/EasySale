@@ -17,14 +17,16 @@ const IMPORT_TEMPLATES = {
   products: {
     csv: {
       filename: 'products_import_template.csv',
-      // Core fields (* = required)
+      // Core fields (* = required by backend)
+      // Backend requires: sku, name, category, unit_price (or price), cost
+      // store_id defaults to "default-store" if not provided
       headers: [
-        'sku*',           // Required: Unique product identifier
-        'name*',          // Required: Product name
-        'category*',      // Required: Product category
-        'unit_price*',    // Required: Selling price
-        'cost*',          // Required: Cost/purchase price
-        'store_id*',      // Required: Store identifier
+        'sku',            // Required: Unique product identifier
+        'name',           // Required: Product name
+        'category',       // Required: Product category
+        'unit_price',     // Required: Selling price (backend also accepts 'price')
+        'cost',           // Required: Cost/purchase price
+        'store_id',       // Optional: Store identifier (defaults to default-store)
         'description',    // Optional: Product description
         'subcategory',    // Optional: Product subcategory
         'quantity',       // Optional: Initial quantity on hand (default: 0)
@@ -32,29 +34,22 @@ const IMPORT_TEMPLATES = {
         'barcode',        // Optional: Barcode value (UPC, EAN, etc.)
         'barcode_type',   // Optional: Barcode format (UPC-A, EAN-13, Code128, QR)
         'is_active',      // Optional: Active status (true/false, default: true)
-        'parent_sku',     // Optional: Parent product SKU for variants
-        'images',         // Optional: Comma-separated image URLs
-        // Dynamic attributes (JSON or key:value pairs)
+        // Dynamic attributes (any column starting with attr_)
         'attr_color',     // Optional: Custom attribute - color
         'attr_size',      // Optional: Custom attribute - size
         'attr_brand',     // Optional: Custom attribute - brand
-        'attr_weight',    // Optional: Custom attribute - weight
-        'attr_material',  // Optional: Custom attribute - material
-        // Vendor information
-        'vendor_name',    // Optional: Primary vendor/supplier name
-        'vendor_sku',     // Optional: Vendor's SKU for this product
-        'vendor_cost',    // Optional: Cost from this vendor
-        // Additional fields
-        'tax_class',      // Optional: Tax classification (standard, reduced, exempt)
-        'notes',          // Optional: Internal notes
+        // Vendor information (vendor_1_name, vendor_1_sku, vendor_1_cost pattern)
+        'vendor_1_name',  // Optional: Primary vendor/supplier name
+        'vendor_1_sku',   // Optional: Vendor's SKU for this product
+        'vendor_1_cost',  // Optional: Cost from this vendor
       ],
       sampleRows: [
-        // Example 1: Basic product with required fields only
-        ['WIDGET-001', 'Blue Widget', 'Electronics', '19.99', '10.00', 'main-store', 'High-quality widget', 'Gadgets', '100', '10', '012345678905', 'UPC-A', 'true', '', '', 'Blue', 'Standard', 'Acme', '150g', 'Plastic', 'Acme Supplies', 'ACME-W001', '8.00', 'standard', ''],
-        // Example 2: Product with attributes and vendor info
-        ['SHIRT-001', 'Cotton T-Shirt Blue Large', 'Apparel', '29.99', '12.00', 'main-store', 'Comfortable cotton t-shirt', 'Shirts', '50', '5', '012345678912', 'EAN-13', 'true', '', '', 'Blue', 'Large', 'StyleCo', '200g', 'Cotton', 'Textile World', 'TW-TS-BL-L', '10.00', 'standard', ''],
-        // Example 3: Another standalone product (no parent_sku to avoid import order issues)
-        ['TOOL-001', 'Precision Screwdriver Set', 'Tools', '45.00', '22.00', 'main-store', '12-piece precision set', 'Hand Tools', '25', '5', '098765432109', 'UPC-A', 'true', '', '', '', '', 'ToolPro', '350g', 'Steel', 'Tool Masters', 'TM-PSD12', '18.00', 'standard', 'Professional grade'],
+        // Example 1: Complete product with all common fields
+        ['WIDGET-001', 'Blue Widget', 'Electronics', '19.99', '10.00', 'main-store', 'High-quality widget', 'Gadgets', '100', '10', '012345678905', 'UPC-A', 'true', 'Blue', 'Standard', 'Acme', 'Acme Supplies', 'ACME-W001', '8.00'],
+        // Example 2: Product with attributes
+        ['SHIRT-001', 'Cotton T-Shirt', 'Apparel', '29.99', '12.00', 'main-store', 'Comfortable cotton t-shirt', 'Shirts', '50', '5', '012345678912', 'EAN-13', 'true', 'Blue', 'Large', 'StyleCo', 'Textile World', 'TW-TS-BL-L', '10.00'],
+        // Example 3: Minimal product (only required fields + store_id)
+        ['TOOL-001', 'Screwdriver Set', 'Tools', '45.00', '22.00', 'main-store', '', '', '', '', '', '', 'true', '', '', '', '', '', ''],
       ],
     },
     excel: {

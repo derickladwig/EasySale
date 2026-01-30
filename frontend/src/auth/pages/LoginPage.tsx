@@ -403,7 +403,7 @@ function LoginPageContent({
                   type="checkbox"
                   checked={rememberUsername}
                   onChange={(e) => setRememberUsername(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0"
                 />
                 <span className="text-slate-400 text-sm">Remember username</span>
               </label>

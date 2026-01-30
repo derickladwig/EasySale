@@ -8,10 +8,11 @@
  */
 
 // Default focus indicator tokens (used when outside LoginThemeProvider)
+// Uses CSS variables so the focus color follows the theme's primary color
 const defaultTokens = {
   colors: {
     border: {
-      focus: '#14b8a6', // teal-500
+      focus: 'var(--color-primary-500, #14b8a6)', // Uses theme primary, falls back to teal
     },
   },
   radius: {
