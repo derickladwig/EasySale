@@ -9,7 +9,7 @@ import { BottomNav, BottomNavItem } from './common/components/organisms/BottomNa
 import { DemoModeIndicator } from './components/DemoModeIndicator';
 import { ProfileMenu } from './common/components/molecules/ProfileMenu';
 import { LogoWithFallback } from './common/components/atoms/LogoWithFallback';
-import { useStations } from './common/hooks/useStations';
+import { useStations } from './admin/hooks/useStations';
 
 import { Permission } from './common/contexts/PermissionsContext';
 
