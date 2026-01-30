@@ -14,6 +14,21 @@ function getApiBaseUrl(): string {
   return `http://${hostname}:8923`;
 }
 
+/**
+ * Get CSRF token from cookie for state-changing requests
+ */
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrf_token') {
+      return decodeURIComponent(value);
+    }
+  }
+  return null;
+}
+
 const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
@@ -21,13 +36,17 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include httpOnly cookies for authentication
 });
 
-// Add auth token to requests
+// Add CSRF token to state-changing requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const method = (config.method || 'get').toUpperCase();
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
   }
   return config;
 });
@@ -77,12 +96,12 @@ export interface PerformanceSettings {
 
 // Settings Resolution Types
 export interface ResolvedSettings {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface Setting {
   key: string;
-  value: any;
+  value: string | number | boolean | Record<string, unknown>;
   scope: 'user' | 'station' | 'store' | 'global';
   tenant_id: string;
   created_at: string;
@@ -91,12 +110,12 @@ export interface Setting {
 
 export interface CreateSettingRequest {
   key: string;
-  value: any;
+  value: string | number | boolean | Record<string, unknown>;
   scope: 'user' | 'station' | 'store' | 'global';
 }
 
 export interface UpdateSettingRequest {
-  value: any;
+  value: string | number | boolean | Record<string, unknown>;
 }
 
 // API Functions

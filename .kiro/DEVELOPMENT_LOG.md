@@ -934,20 +934,23 @@ This section documents a production-grade audit of the POS checkout flow.
 4. Export handlers are placeholders
 5. CSV exports return empty data
 
-**Security Issues - Status Update (Jan 30, 2026):**
+**Security Issues - ALL RESOLVED (Jan 30, 2026):**
 
 | Issue | Status |
 |-------|--------|
 | Auth token in localStorage | ✅ **FIXED** - httpOnly cookies in `auth.rs` |
 | No CSRF protection | ✅ **FIXED** - Double-submit pattern in `csrf.rs` |
-| Default webhook secret fallback | ⚠️ Still present in `webhooks.rs:47` |
-| Dynamic SQL without validation | ⚠️ Needs allowlist validation |
-| Legacy axios clients | ⚠️ `syncApi.ts`, `settingsApi.ts` still use localStorage |
+| Default webhook secret fallback | ✅ **FIXED** - Returns error if env var missing |
+| Dynamic SQL without validation | ✅ **FIXED** - Match allowlist pattern in `sync_queue_processor.rs:545-555` |
+| Legacy axios clients | ✅ **FIXED** - Migrated to `withCredentials: true` + CSRF |
 
-**New Implementations Verified:**
+**All Security Implementations Verified:**
 - `backend/crates/server/src/middleware/csrf.rs` - 363 lines, full CSRF middleware
+- `backend/crates/server/src/handlers/webhooks.rs` - Webhook secrets fail if not configured
+- `backend/crates/server/src/services/sync_queue_processor.rs` - Entity allowlist validation
 - `docs/api/openapi.yaml` - 7,695 lines, 200+ endpoints documented
 - `frontend/src/common/utils/apiClient.ts` - Uses `credentials: 'include'` + CSRF headers
+- `frontend/src/services/*.ts` - Migrated to `withCredentials: true` + CSRF
 
 **Code Quality Issues:**
 - 8 files with console.log in production review components

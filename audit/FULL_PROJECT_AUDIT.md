@@ -309,20 +309,20 @@ From `DEVELOPMENT_LOG.md`:
 | 1 | Auth token in localStorage | `AuthContext.tsx` | ✅ **FIXED** - httpOnly cookies implemented |
 | 2 | No CSRF protection | API layer | ✅ **FIXED** - Double-submit cookie pattern in `csrf.rs` |
 
-### Medium Severity
+### Medium Severity - FIXED
 
 | # | Issue | File | Status |
 |---|-------|------|--------|
-| 3 | Default webhook secret fallback | `webhooks.rs:47` | ⚠️ Still present |
-| 4 | Dynamic SQL table names | `sync_queue_processor.rs:557` | ⚠️ Needs allowlist validation |
+| 3 | Default webhook secret fallback | `webhooks.rs` | ✅ **FIXED** - Returns error if env var missing |
+| 4 | Dynamic SQL table names | `sync_queue_processor.rs:545-555` | ✅ **FIXED** - Uses match allowlist pattern |
+| 5 | Legacy axios clients use localStorage | `syncApi.ts`, `settingsApi.ts`, etc. | ✅ **FIXED** - Migrated to `withCredentials: true` |
 
 ### Low Severity
 
 | # | Issue | File | Fix |
 |---|-------|------|-----|
-| 5 | Input validation consistency | Various | Audit all input points |
-| 6 | Dynamic column names in UPDATE | `work_order.rs:304` | Validate column names |
-| 7 | Legacy axios clients use localStorage | `syncApi.ts`, `settingsApi.ts`, etc. | Migrate to apiClient.ts |
+| 6 | Input validation consistency | Various | Audit all input points |
+| 7 | Dynamic column names in UPDATE | `work_order.rs:304` | Validate column names |
 
 ### Security Implementations Verified (Jan 30, 2026)
 
@@ -340,6 +340,21 @@ From `DEVELOPMENT_LOG.md`:
 **OpenAPI Specification:**
 - `docs/api/openapi.yaml` - 7,695 lines documenting 200+ endpoints
 - Includes authentication, schemas, and all API tags
+
+**Webhook Security (Verified Jan 30, 2026):**
+- `webhooks.rs:46-47` - `WOOCOMMERCE_WEBHOOK_SECRET` returns error if not configured
+- `webhooks.rs:245-246` - `QUICKBOOKS_WEBHOOK_VERIFIER` returns error if not configured
+- No default/fallback secrets - fails securely
+
+**Dynamic SQL Security (Verified Jan 30, 2026):**
+- `sync_queue_processor.rs:545-555` - Uses match statement as allowlist
+- Only accepts: "customer", "product", "order", "invoice"
+- Returns error for unknown entity types
+
+**Legacy Axios Clients (Verified Jan 30, 2026):**
+- `syncApi.ts`, `settingsApi.ts`, `brandingApi.ts` migrated to `withCredentials: true`
+- CSRF token support added to state-changing requests
+- No longer use `localStorage.getItem('auth_token')`
 
 ---
 

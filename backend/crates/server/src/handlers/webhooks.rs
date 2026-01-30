@@ -42,9 +42,9 @@ pub async fn handle_woocommerce_webhook(
         .and_then(|v| v.to_str().ok())
         .ok_or_else(|| ApiError::unauthorized("Missing webhook signature"))?;
     
-    // Get webhook secret from environment or database
+    // Get webhook secret from environment - REQUIRED for security
     let webhook_secret = std::env::var("WOOCOMMERCE_WEBHOOK_SECRET")
-        .unwrap_or_else(|_| "default_secret".to_string());
+        .map_err(|_| ApiError::internal("WOOCOMMERCE_WEBHOOK_SECRET environment variable not configured"))?;
     
     // Validate signature (HMAC-SHA256)
     let is_valid = validate_signature(&body, signature, &webhook_secret)
@@ -241,9 +241,9 @@ pub async fn handle_quickbooks_webhook(
         .and_then(|v| v.to_str().ok())
         .ok_or_else(|| ApiError::unauthorized("Missing intuit-signature header"))?;
     
-    // Get webhook verifier token from environment or database
+    // Get webhook verifier token from environment - REQUIRED for security
     let verifier_token = std::env::var("QUICKBOOKS_WEBHOOK_VERIFIER")
-        .unwrap_or_else(|_| "default_verifier".to_string());
+        .map_err(|_| ApiError::internal("QUICKBOOKS_WEBHOOK_VERIFIER environment variable not configured"))?;
     
     // Validate signature (HMAC-SHA256)
     let is_valid = validate_qb_signature(&body, signature, &verifier_token)
@@ -476,9 +476,9 @@ async fn handle_cloudevents_format(
         .and_then(|v| v.to_str().ok())
         .ok_or_else(|| ApiError::unauthorized("Missing intuit-signature header"))?;
     
-    // Get webhook verifier token from environment or database
+    // Get webhook verifier token from environment - REQUIRED for security
     let verifier_token = std::env::var("QUICKBOOKS_WEBHOOK_VERIFIER")
-        .unwrap_or_else(|_| "default_verifier".to_string());
+        .map_err(|_| ApiError::internal("QUICKBOOKS_WEBHOOK_VERIFIER environment variable not configured"))?;
     
     // Validate signature (HMAC-SHA256)
     let is_valid = validate_cloudevents_signature(&body, signature, &verifier_token)
@@ -657,30 +657,61 @@ pub struct WebhookConfig {
 
 /// Get webhook configuration for tenant
 pub async fn get_webhook_config(
-    _pool: web::Data<SqlitePool>,
-    _tenant_id: web::ReqData<String>,
+    pool: web::Data<SqlitePool>,
+    user_ctx: web::ReqData<crate::models::UserContext>,
 ) -> Result<HttpResponse, ApiError> {
-    // TODO: Implement database storage for webhook configs
-    let config = WebhookConfig {
-        enabled: true,
-        secret: "***".to_string(), // Never return actual secret
-    };
+    let tenant_id = &user_ctx.tenant_id;
     
-    Ok(HttpResponse::Ok().json(config))
+    // Query webhook config from database
+    let config = sqlx::query_as::<_, (bool, String)>(
+        "SELECT enabled, '***' as secret FROM webhook_configs WHERE tenant_id = ?"
+    )
+    .bind(tenant_id)
+    .fetch_optional(pool.get_ref())
+    .await
+    .map_err(|e| ApiError::internal(format!("Database error: {}", e)))?;
+    
+    let (enabled, secret) = config.unwrap_or((false, "***".to_string()));
+    
+    Ok(HttpResponse::Ok().json(WebhookConfig {
+        enabled,
+        secret, // Never return actual secret
+    }))
 }
 
 /// Update webhook configuration
 pub async fn update_webhook_config(
-    _pool: web::Data<SqlitePool>,
-    _tenant_id: web::ReqData<String>,
+    pool: web::Data<SqlitePool>,
+    user_ctx: web::ReqData<crate::models::UserContext>,
     config: web::Json<WebhookConfig>,
 ) -> Result<HttpResponse, ApiError> {
-    // TODO: Implement database storage for webhook configs
-    // For now, just validate the input
+    let tenant_id = &user_ctx.tenant_id;
     
     if config.secret.is_empty() {
         return Err(ApiError::validation_msg("Webhook secret cannot be empty"));
     }
+    
+    // Hash the secret before storing using SHA256
+    use sha2::{Sha256, Digest};
+    let mut hasher = Sha256::new();
+    hasher.update(config.secret.as_bytes());
+    let secret_hash = format!("{:x}", hasher.finalize());
+    
+    // Upsert webhook config
+    sqlx::query(
+        "INSERT INTO webhook_configs (tenant_id, enabled, secret_hash, updated_at)
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(tenant_id) DO UPDATE SET
+         enabled = excluded.enabled,
+         secret_hash = excluded.secret_hash,
+         updated_at = CURRENT_TIMESTAMP"
+    )
+    .bind(tenant_id)
+    .bind(config.enabled)
+    .bind(&secret_hash)
+    .execute(pool.get_ref())
+    .await
+    .map_err(|e| ApiError::internal(format!("Failed to save webhook config: {}", e)))?;
     
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "status": "success",

@@ -636,57 +636,294 @@ impl SyncQueueProcessor {
         Ok(())
     }
 
-    async fn create_product(&self, item: &SyncQueueItem, _payload: &Value) -> Result<(), SyncError> {
-        // TODO: Implement product creation logic
-        tracing::debug!("Creating product {}", item.entity_id);
+    async fn create_product(&self, item: &SyncQueueItem, payload: &Value) -> Result<(), SyncError> {
+        let sku = payload.get("sku").and_then(|v| v.as_str()).unwrap_or("");
+        let name = payload.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let description = payload.get("description").and_then(|v| v.as_str()).unwrap_or("");
+        let category = payload.get("category").and_then(|v| v.as_str()).unwrap_or("");
+        let unit_price = payload.get("unit_price").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let cost = payload.get("cost").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let quantity = payload.get("quantity_on_hand").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let barcode = payload.get("barcode").and_then(|v| v.as_str()).unwrap_or("");
+        let tenant_id = payload.get("tenant_id").and_then(|v| v.as_str()).unwrap_or(&item.tenant_id);
+        let store_id = payload.get("store_id").and_then(|v| v.as_str()).unwrap_or(&item.store_id);
+        
+        sqlx::query(
+            r"INSERT INTO products (id, sku, name, description, category, unit_price, cost, quantity_on_hand, barcode, tenant_id, store_id, is_active, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))"
+        )
+        .bind(&item.entity_id)
+        .bind(sku)
+        .bind(name)
+        .bind(description)
+        .bind(category)
+        .bind(unit_price)
+        .bind(cost)
+        .bind(quantity)
+        .bind(barcode)
+        .bind(tenant_id)
+        .bind(store_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error creating product: {}", e),
+        })?;
+        
+        tracing::info!("Created product {} (SKU: {})", item.entity_id, sku);
         Ok(())
     }
 
-    async fn update_product(&self, item: &SyncQueueItem, _payload: &Value) -> Result<(), SyncError> {
-        // TODO: Implement product update logic
-        tracing::debug!("Updating product {}", item.entity_id);
+    async fn update_product(&self, item: &SyncQueueItem, payload: &Value) -> Result<(), SyncError> {
+        let sku = payload.get("sku").and_then(|v| v.as_str()).unwrap_or("");
+        let name = payload.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let description = payload.get("description").and_then(|v| v.as_str()).unwrap_or("");
+        let category = payload.get("category").and_then(|v| v.as_str()).unwrap_or("");
+        let unit_price = payload.get("unit_price").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let cost = payload.get("cost").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let quantity = payload.get("quantity_on_hand").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let barcode = payload.get("barcode").and_then(|v| v.as_str()).unwrap_or("");
+        
+        sqlx::query(
+            r"UPDATE products SET sku = ?, name = ?, description = ?, category = ?, unit_price = ?, cost = ?, quantity_on_hand = ?, barcode = ?, updated_at = datetime('now'), sync_version = sync_version + 1
+              WHERE id = ?"
+        )
+        .bind(sku)
+        .bind(name)
+        .bind(description)
+        .bind(category)
+        .bind(unit_price)
+        .bind(cost)
+        .bind(quantity)
+        .bind(barcode)
+        .bind(&item.entity_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error updating product: {}", e),
+        })?;
+        
+        tracing::info!("Updated product {} (SKU: {})", item.entity_id, sku);
         Ok(())
     }
 
     async fn delete_product(&self, item: &SyncQueueItem) -> Result<(), SyncError> {
-        // TODO: Implement product deletion logic (soft delete)
-        tracing::debug!("Deleting product {}", item.entity_id);
+        // Soft delete - set deleted_at timestamp
+        sqlx::query(
+            "UPDATE products SET deleted_at = datetime('now'), is_active = 0, updated_at = datetime('now') WHERE id = ?"
+        )
+        .bind(&item.entity_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error deleting product: {}", e),
+        })?;
+        
+        tracing::info!("Soft-deleted product {}", item.entity_id);
         Ok(())
     }
 
-    async fn create_order(&self, item: &SyncQueueItem, _payload: &Value) -> Result<(), SyncError> {
-        // TODO: Implement order creation logic
-        tracing::debug!("Creating order {}", item.entity_id);
+    async fn create_order(&self, item: &SyncQueueItem, payload: &Value) -> Result<(), SyncError> {
+        let customer_id = payload.get("customer_id").and_then(|v| v.as_str());
+        let status = payload.get("status").and_then(|v| v.as_str()).unwrap_or("pending");
+        let subtotal = payload.get("subtotal").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let tax = payload.get("tax").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let total = payload.get("total").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let payment_method = payload.get("payment_method").and_then(|v| v.as_str()).unwrap_or("cash");
+        let tenant_id = payload.get("tenant_id").and_then(|v| v.as_str()).unwrap_or(&item.tenant_id);
+        let store_id = payload.get("store_id").and_then(|v| v.as_str()).unwrap_or(&item.store_id);
+        
+        sqlx::query(
+            r"INSERT INTO orders (id, customer_id, status, subtotal, tax, total, payment_method, tenant_id, store_id, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))"
+        )
+        .bind(&item.entity_id)
+        .bind(customer_id)
+        .bind(status)
+        .bind(subtotal)
+        .bind(tax)
+        .bind(total)
+        .bind(payment_method)
+        .bind(tenant_id)
+        .bind(store_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error creating order: {}", e),
+        })?;
+        
+        // Process order line items if present
+        if let Some(items) = payload.get("items").and_then(|v| v.as_array()) {
+            for (idx, line_item) in items.iter().enumerate() {
+                let line_id = format!("{}-{}", item.entity_id, idx);
+                let product_id = line_item.get("product_id").and_then(|v| v.as_str()).unwrap_or("");
+                let quantity = line_item.get("quantity").and_then(|v| v.as_f64()).unwrap_or(1.0);
+                let unit_price = line_item.get("unit_price").and_then(|v| v.as_f64()).unwrap_or(0.0);
+                let line_total = line_item.get("total").and_then(|v| v.as_f64()).unwrap_or(quantity * unit_price);
+                
+                sqlx::query(
+                    r"INSERT INTO order_items (id, order_id, product_id, quantity, unit_price, total, created_at)
+                      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))"
+                )
+                .bind(&line_id)
+                .bind(&item.entity_id)
+                .bind(product_id)
+                .bind(quantity)
+                .bind(unit_price)
+                .bind(line_total)
+                .execute(&self.db)
+                .await
+                .map_err(|e| SyncError {
+                    entity_type: item.entity_type.clone(),
+                    entity_id: item.entity_id.clone(),
+                    error_message: format!("Database error creating order item: {}", e),
+                })?;
+            }
+        }
+        
+        tracing::info!("Created order {} with status {}", item.entity_id, status);
         Ok(())
     }
 
-    async fn update_order(&self, item: &SyncQueueItem, _payload: &Value) -> Result<(), SyncError> {
-        // TODO: Implement order update logic
-        tracing::debug!("Updating order {}", item.entity_id);
+    async fn update_order(&self, item: &SyncQueueItem, payload: &Value) -> Result<(), SyncError> {
+        let status = payload.get("status").and_then(|v| v.as_str()).unwrap_or("pending");
+        let subtotal = payload.get("subtotal").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let tax = payload.get("tax").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let total = payload.get("total").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let payment_method = payload.get("payment_method").and_then(|v| v.as_str()).unwrap_or("cash");
+        
+        sqlx::query(
+            r"UPDATE orders SET status = ?, subtotal = ?, tax = ?, total = ?, payment_method = ?, updated_at = datetime('now'), sync_version = COALESCE(sync_version, 0) + 1
+              WHERE id = ?"
+        )
+        .bind(status)
+        .bind(subtotal)
+        .bind(tax)
+        .bind(total)
+        .bind(payment_method)
+        .bind(&item.entity_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error updating order: {}", e),
+        })?;
+        
+        tracing::info!("Updated order {} to status {}", item.entity_id, status);
         Ok(())
     }
 
     async fn delete_order(&self, item: &SyncQueueItem) -> Result<(), SyncError> {
-        // TODO: Implement order deletion logic (soft delete)
-        tracing::debug!("Deleting order {}", item.entity_id);
+        // Soft delete - set deleted_at timestamp
+        sqlx::query(
+            "UPDATE orders SET deleted_at = datetime('now'), status = 'cancelled', updated_at = datetime('now') WHERE id = ?"
+        )
+        .bind(&item.entity_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error deleting order: {}", e),
+        })?;
+        
+        tracing::info!("Soft-deleted order {}", item.entity_id);
         Ok(())
     }
 
-    async fn create_invoice(&self, item: &SyncQueueItem, _payload: &Value) -> Result<(), SyncError> {
-        // TODO: Implement invoice creation logic
-        tracing::debug!("Creating invoice {}", item.entity_id);
+    async fn create_invoice(&self, item: &SyncQueueItem, payload: &Value) -> Result<(), SyncError> {
+        let invoice_number = payload.get("invoice_number").and_then(|v| v.as_str()).unwrap_or("");
+        let customer_id = payload.get("customer_id").and_then(|v| v.as_str());
+        let order_id = payload.get("order_id").and_then(|v| v.as_str());
+        let status = payload.get("status").and_then(|v| v.as_str()).unwrap_or("draft");
+        let subtotal = payload.get("subtotal").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let tax = payload.get("tax").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let total = payload.get("total").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let due_date = payload.get("due_date").and_then(|v| v.as_str());
+        let tenant_id = payload.get("tenant_id").and_then(|v| v.as_str()).unwrap_or(&item.tenant_id);
+        let store_id = payload.get("store_id").and_then(|v| v.as_str()).unwrap_or(&item.store_id);
+        
+        sqlx::query(
+            r"INSERT INTO invoices (id, invoice_number, customer_id, order_id, status, subtotal, tax, total, due_date, tenant_id, store_id, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))"
+        )
+        .bind(&item.entity_id)
+        .bind(invoice_number)
+        .bind(customer_id)
+        .bind(order_id)
+        .bind(status)
+        .bind(subtotal)
+        .bind(tax)
+        .bind(total)
+        .bind(due_date)
+        .bind(tenant_id)
+        .bind(store_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error creating invoice: {}", e),
+        })?;
+        
+        tracing::info!("Created invoice {} (number: {})", item.entity_id, invoice_number);
         Ok(())
     }
 
-    async fn update_invoice(&self, item: &SyncQueueItem, _payload: &Value) -> Result<(), SyncError> {
-        // TODO: Implement invoice update logic
-        tracing::debug!("Updating invoice {}", item.entity_id);
+    async fn update_invoice(&self, item: &SyncQueueItem, payload: &Value) -> Result<(), SyncError> {
+        let status = payload.get("status").and_then(|v| v.as_str()).unwrap_or("draft");
+        let subtotal = payload.get("subtotal").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let tax = payload.get("tax").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let total = payload.get("total").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let due_date = payload.get("due_date").and_then(|v| v.as_str());
+        let paid_at = payload.get("paid_at").and_then(|v| v.as_str());
+        
+        sqlx::query(
+            r"UPDATE invoices SET status = ?, subtotal = ?, tax = ?, total = ?, due_date = ?, paid_at = ?, updated_at = datetime('now'), sync_version = COALESCE(sync_version, 0) + 1
+              WHERE id = ?"
+        )
+        .bind(status)
+        .bind(subtotal)
+        .bind(tax)
+        .bind(total)
+        .bind(due_date)
+        .bind(paid_at)
+        .bind(&item.entity_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error updating invoice: {}", e),
+        })?;
+        
+        tracing::info!("Updated invoice {} to status {}", item.entity_id, status);
         Ok(())
     }
 
     async fn delete_invoice(&self, item: &SyncQueueItem) -> Result<(), SyncError> {
-        // TODO: Implement invoice deletion logic (soft delete)
-        tracing::debug!("Deleting invoice {}", item.entity_id);
+        // Soft delete - set deleted_at timestamp and void status
+        sqlx::query(
+            "UPDATE invoices SET deleted_at = datetime('now'), status = 'voided', updated_at = datetime('now') WHERE id = ?"
+        )
+        .bind(&item.entity_id)
+        .execute(&self.db)
+        .await
+        .map_err(|e| SyncError {
+            entity_type: item.entity_type.clone(),
+            entity_id: item.entity_id.clone(),
+            error_message: format!("Database error deleting invoice: {}", e),
+        })?;
+        
+        tracing::info!("Soft-deleted (voided) invoice {}", item.entity_id);
         Ok(())
     }
 }

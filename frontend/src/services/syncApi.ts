@@ -14,21 +14,40 @@ function getApiBaseUrl(): string {
   return `http://${hostname}:8923`;
 }
 
+/**
+ * Get CSRF token from cookie for state-changing requests
+ */
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrf_token') {
+      return decodeURIComponent(value);
+    }
+  }
+  return null;
+}
+
 const API_BASE_URL = getApiBaseUrl();
 
-// Create axios instance with auth token
+// Create axios instance with httpOnly cookie support
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include httpOnly cookies for authentication
 });
 
-// Add auth token to requests
+// Add CSRF token to state-changing requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const method = (config.method || 'get').toUpperCase();
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
   }
   return config;
 });
@@ -211,13 +230,38 @@ export const syncApi = {
   // Trigger sync
   triggerSync: async (entity: string, request: SyncTriggerRequest): Promise<SyncStatus> => {
     const response = await api.post(`/api/sync/${entity}`, request);
-    return response.data;
+    // Transform snake_case backend response to camelCase frontend format
+    const data = response.data;
+    return {
+      syncId: data.sync_id || data.syncId,
+      entity: data.entity,
+      mode: data.mode,
+      status: data.status === 'queued' ? 'pending' : data.status,
+      startedAt: data.started_at || data.startedAt,
+      completedAt: data.completed_at || data.completedAt,
+      recordsProcessed: data.records_processed || data.recordsProcessed || 0,
+      recordsFailed: data.records_failed || data.recordsFailed || 0,
+      errors: data.errors,
+    };
   },
 
   // Get sync status
   getSyncStatus: async (): Promise<SyncStatus[]> => {
     const response = await api.get('/api/sync/status');
-    return response.data;
+    // Transform snake_case backend response to camelCase frontend format
+    const data = response.data;
+    const syncRuns = data.sync_runs || data.syncRuns || data || [];
+    return syncRuns.map((run: Record<string, unknown>) => ({
+      syncId: run.sync_id || run.syncId || '',
+      entity: run.entity_type || run.entity || '',
+      mode: run.mode || 'incremental',
+      status: run.status || 'pending',
+      startedAt: run.started_at || run.startedAt || '',
+      completedAt: run.ended_at || run.completedAt,
+      recordsProcessed: Number(run.records_completed || run.recordsProcessed || 0),
+      recordsFailed: Number(run.records_failed || run.recordsFailed || 0),
+      errors: run.errors as string[] | undefined,
+    }));
   },
 
   // Get specific sync details
@@ -936,6 +980,52 @@ export const syncApi = {
     }>;
   }> => {
     const response = await api.get('/api/sync/circuit-breaker/status');
+    return response.data;
+  },
+
+  // ============================================================================
+  // Failed Records Extended API (Sync Monitoring UI - Task 1.2)
+  // ============================================================================
+
+  /**
+   * Get detailed information for a single failed record including payload
+   * Validates: Requirements 4.3, 12.4
+   */
+  getFailedRecordDetails: async (id: number): Promise<{
+    id: number;
+    entity: string;
+    sourceId: string;
+    errorMessage: string;
+    retryCount: number;
+    maxRetries: number;
+    nextRetryAt?: string;
+    lastAttemptAt: string;
+    createdAt: string;
+    payload?: unknown;
+    retryHistory?: Array<{
+      attemptedAt: string;
+      errorMessage: string;
+    }>;
+  }> => {
+    const response = await api.get(`/api/sync/failures/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Acknowledge (ignore) a single failed record - removes from active queue without retry
+   * Validates: Requirements 12.3
+   */
+  acknowledgeFailedRecord: async (id: number): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post(`/api/sync/failures/${id}/acknowledge`);
+    return response.data;
+  },
+
+  /**
+   * Acknowledge (ignore) multiple failed records in bulk
+   * Validates: Requirements 12.3
+   */
+  acknowledgeFailedRecords: async (ids: number[]): Promise<{ success: boolean; message: string; count: number }> => {
+    const response = await api.post('/api/sync/failures/acknowledge', { ids });
     return response.data;
   },
 };
