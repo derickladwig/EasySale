@@ -206,7 +206,7 @@ README_MASTER.md
 README_VNEXT.md
 
 # Root CHECKLISTS.md (duplicate of spec/CHECKLISTS.md)
-CHECKLISTS.md
+/CHECKLISTS.md
 
 # Workspace files
 *.code-workspace
