@@ -11,7 +11,7 @@
  */
 
 // Build variant from environment (set at build time)
-export const BUILD_VARIANT = import.meta.env.VITE_BUILD_VARIANT || 'full';
+export const BUILD_VARIANT = import.meta.env.VITE_BUILD_VARIANT || 'export';
 
 // Variant detection helpers
 export const IS_LITE_MODE = BUILD_VARIANT === 'lite';

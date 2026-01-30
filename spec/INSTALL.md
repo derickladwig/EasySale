@@ -185,9 +185,9 @@ start-dev.bat
 ### Step 5: View Logs
 
 ```powershell
-docker-compose -p EasySale logs -f           # All services
-docker-compose -p EasySale logs -f backend   # Backend only
-docker-compose -p EasySale logs -f frontend  # Frontend only
+docker-compose -p easysale logs -f           # All services
+docker-compose -p easysale logs -f backend   # Backend only
+docker-compose -p easysale logs -f frontend  # Frontend only
 ```
 
 ### Step 6: Stop Development Environment
@@ -323,7 +323,7 @@ openssl rand -base64 32
 | `Docker is not running!` | Start Docker Desktop, wait for "Docker Desktop is running" |
 | `Cannot connect to Docker daemon` | Restart Docker Desktop, check WSL 2 backend |
 | `Image build fails with network error` | Check Docker Desktop network settings, try `docker system prune` |
-| `Container exits immediately` | Check logs: `docker-compose -p EasySale logs backend` |
+| `Container exits immediately` | Check logs: `docker-compose -p easysale logs backend` |
 
 ### Node/Rust Issues
 

@@ -557,3 +557,76 @@ if password.len() < 8 {
 | TODO comments | ~40 | ℹ️ Tracked |
 
 *Last Updated: 2026-01-30 (Session 7 - Code Quality Audit Response)*
+
+## Session 8 Fixes (2026-01-30 - Docker Project Name Fix)
+
+### Docker Project Name Invalid (BREAKING FIX)
+
+**Issue:** Docker Compose requires project names to be lowercase alphanumeric with hyphens/underscores only. The project was using `EasySale` (uppercase S) which caused:
+```
+invalid project name "EasySale": must consist only of lowercase alphanumeric characters, hyphens, and underscores
+```
+
+**Files Modified (active scripts):**
+- `build-prod.bat` - Changed `-p EasySale` to `-p easysale`
+- `build-prod.sh` - Changed `-p EasySale` to `-p easysale`
+- `build-dev.bat` - Changed `-p EasySale` to `-p easysale`
+- `start-prod.bat` - Changed `-p EasySale` to `-p easysale`
+- `start-dev.bat` - Changed `-p EasySale` to `-p easysale`
+- `stop-prod.bat` - Changed `-p EasySale` to `-p easysale`
+- `stop-dev.bat` - Changed `-p EasySale` to `-p easysale`
+- `update-prod.bat` - Changed `-p EasySale` to `-p easysale`
+- `update-dev.bat` - Changed `-p EasySale` to `-p easysale`
+- `docker-clean.bat` - Changed `-p EasySale` to `-p easysale`
+- `docker-stop.bat` - Changed `-p EasySale` to `-p easysale`
+- `docker-stop.sh` - Changed `-p EasySale` to `-p easysale`
+- `docker-start.sh` - Changed `-p EasySale` to `-p easysale`
+
+**Documentation Updated:**
+- `docs/RUNBOOK.md`
+- `docs/INSTALL.md`
+- `docs/DEPLOYMENT_WINDOWS.md`
+- `docs/deployment/DOCKER_BUILD_INSTRUCTIONS.md`
+- `docs/deployment/WINDOWS_DEPLOYMENT_QUICK_START.md`
+- `spec/INSTALL.md`
+
+**Not Modified (per archive policy):**
+- Files in `archive/` directory - preserved for history
+- Files in `docs/split-build/` - historical documentation
+
+**Impact:** Docker builds should now succeed. Users with existing containers may need to run `docker-clean.bat` first to remove old `EasySale` project resources.
+
+*Last Updated: 2026-01-30 (Session 8 - Docker Project Name Fix)*
+
+## Session 9 Fixes (2026-01-30 - Build Variant Defaults)
+
+### Build Variant Defaults Aligned to Documentation
+
+**Issue:** The three build systems had inconsistent defaults that didn't match documentation (which specifies `export` as the default variant).
+
+**Files Modified:**
+
+1. **Dockerfile.backend** (lines 28-32)
+   - Before: Built with no features if `FEATURES` not specified
+   - After: Defaults to `--features "export"` when `FEATURES` is empty
+
+2. **backend/crates/server/Cargo.toml** (line 18)
+   - Before: `default = ["document-processing"]`
+   - After: `default = ["export"]`
+
+3. **frontend/vite.config.ts** (line 82)
+   - Before: `VITE_BUILD_VARIANT || 'full'`
+   - After: `VITE_BUILD_VARIANT || 'export'`
+
+4. **frontend/src/common/utils/buildVariant.ts** (line 14)
+   - Before: `import.meta.env.VITE_BUILD_VARIANT || 'full'`
+   - After: `import.meta.env.VITE_BUILD_VARIANT || 'export'`
+   - Note: Comment on line 9 already correctly documented `export` as default
+
+**Verification:**
+- ✅ Backend compiles successfully with new default
+- ✅ All three systems now default to `export` variant
+
+**Impact:** Builds without explicit feature flags will now produce the `export` variant (core POS + CSV export), matching documentation.
+
+*Last Updated: 2026-01-30 (Session 9 - Build Variant Defaults)*

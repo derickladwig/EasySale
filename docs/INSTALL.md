@@ -237,23 +237,23 @@ For development with hot-reload:
 
 ```bash
 # Start development containers
-docker-compose -p EasySale up --build
+docker-compose -p easysale up --build
 
 # Or in detached mode
-docker-compose -p EasySale up -d --build
+docker-compose -p easysale up -d --build
 
 # View logs
-docker-compose -p EasySale logs -f
+docker-compose -p easysale logs -f
 
 # Stop
-docker-compose -p EasySale down
+docker-compose -p easysale down
 ```
 
 ### Storybook (Optional)
 
 ```bash
 # Start with Storybook profile
-docker-compose -p EasySale --profile storybook up --build
+docker-compose -p easysale --profile storybook up --build
 ```
 
 Access Storybook at http://localhost:7946

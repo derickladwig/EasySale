@@ -15,7 +15,7 @@ name = "migrate-snapshots"
 path = "src/bin/migrate-snapshots.rs"
 
 [features]
-default = ["document-processing"]
+default = ["export"]
 
 # Document processing (PDF, images) - gates heavy deps
 document-processing = ["dep:image", "dep:lopdf", "dep:pdfium-render"]
