@@ -2,13 +2,30 @@
 // Supports PDF rasterization, image loading, and multi-page handling
 
 use crate::models::{InputArtifact, PageArtifact};
+use image::{DynamicImage, ImageBuffer, Rgba};
 use lopdf::Document as PdfDocument;
+use pdfium_render::prelude::*;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::Read;
+use std::sync::OnceLock;
 use thiserror::Error;
 use uuid::Uuid;
+
+/// Global Pdfium instance (loaded once, reused)
+static PDFIUM: OnceLock<Option<Pdfium>> = OnceLock::new();
+
+/// Get or initialize the Pdfium library
+fn get_pdfium() -> Option<&'static Pdfium> {
+    PDFIUM.get_or_init(|| {
+        // Try to bind to system pdfium library
+        Pdfium::bind_to_system_library()
+            .or_else(|_| Pdfium::bind_to_library("pdfium"))
+            .or_else(|_| Pdfium::bind_to_library("libpdfium"))
+            .ok()
+    }).as_ref()
+}
 
 /// Errors that can occur during document ingestion
 #[derive(Debug, Error)]
@@ -135,31 +152,50 @@ impl DocumentIngestService {
         file_path: &Path,
         input_artifact: &InputArtifact,
     ) -> Result<Vec<PageArtifact>, IngestError> {
-        // Load the PDF document
+        // Ensure storage directory exists
+        fs::create_dir_all(&self.config.storage_dir)?;
+
+        // Load the PDF document with lopdf for text extraction
         let doc = PdfDocument::load(file_path)
             .map_err(|e| IngestError::Pdf(format!("Failed to load PDF: {}", e)))?;
 
         let page_count = doc.get_pages().len();
         let mut page_artifacts = Vec::with_capacity(page_count);
 
+        // Try to use pdfium for rasterization
+        let pdfium = get_pdfium();
+        let pdfium_doc = pdfium.and_then(|p| {
+            p.load_pdf_from_file(file_path, None).ok()
+        });
+
         // Process each page
         for (page_num, _page_id) in doc.get_pages().iter().enumerate() {
             let page_number = (page_num + 1) as u32;
 
-            // Extract text layer from this page
+            // Extract text layer from this page using lopdf
             let text_layer = self.extract_text_from_page(&doc, page_num + 1)?;
 
             // Calculate confidence score based on text quality
             let text_confidence = Self::calculate_text_confidence(&text_layer);
 
-            // For now, we'll create a placeholder image path
-            // TODO: Implement actual PDF rasterization in a future task
             let artifact_id = format!("page-{}", Uuid::new_v4());
             let image_filename = format!("{}.png", artifact_id);
             let image_path = self.config.storage_dir.join(&image_filename);
 
-            // Ensure storage directory exists
-            fs::create_dir_all(&self.config.storage_dir)?;
+            // Rasterize the page to an image
+            let rasterization_success = if let Some(ref pdfium_doc) = pdfium_doc {
+                self.rasterize_pdf_page(pdfium_doc, page_num, &image_path)
+                    .map_err(|e| tracing::warn!("PDF rasterization failed for page {}: {}", page_number, e))
+                    .is_ok()
+            } else {
+                tracing::warn!("Pdfium not available, creating placeholder for page {}", page_number);
+                false
+            };
+
+            // If rasterization failed, create a placeholder image
+            if !rasterization_success {
+                self.create_placeholder_image(&image_path, page_number)?;
+            }
 
             // Create page artifact with text layer
             let page_artifact = PageArtifact::new(
@@ -168,7 +204,7 @@ impl DocumentIngestService {
                 page_number,
                 self.config.default_dpi,
                 0, // No rotation initially
-                text_confidence, // Use text confidence as rotation score for now
+                text_confidence,
                 image_path.to_string_lossy().to_string(),
                 if text_layer.is_empty() {
                     None
@@ -181,6 +217,56 @@ impl DocumentIngestService {
         }
 
         Ok(page_artifacts)
+    }
+
+    /// Rasterize a single PDF page to an image using pdfium
+    fn rasterize_pdf_page(
+        &self,
+        doc: &PdfiumDocument,
+        page_index: usize,
+        output_path: &Path,
+    ) -> Result<(), IngestError> {
+        let page = doc.pages().get(page_index as u16)
+            .map_err(|e| IngestError::Pdf(format!("Failed to get page {}: {}", page_index + 1, e)))?;
+
+        // Calculate render dimensions based on DPI
+        let dpi = self.config.default_dpi as f32;
+        let scale = dpi / 72.0; // PDF points are 1/72 inch
+
+        let width = (page.width().value * scale) as i32;
+        let height = (page.height().value * scale) as i32;
+
+        // Render the page to a bitmap
+        let bitmap = page.render_with_config(&PdfRenderConfig::new()
+            .set_target_width(width)
+            .set_target_height(height)
+            .render_form_data(true)
+            .render_annotations(true))
+            .map_err(|e| IngestError::Pdf(format!("Failed to render page: {}", e)))?;
+
+        // Convert to image and save
+        let img = bitmap.as_image();
+        img.save(output_path)
+            .map_err(|e| IngestError::Image(e))?;
+
+        Ok(())
+    }
+
+    /// Create a placeholder image when PDF rasterization is not available
+    fn create_placeholder_image(&self, output_path: &Path, page_number: u32) -> Result<(), IngestError> {
+        // Create a simple gray placeholder image with page number text
+        let width = 612; // Standard letter width at 72 DPI
+        let height = 792; // Standard letter height at 72 DPI
+
+        let img: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_fn(width, height, |_x, _y| {
+            Rgba([240, 240, 240, 255]) // Light gray background
+        });
+
+        let dynamic_img = DynamicImage::ImageRgba8(img);
+        dynamic_img.save(output_path)?;
+
+        tracing::info!("Created placeholder image for page {} at {:?}", page_number, output_path);
+        Ok(())
     }
 
     /// Extract text from a specific PDF page

@@ -18,7 +18,7 @@ path = "src/bin/migrate-snapshots.rs"
 default = ["document-processing"]
 
 # Document processing (PDF, images) - gates heavy deps
-document-processing = ["dep:image", "dep:lopdf"]
+document-processing = ["dep:image", "dep:lopdf", "dep:pdfium-render"]
 
 # OCR and image enhancement - requires document-processing
 ocr = ["document-processing", "dep:imageproc"]
@@ -140,6 +140,9 @@ imageproc = { workspace = true, optional = true }
 
 # PDF processing for text layer extraction (optional - feature-gated)
 lopdf = { workspace = true, optional = true }
+
+# PDF rendering for rasterization to images (optional - feature-gated)
+pdfium-render = { workspace = true, optional = true }
 
 # Email sending (optional - feature-gated)
 lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "tokio1-rustls-tls", "builder"], optional = true }

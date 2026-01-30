@@ -855,4 +855,87 @@ export const syncApi = {
     const response = await api.get(`/api/payments/orders/${orderId}/payment`);
     return response.data;
   },
+
+  // ============================================================================
+  // Notification Settings API
+  // ============================================================================
+
+  /**
+   * Get notification configurations
+   */
+  getNotificationConfigs: async (): Promise<Array<{
+    id: string;
+    tenant_id: string;
+    notification_type: 'email' | 'slack' | 'webhook';
+    enabled: boolean;
+    config: unknown;
+    filters: {
+      min_severity: string;
+      connectors?: string[];
+      entity_types?: string[];
+      error_types?: string[];
+    };
+  }>> => {
+    const response = await api.get('/api/notifications/config');
+    return response.data || [];
+  },
+
+  /**
+   * Create notification configuration
+   */
+  createNotificationConfig: async (config: unknown): Promise<{ id: string; success: boolean }> => {
+    const response = await api.post('/api/notifications/config', config);
+    return { id: response.data.id, success: true };
+  },
+
+  /**
+   * Delete notification configuration
+   */
+  deleteNotificationConfig: async (id: string): Promise<{ success: boolean }> => {
+    await api.delete(`/api/notifications/config/${id}`);
+    return { success: true };
+  },
+
+  /**
+   * Test notification configuration
+   */
+  testNotificationConfig: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post(`/api/notifications/config/${id}/test`);
+    return response.data;
+  },
+
+  /**
+   * Get notification history
+   */
+  getNotificationHistory: async (): Promise<Array<{
+    id: string;
+    event_type: string;
+    severity: string;
+    title: string;
+    message: string;
+    sent_at: string;
+    success: boolean;
+    error_message?: string;
+  }>> => {
+    const response = await api.get('/api/notifications/history');
+    return response.data.history || [];
+  },
+
+  // ============================================================================
+  // Circuit Breaker Status API (Phase 6 - Task 7.2)
+  // ============================================================================
+
+  /**
+   * Get circuit breaker status for all connectors
+   */
+  getCircuitBreakerStatus: async (): Promise<{
+    connectors: Array<{
+      connector_id: string;
+      state: string;
+      is_open: boolean;
+    }>;
+  }> => {
+    const response = await api.get('/api/sync/circuit-breaker/status');
+    return response.data;
+  },
 };

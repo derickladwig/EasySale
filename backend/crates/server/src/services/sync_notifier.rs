@@ -367,11 +367,18 @@ impl SyncNotifier {
     }
 
     /// Send email notification
+    #[cfg(feature = "notifications")]
     async fn send_email(
         &self,
         config: &NotificationConfig,
         event: &NotificationEvent,
     ) -> Result<(), String> {
+        use lettre::{
+            message::{header::ContentType, Mailbox, MultiPart, SinglePart},
+            transport::smtp::authentication::Credentials,
+            AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
+        };
+
         if let NotificationChannelConfig::Email {
             smtp_host,
             smtp_port,
@@ -381,23 +388,195 @@ impl SyncNotifier {
             to_addresses,
         } = &config.config
         {
-            // TODO: Implement actual email sending using lettre crate
-            // For now, log the notification
-            tracing::info!(
-                "Email notification: {} -> {:?}\nSubject: {}\nBody: {}",
-                from_address,
-                to_addresses,
-                event.title,
-                event.message
-            );
+            // Build HTML email body
+            let html_body = self.build_email_html(event);
+            let plain_body = self.build_email_plain(event);
 
-            // Placeholder for actual implementation
-            let _ = (smtp_host, smtp_port, smtp_username, smtp_password);
+            // Parse from address
+            let from_mailbox: Mailbox = from_address
+                .parse()
+                .map_err(|e| format!("Invalid from address: {}", e))?;
+
+            // Build message for each recipient
+            for to_address in to_addresses {
+                let to_mailbox: Mailbox = to_address
+                    .parse()
+                    .map_err(|e| format!("Invalid to address {}: {}", to_address, e))?;
+
+                let email = Message::builder()
+                    .from(from_mailbox.clone())
+                    .to(to_mailbox)
+                    .subject(&event.title)
+                    .multipart(
+                        MultiPart::alternative()
+                            .singlepart(
+                                SinglePart::builder()
+                                    .header(ContentType::TEXT_PLAIN)
+                                    .body(plain_body.clone()),
+                            )
+                            .singlepart(
+                                SinglePart::builder()
+                                    .header(ContentType::TEXT_HTML)
+                                    .body(html_body.clone()),
+                            ),
+                    )
+                    .map_err(|e| format!("Failed to build email: {}", e))?;
+
+                // Create SMTP transport
+                let creds = Credentials::new(smtp_username.clone(), smtp_password.clone());
+
+                let mailer: AsyncSmtpTransport<Tokio1Executor> =
+                    AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(smtp_host)
+                        .map_err(|e| format!("Failed to create SMTP transport: {}", e))?
+                        .port(*smtp_port)
+                        .credentials(creds)
+                        .build();
+
+                // Send email
+                mailer
+                    .send(email)
+                    .await
+                    .map_err(|e| format!("Failed to send email to {}: {}", to_address, e))?;
+
+                tracing::info!("Email notification sent to {}: {}", to_address, event.title);
+            }
 
             Ok(())
         } else {
             Err("Invalid email configuration".to_string())
         }
+    }
+
+    /// Send email notification (stub when notifications feature disabled)
+    #[cfg(not(feature = "notifications"))]
+    async fn send_email(
+        &self,
+        config: &NotificationConfig,
+        event: &NotificationEvent,
+    ) -> Result<(), String> {
+        if let NotificationChannelConfig::Email {
+            from_address,
+            to_addresses,
+            ..
+        } = &config.config
+        {
+            tracing::info!(
+                "Email notification (feature disabled): {} -> {:?}\nSubject: {}\nBody: {}",
+                from_address,
+                to_addresses,
+                event.title,
+                event.message
+            );
+            Ok(())
+        } else {
+            Err("Invalid email configuration".to_string())
+        }
+    }
+
+    /// Build HTML email body
+    fn build_email_html(&self, event: &NotificationEvent) -> String {
+        let severity_color = match event.severity {
+            NotificationSeverity::Info => "#36a64f",
+            NotificationSeverity::Warning => "#ff9900",
+            NotificationSeverity::Error => "#ff0000",
+            NotificationSeverity::Critical => "#8b0000",
+        };
+
+        let actions_html = if event.suggested_actions.is_empty() {
+            String::new()
+        } else {
+            let actions_list: String = event
+                .suggested_actions
+                .iter()
+                .map(|a| format!("<li>{}</li>", a))
+                .collect();
+            format!(
+                r#"<div style="margin-top: 16px;">
+                    <strong>Suggested Actions:</strong>
+                    <ul style="margin: 8px 0; padding-left: 20px;">{}</ul>
+                </div>"#,
+                actions_list
+            )
+        };
+
+        let details_html = if event.details.is_empty() {
+            String::new()
+        } else {
+            let details_rows: String = event
+                .details
+                .iter()
+                .map(|(k, v)| format!("<tr><td style=\"padding: 4px 8px; font-weight: bold;\">{}</td><td style=\"padding: 4px 8px;\">{}</td></tr>", k, v))
+                .collect();
+            format!(
+                r#"<div style="margin-top: 16px;">
+                    <strong>Details:</strong>
+                    <table style="margin-top: 8px; border-collapse: collapse;">{}</table>
+                </div>"#,
+                details_rows
+            )
+        };
+
+        format!(
+            r#"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{title}</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
+    <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="background: {color}; color: white; padding: 16px 24px;">
+            <h1 style="margin: 0; font-size: 20px;">{title}</h1>
+            <p style="margin: 4px 0 0; opacity: 0.9; font-size: 14px;">{severity:?} • {timestamp}</p>
+        </div>
+        <div style="padding: 24px;">
+            <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.5;">{message}</p>
+            {details}
+            {actions}
+        </div>
+        <div style="background: #f9f9f9; padding: 16px 24px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+            <p style="margin: 0;">This notification was sent by EasySale Sync Monitor.</p>
+        </div>
+    </div>
+</body>
+</html>"#,
+            title = event.title,
+            color = severity_color,
+            severity = event.severity,
+            timestamp = event.timestamp,
+            message = event.message,
+            details = details_html,
+            actions = actions_html,
+        )
+    }
+
+    /// Build plain text email body
+    fn build_email_plain(&self, event: &NotificationEvent) -> String {
+        let mut body = format!(
+            "{}\n{}\n\nSeverity: {:?}\nTimestamp: {}\n\n{}\n",
+            event.title,
+            "=".repeat(event.title.len()),
+            event.severity,
+            event.timestamp,
+            event.message
+        );
+
+        if !event.details.is_empty() {
+            body.push_str("\nDetails:\n");
+            for (key, value) in &event.details {
+                body.push_str(&format!("  {}: {}\n", key, value));
+            }
+        }
+
+        if !event.suggested_actions.is_empty() {
+            body.push_str("\nSuggested Actions:\n");
+            for (i, action) in event.suggested_actions.iter().enumerate() {
+                body.push_str(&format!("  {}. {}\n", i + 1, action));
+            }
+        }
+
+        body.push_str("\n--\nEasySale Sync Monitor\n");
+        body
     }
 
     /// Send Slack notification

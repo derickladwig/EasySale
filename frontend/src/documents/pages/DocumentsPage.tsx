@@ -126,12 +126,12 @@ export const DocumentsPage: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-background-primary">
       {/* Header */}
-      <div className="p-6 bg-surface-base border-b border-border">
+      <div className="p-6 bg-surface-base border-b border-border-default">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-white">Documents</h1>
+          <h1 className="text-2xl font-bold text-text-primary">Documents</h1>
           <button
             onClick={handleUploadClick}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-primary-500 text-text-inverse rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
           >
             <Upload className="w-5 h-5" />
             Upload
@@ -159,7 +159,7 @@ export const DocumentsPage: React.FC = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-surface-base border-b border-border">
+      <div className="bg-surface-base border-b border-border-default">
         <div className="px-6">
           <div className="flex gap-4">
             <button
@@ -195,7 +195,7 @@ export const DocumentsPage: React.FC = () => {
         {activeTab === 'documents' ? (
           <div className="h-full flex flex-col">
             {/* Filters - Requirement 1.5 */}
-            <div className="p-4 bg-surface-base border-b border-border">
+            <div className="p-4 bg-surface-base border-b border-border-default">
               <DocumentFilters
                 filters={filters}
                 onFilterChange={handleFilterChange}
@@ -213,7 +213,7 @@ export const DocumentsPage: React.FC = () => {
                     <p className="text-text-tertiary text-sm mb-4">{getErrorMessage(error)}</p>
                     <button
                       onClick={() => window.location.reload()}
-                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                      className="px-4 py-2 bg-primary-500 text-text-inverse rounded-lg hover:bg-primary-600"
                     >
                       Retry
                     </button>

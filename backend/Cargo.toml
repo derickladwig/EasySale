@@ -97,6 +97,9 @@ imageproc = "0.23"
 # PDF processing for text layer extraction (optional - used by document processing features)
 lopdf = "0.32"
 
+# PDF rendering for rasterization to images (optional - used by document processing features)
+pdfium-render = "0.8"
+
 # Platform-specific disk space APIs (Windows)
 winapi = { version = "0.3", features = ["fileapi", "winbase"] }
 

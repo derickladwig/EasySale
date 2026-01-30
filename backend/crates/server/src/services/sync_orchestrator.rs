@@ -618,12 +618,10 @@ impl SyncOrchestrator {
                 self.sync_woo_orders_to_qbo(&flow, sync_id, options, result).await?;
             }
             "customers" => {
-                tracing::info!("Customer sync not yet implemented for WooCommerce → QuickBooks");
-                // TODO: Implement customer sync
+                self.sync_woo_customers_to_qbo(&flow, tenant_id, sync_id, options, result).await?;
             }
             "products" => {
-                tracing::info!("Product sync not yet implemented for WooCommerce → QuickBooks");
-                // TODO: Implement product sync
+                self.sync_woo_products_to_qbo(&flow, tenant_id, sync_id, options, result).await?;
             }
             _ => {
                 return Err(format!("Unsupported entity type: {}", entity_type));
@@ -746,6 +744,240 @@ impl SyncOrchestrator {
         }
 
         tracing::info!("Completed order sync: {} total orders fetched", total_fetched);
+        Ok(())
+    }
+
+    /// Sync WooCommerce customers to QuickBooks
+    async fn sync_woo_customers_to_qbo(
+        &self,
+        flow: &WooToQboFlow,
+        tenant_id: &str,
+        sync_id: &str,
+        options: &SyncOptions,
+        result: &mut SyncResult,
+    ) -> Result<(), String> {
+        use crate::connectors::woocommerce::customers::CustomerQuery;
+        use futures_util::stream::{self, StreamExt};
+        
+        let mut page = 1;
+        let mut total_fetched = 0;
+        let concurrency_limit = 5;
+        
+        loop {
+            let query = CustomerQuery {
+                per_page: Some(100),
+                page: Some(page),
+                search: None,
+                email: None,
+                role: None,
+                order_by: Some("registered_date".to_string()),
+                order: Some("desc".to_string()),
+            };
+
+            let customers = flow.woo_client()
+                .get_customers(query)
+                .await
+                .map_err(|e| format!("Failed to fetch WooCommerce customers (page {}): {}", page, e))?;
+
+            if customers.is_empty() {
+                tracing::info!("No more customers to fetch (page {})", page);
+                break;
+            }
+
+            total_fetched += customers.len();
+            tracing::info!("Fetched {} customers from WooCommerce (page {}, total: {})", customers.len(), page, total_fetched);
+
+            if options.dry_run {
+                result.records_processed += customers.len();
+                tracing::info!("DRY RUN: Would sync {} customers", customers.len());
+                page += 1;
+                continue;
+            }
+
+            // Process customers in parallel
+            let sync_results: Vec<_> = stream::iter(customers)
+                .map(|woo_customer| {
+                    let flow_ref = flow;
+                    let customer_id = woo_customer.id;
+                    async move {
+                        (customer_id, flow_ref.sync_customer(tenant_id, customer_id, false).await)
+                    }
+                })
+                .buffer_unordered(concurrency_limit)
+                .collect()
+                .await;
+
+            // Aggregate results
+            let mut last_customer_id = String::new();
+            for (customer_id, sync_result) in sync_results {
+                last_customer_id = customer_id.to_string();
+                result.records_processed += 1;
+                match sync_result {
+                    Ok(customer_result) => {
+                        match customer_result.action.as_str() {
+                            "created" => result.records_created += 1,
+                            "linked" => result.records_updated += 1,
+                            _ => {}
+                        }
+                        tracing::info!(
+                            "Successfully synced customer {} to QuickBooks (QBO ID: {:?}, action: {})",
+                            customer_result.customer_id,
+                            customer_result.qbo_id,
+                            customer_result.action
+                        );
+                    }
+                    Err(e) => {
+                        result.records_failed += 1;
+                        result.errors.push(SyncError {
+                            entity_type: "customer".to_string(),
+                            entity_id: customer_id.to_string(),
+                            error_message: e.clone(),
+                        });
+                        tracing::error!("Failed to sync customer {}: {}", customer_id, e);
+                    }
+                }
+            }
+
+            // Store resume checkpoint
+            if !last_customer_id.is_empty() {
+                if let Err(e) = self.store_resume_checkpoint(sync_id, "customer", &last_customer_id, page).await {
+                    tracing::warn!("Failed to store resume checkpoint: {}", e);
+                }
+            }
+
+            // Update progress
+            if let Err(e) = self.update_sync_progress(
+                sync_id,
+                result.records_processed,
+                result.records_created,
+                result.records_failed,
+            ).await {
+                tracing::warn!("Failed to update sync progress: {}", e);
+            }
+
+            page += 1;
+        }
+
+        tracing::info!("Completed customer sync: {} total customers fetched", total_fetched);
+        Ok(())
+    }
+
+    /// Sync WooCommerce products to QuickBooks
+    async fn sync_woo_products_to_qbo(
+        &self,
+        flow: &WooToQboFlow,
+        tenant_id: &str,
+        sync_id: &str,
+        options: &SyncOptions,
+        result: &mut SyncResult,
+    ) -> Result<(), String> {
+        use crate::connectors::woocommerce::products::{ProductQuery, ProductStatus};
+        use futures_util::stream::{self, StreamExt};
+        
+        let mut page = 1;
+        let mut total_fetched = 0;
+        let concurrency_limit = 5;
+        
+        loop {
+            let query = ProductQuery {
+                per_page: Some(100),
+                page: Some(page),
+                search: None,
+                sku: None,
+                status: Some(vec![ProductStatus::Publish]),
+                product_type: None,
+                category: None,
+                tag: None,
+                modified_after: options.date_range.as_ref().map(|dr| dr.start.clone()),
+                order_by: Some("date".to_string()),
+                order: Some("desc".to_string()),
+            };
+
+            let products = flow.woo_client()
+                .get_products(query)
+                .await
+                .map_err(|e| format!("Failed to fetch WooCommerce products (page {}): {}", page, e))?;
+
+            if products.is_empty() {
+                tracing::info!("No more products to fetch (page {})", page);
+                break;
+            }
+
+            total_fetched += products.len();
+            tracing::info!("Fetched {} products from WooCommerce (page {}, total: {})", products.len(), page, total_fetched);
+
+            if options.dry_run {
+                result.records_processed += products.len();
+                tracing::info!("DRY RUN: Would sync {} products", products.len());
+                page += 1;
+                continue;
+            }
+
+            // Process products in parallel
+            let sync_results: Vec<_> = stream::iter(products)
+                .map(|woo_product| {
+                    let flow_ref = flow;
+                    let product_id = woo_product.id;
+                    async move {
+                        (product_id, flow_ref.sync_product(tenant_id, product_id, false).await)
+                    }
+                })
+                .buffer_unordered(concurrency_limit)
+                .collect()
+                .await;
+
+            // Aggregate results
+            let mut last_product_id = String::new();
+            for (product_id, sync_result) in sync_results {
+                last_product_id = product_id.to_string();
+                result.records_processed += 1;
+                match sync_result {
+                    Ok(product_result) => {
+                        match product_result.action.as_str() {
+                            "created" => result.records_created += 1,
+                            "linked" => result.records_updated += 1,
+                            _ => {}
+                        }
+                        tracing::info!(
+                            "Successfully synced product {} to QuickBooks (QBO ID: {:?}, action: {})",
+                            product_result.product_id,
+                            product_result.qbo_id,
+                            product_result.action
+                        );
+                    }
+                    Err(e) => {
+                        result.records_failed += 1;
+                        result.errors.push(SyncError {
+                            entity_type: "product".to_string(),
+                            entity_id: product_id.to_string(),
+                            error_message: e.clone(),
+                        });
+                        tracing::error!("Failed to sync product {}: {}", product_id, e);
+                    }
+                }
+            }
+
+            // Store resume checkpoint
+            if !last_product_id.is_empty() {
+                if let Err(e) = self.store_resume_checkpoint(sync_id, "product", &last_product_id, page).await {
+                    tracing::warn!("Failed to store resume checkpoint: {}", e);
+                }
+            }
+
+            // Update progress
+            if let Err(e) = self.update_sync_progress(
+                sync_id,
+                result.records_processed,
+                result.records_created,
+                result.records_failed,
+            ).await {
+                tracing::warn!("Failed to update sync progress: {}", e);
+            }
+
+            page += 1;
+        }
+
+        tracing::info!("Completed product sync: {} total products fetched", total_fetched);
         Ok(())
     }
 

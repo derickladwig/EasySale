@@ -127,6 +127,10 @@ export const LazySyncDashboardPage = lazyWithFallback(
   () => import('../settings/pages/SyncDashboardPage').then(m => ({ default: m.SyncDashboardPage }))
 );
 
+export const LazyNotificationSettingsPage = lazyWithFallback(
+  () => import('../settings/pages/NotificationSettingsPage').then(m => ({ default: m.NotificationSettingsPage }))
+);
+
 // ============================================================================
 // Reporting & Analytics
 // ============================================================================

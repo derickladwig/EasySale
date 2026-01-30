@@ -10,3 +10,4 @@ export { TaxRulesPage } from './TaxRulesPage';
 export { CompanyStoresPage } from './CompanyStoresPage';
 export { SyncDashboardPage } from './SyncDashboardPage';
 export { MyPreferencesPage } from './MyPreferencesPage';
+export { NotificationSettingsPage } from './NotificationSettingsPage';

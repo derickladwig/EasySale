@@ -539,6 +539,7 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::sync_operations::list_failures)
             .service(handlers::sync_operations::check_confirmation_requirement)
             .service(handlers::sync_operations::execute_confirmed_operation)
+            .service(handlers::sync_operations::get_circuit_breaker_status)
             // Dev-only endpoints (gated by profile - not registered in prod)
             // Task 9.4: Dev/debug/setup endpoint gating
             // Option A: Don't register dev endpoints in prod profile
@@ -899,6 +900,13 @@ async fn main() -> std::io::Result<()> {
             .configure(handlers::unit_conversion::configure)
             // Theme operations (theme preferences with scope resolution)
             .configure(handlers::theme::configure)
+            // Notification settings (email, Slack, webhook alerts) - feature-gated: notifications
+            .configure(|_cfg| {
+                #[cfg(feature = "notifications")]
+                {
+                    handlers::notifications::configure(_cfg);
+                }
+            })
             // Note: Network configuration routes are registered BEFORE ContextExtractor
             // to allow access during setup wizard without authentication
     })

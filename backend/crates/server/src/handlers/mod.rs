@@ -100,6 +100,13 @@ pub mod oauth_management;
 pub mod branding_assets;
 
 // ============================================================================
+// NOTIFICATION HANDLERS (feature-gated: notifications)
+// ============================================================================
+
+#[cfg(feature = "notifications")]
+pub mod notifications;
+
+// ============================================================================
 // DOCUMENT PROCESSING HANDLERS (feature-gated: document-processing)
 // ============================================================================
 

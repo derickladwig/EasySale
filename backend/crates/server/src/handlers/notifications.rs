@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use uuid::Uuid;
 
-use crate::services::sync_notifier::{
+use crate::services::{
     NotificationChannelConfig, NotificationConfig, NotificationEvent, NotificationFilters,
     NotificationSeverity, NotificationType, SyncNotifier,
 };
@@ -62,14 +62,32 @@ pub struct NotificationHistoryQuery {
 /// Configure notification routes
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        web::scope("/notifications")
-            .route("/configs", web::get().to(list_configs))
-            .route("/configs", web::post().to(create_config))
-            .route("/configs/{id}", web::put().to(update_config))
-            .route("/configs/{id}", web::delete().to(delete_config))
+        web::scope("/api/notifications")
+            .route("/config", web::get().to(list_configs))
+            .route("/config", web::post().to(create_config))
+            .route("/config/{id}", web::put().to(update_config))
+            .route("/config/{id}", web::delete().to(delete_config))
+            .route("/config/{id}/test", web::post().to(test_notification_by_id))
             .route("/test", web::post().to(test_notification))
             .route("/history", web::get().to(get_history))
     );
+}
+
+/// POST /api/notifications/config/{id}/test
+/// Test notification configuration by ID
+pub async fn test_notification_by_id(
+    tenant_id: web::ReqData<String>,
+    pool: web::Data<SqlitePool>,
+    config_id: web::Path<String>,
+) -> Result<HttpResponse> {
+    test_notification(
+        tenant_id,
+        pool,
+        web::Json(TestNotificationRequest {
+            config_id: config_id.into_inner(),
+        }),
+    )
+    .await
 }
 
 /// GET /api/notifications/configs

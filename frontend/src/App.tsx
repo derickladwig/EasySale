@@ -54,6 +54,7 @@ import {
   LazyTaxRulesPage,
   LazyCompanyStoresPage,
   LazySyncDashboardPage,
+  LazyNotificationSettingsPage,
   LazyReviewPage,
   LazyReviewCaseDetailPage,
   LazyTemplateManagerPage,
@@ -289,6 +290,7 @@ function App() {
                             {ENABLE_EXPORTS && <Route path="exports" element={<LazyExportsPage />} />}
                             <Route path="capabilities" element={<LazyCapabilitiesDashboardPage />} />
                             <Route path="health" element={<LazySyncDashboardPage />} />
+                            <Route path="notifications" element={<LazyNotificationSettingsPage />} />
                             <Route path="advanced" element={<LazyFeatureFlagsPage />} />
                             {/* Hardware and Network settings under advanced */}
                             <Route path="hardware" element={<LazyHardwarePage />} />

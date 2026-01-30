@@ -42,6 +42,8 @@ pub mod sync_orchestrator;
 pub mod sync_scheduler;
 pub mod sync_logger;
 pub mod sync_queue_processor;
+#[cfg(feature = "notifications")]
+pub mod sync_notifier;
 pub mod tenant_resolver;
 pub mod unit_conversion_service;
 pub mod variant_service;
@@ -172,6 +174,17 @@ pub use variant_service::VariantService;
 pub use branding_asset_service::{BrandingAssetService, AssetType, CropRegion, BrandingAsset, UploadResult, BrandingAssetError};
 #[cfg(feature = "document-processing")]
 pub use vendor_service::VendorService;
+
+// ============================================================================
+// RE-EXPORTS: NOTIFICATION SERVICES (feature-gated: notifications)
+// ============================================================================
+
+#[cfg(feature = "notifications")]
+#[allow(unused_imports)]
+pub use sync_notifier::{
+    SyncNotifier, NotificationConfig, NotificationChannelConfig, NotificationFilters,
+    NotificationEvent, NotificationSeverity, NotificationType,
+};
 
 // ============================================================================
 // RE-EXPORTS: DOCUMENT PROCESSING (feature-gated)

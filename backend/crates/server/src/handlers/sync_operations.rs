@@ -1043,3 +1043,45 @@ pub struct ExecuteConfirmedRequest {
 pub struct SetSandboxRequest {
     pub enabled: bool,
 }
+
+// ============================================================================
+// Circuit Breaker Status Endpoint (Phase 6 - Task 7.2)
+// ============================================================================
+
+/// Circuit breaker status response
+#[derive(Serialize)]
+pub struct CircuitBreakerStatusResponse {
+    pub connectors: Vec<ConnectorCircuitStatus>,
+}
+
+#[derive(Serialize)]
+pub struct ConnectorCircuitStatus {
+    pub connector_id: String,
+    pub state: String,
+    pub is_open: bool,
+}
+
+/// GET /api/sync/circuit-breaker/status
+/// Get circuit breaker status for all connectors
+#[get("/api/sync/circuit-breaker/status")]
+pub async fn get_circuit_breaker_status(
+    orchestrator: web::Data<Arc<SyncOrchestrator>>,
+) -> impl Responder {
+    tracing::info!("Getting circuit breaker status");
+
+    let status_map = orchestrator.get_circuit_breaker_status().await;
+    
+    let connectors: Vec<ConnectorCircuitStatus> = status_map
+        .into_iter()
+        .map(|(connector_id, state)| {
+            let is_open = state.starts_with("open");
+            ConnectorCircuitStatus {
+                connector_id,
+                state,
+                is_open,
+            }
+        })
+        .collect();
+
+    HttpResponse::Ok().json(CircuitBreakerStatusResponse { connectors })
+}

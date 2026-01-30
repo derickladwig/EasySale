@@ -355,6 +355,256 @@ impl WooToQboFlow {
             .unwrap_or_default()
             .to_string())
     }
+
+    /// Sync a single customer from WooCommerce to QuickBooks
+    pub async fn sync_customer(
+        &self,
+        tenant_id: &str,
+        customer_id: i64,
+        dry_run: bool,
+    ) -> Result<SyncCustomerResult, String> {
+        // 1. Fetch WooCommerce customer
+        let woo_customer = self.woo_client
+            .get_customer(customer_id)
+            .await
+            .map_err(|e| format!("Failed to fetch WooCommerce customer: {}", e))?;
+
+        let email = woo_customer.email.clone();
+
+        if dry_run {
+            return Ok(SyncCustomerResult {
+                customer_id: customer_id.to_string(),
+                action: "preview".to_string(),
+                qbo_id: None,
+                email,
+            });
+        }
+
+        // 2. Check if mapping already exists
+        if let Some(qbo_id) = self.id_mapper.get_mapping(
+            tenant_id,
+            "woocommerce",
+            "customer",
+            &email,
+            "quickbooks",
+        ).await? {
+            return Ok(SyncCustomerResult {
+                customer_id: customer_id.to_string(),
+                action: "skipped".to_string(),
+                qbo_id: Some(qbo_id),
+                email,
+            });
+        }
+
+        // 3. Search for existing customer in QuickBooks by email
+        if let Ok(Some(existing)) = self.qbo_client.query_customer_by_email(&email).await {
+            if let Some(id) = existing.id {
+                // Store mapping for existing customer
+                self.id_mapper.store_mapping(
+                    tenant_id,
+                    "woocommerce",
+                    "customer",
+                    &email,
+                    "quickbooks",
+                    "customer",
+                    &id,
+                ).await?;
+
+                return Ok(SyncCustomerResult {
+                    customer_id: customer_id.to_string(),
+                    action: "linked".to_string(),
+                    qbo_id: Some(id),
+                    email,
+                });
+            }
+        }
+
+        // 4. Transform WooCommerce customer to internal format
+        let internal_customer = WooCommerceTransformers::customer_to_internal(&woo_customer)
+            .map_err(|e| format!("Failed to transform customer: {}", e))?;
+
+        // 5. Transform to QuickBooks customer
+        let qbo_customer = QuickBooksTransformers::internal_customer_to_qbo(&internal_customer)
+            .map_err(|e| format!("Failed to transform to QBO customer: {}", e))?;
+
+        // 6. Create customer in QuickBooks
+        let created = self.qbo_client.create_customer(&qbo_customer)
+            .await
+            .map_err(|e| format!("Failed to create QuickBooks customer: {}", e))?;
+
+        let qbo_id = created.id.clone();
+
+        // 7. Store mapping
+        if let Some(ref id) = qbo_id {
+            self.id_mapper.store_mapping(
+                tenant_id,
+                "woocommerce",
+                "customer",
+                &email,
+                "quickbooks",
+                "customer",
+                id,
+            ).await?;
+        }
+
+        Ok(SyncCustomerResult {
+            customer_id: customer_id.to_string(),
+            action: "created".to_string(),
+            qbo_id,
+            email,
+        })
+    }
+
+    /// Sync a single product from WooCommerce to QuickBooks
+    pub async fn sync_product(
+        &self,
+        tenant_id: &str,
+        product_id: i64,
+        dry_run: bool,
+    ) -> Result<SyncProductResult, String> {
+        // 1. Fetch WooCommerce product
+        let woo_product = self.woo_client
+            .get_product(product_id)
+            .await
+            .map_err(|e| format!("Failed to fetch WooCommerce product: {}", e))?;
+
+        let sku = if woo_product.sku.is_empty() {
+            format!("WOO-{}", product_id)
+        } else {
+            woo_product.sku.clone()
+        };
+
+        if dry_run {
+            return Ok(SyncProductResult {
+                product_id: product_id.to_string(),
+                action: "preview".to_string(),
+                qbo_id: None,
+                sku,
+            });
+        }
+
+        // 2. Check if mapping already exists
+        if let Some(qbo_id) = self.id_mapper.get_mapping(
+            tenant_id,
+            "woocommerce",
+            "product",
+            &sku,
+            "quickbooks",
+        ).await? {
+            return Ok(SyncProductResult {
+                product_id: product_id.to_string(),
+                action: "skipped".to_string(),
+                qbo_id: Some(qbo_id),
+                sku,
+            });
+        }
+
+        // 3. Search for existing item in QuickBooks by SKU
+        if let Ok(Some(existing)) = self.qbo_client.query_item_by_sku(&sku).await {
+            if let Some(id) = existing.id {
+                // Store mapping for existing item
+                self.id_mapper.store_mapping(
+                    tenant_id,
+                    "woocommerce",
+                    "product",
+                    &sku,
+                    "quickbooks",
+                    "item",
+                    &id,
+                ).await?;
+
+                return Ok(SyncProductResult {
+                    product_id: product_id.to_string(),
+                    action: "linked".to_string(),
+                    qbo_id: Some(id),
+                    sku,
+                });
+            }
+        }
+
+        // 4. Transform WooCommerce product to QuickBooks item
+        use crate::connectors::quickbooks::item::{QBItem, AccountRef};
+
+        let price: f64 = woo_product.price.parse().unwrap_or(0.0);
+
+        let qbo_item = QBItem {
+            id: None,
+            sync_token: None,
+            name: woo_product.name.clone(),
+            sku: Some(sku.clone()),
+            item_type: if woo_product.manage_stock {
+                "Inventory".to_string()
+            } else {
+                "NonInventory".to_string()
+            },
+            description: if woo_product.short_description.is_empty() {
+                None
+            } else {
+                Some(woo_product.short_description.clone())
+            },
+            active: Some(woo_product.status == "publish"),
+            unit_price: Some(price),
+            purchase_cost: {
+                let cost: Option<f64> = woo_product.regular_price.parse().ok();
+                cost
+            },
+            qty_on_hand: woo_product.stock_quantity.map(|q| q as f64),
+            inv_start_date: if woo_product.manage_stock {
+                Some(chrono::Utc::now().format("%Y-%m-%d").to_string())
+            } else {
+                None
+            },
+            income_account_ref: AccountRef {
+                value: "79".to_string(),  // Default sales income account
+                name: Some("Sales".to_string()),
+            },
+            expense_account_ref: if woo_product.manage_stock {
+                Some(AccountRef {
+                    value: "80".to_string(),  // Default COGS account
+                    name: Some("Cost of Goods Sold".to_string()),
+                })
+            } else {
+                None
+            },
+            asset_account_ref: if woo_product.manage_stock {
+                Some(AccountRef {
+                    value: "81".to_string(),  // Default inventory asset account
+                    name: Some("Inventory Asset".to_string()),
+                })
+            } else {
+                None
+            },
+            track_qty_on_hand: Some(woo_product.manage_stock),
+            meta_data: None,
+        };
+
+        // 5. Create item in QuickBooks
+        let created = self.qbo_client.create_item(&qbo_item)
+            .await
+            .map_err(|e| format!("Failed to create QuickBooks item: {}", e))?;
+
+        let qbo_id = created.id.clone();
+
+        // 6. Store mapping
+        if let Some(ref id) = qbo_id {
+            self.id_mapper.store_mapping(
+                tenant_id,
+                "woocommerce",
+                "product",
+                &sku,
+                "quickbooks",
+                "item",
+                id,
+            ).await?;
+        }
+
+        Ok(SyncProductResult {
+            product_id: product_id.to_string(),
+            action: "created".to_string(),
+            qbo_id,
+            sku,
+        })
+    }
 }
 
 /// Sync order result
@@ -365,6 +615,24 @@ pub struct SyncOrderResult {
     pub qbo_id: Option<String>,
     pub customer_created: bool,
     pub items_created: usize,
+}
+
+/// Sync customer result
+#[derive(Debug, Clone)]
+pub struct SyncCustomerResult {
+    pub customer_id: String,
+    pub action: String,
+    pub qbo_id: Option<String>,
+    pub email: String,
+}
+
+/// Sync product result
+#[derive(Debug, Clone)]
+pub struct SyncProductResult {
+    pub product_id: String,
+    pub action: String,
+    pub qbo_id: Option<String>,
+    pub sku: String,
 }
 
 #[cfg(test)]
