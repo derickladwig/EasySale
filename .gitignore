@@ -173,7 +173,7 @@ volumes/
 # to show the development process and journey
 
 # Internal folders (excluded)
-audit/
+# audit/      <- INCLUDED for hackathon (shows audit process)
 sync/
 backup/
 .agents/
