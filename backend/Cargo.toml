@@ -107,7 +107,7 @@ winapi = { version = "0.3", features = ["fileapi", "winbase"] }
 nix = { version = "0.27", features = ["fs"] }
 
 # Pin home crate to avoid edition 2024 requirement
-home = "=0.5.5"
+home = "=0.5.12"
 
 # Dev dependencies
 actix-rt = "2.9"
