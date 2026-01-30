@@ -1,18 +1,27 @@
 # Theming, Branding, and CSS Audit Report
 
 **Date:** January 30, 2026  
-**Status:** Audit Complete - Implementation Pending  
+**Status:** P0 Complete, P1 Mostly Complete - P2/P3 Pending  
 **Priority:** High (Affects white-label capability and UX consistency)
 
 ---
 
 ## Executive Summary
 
-This audit identifies **200+ issues** across the codebase related to:
+This audit identified **200+ issues** across the codebase related to:
 - Hardcoded colors outside the theme system
 - Missing dark mode support
 - Hardcoded brand names ("EasySale")
 - Inconsistent theming approaches
+
+### P0 Fixes Applied (2026-01-30)
+
+| Issue | File | Status |
+|-------|------|--------|
+| LoginPage hardcoded colors | `LoginPage.tsx` | ✅ Fixed - Uses `--login-*` CSS vars |
+| Hardcoded "EasySale" brand | Multiple wizard files | ✅ Fixed - Uses `brandConfig` |
+| BrandingSettingsPage TODO | `BrandingSettingsPage.tsx` | ✅ Fixed - Uses `useConfig()` |
+| ErrorBoundary no dark mode | `ErrorBoundary.tsx` | ✅ Fixed - Uses semantic tokens |
 
 ---
 
@@ -271,21 +280,21 @@ getCurrentTheme(): ThemeConfig {
 
 ## Priority Fix List
 
-### P0 - Critical (Blocks white-label)
+### P0 - Critical (Blocks white-label) — ✅ COMPLETED
 
-| # | Issue | File | Lines | Effort |
+| # | Issue | File | Lines | Status |
 |---|-------|------|-------|--------|
-| 1 | LoginPage hardcoded colors | `LoginPage.tsx` | 50+ | High |
-| 2 | Hardcoded "EasySale" brand | Multiple | 10+ | Low |
-| 3 | BrandingSettingsPage TODO | `BrandingSettingsPage.tsx` | 446 | Low |
+| 1 | LoginPage hardcoded colors | `LoginPage.tsx` | 50+ | ✅ Fixed |
+| 2 | Hardcoded "EasySale" brand | Multiple | 10+ | ✅ Fixed |
+| 3 | BrandingSettingsPage TODO | `BrandingSettingsPage.tsx` | 446 | ✅ Fixed |
 
 ### P1 - High (Degrades UX)
 
-| # | Issue | File | Lines | Effort |
+| # | Issue | File | Lines | Status |
 |---|-------|------|-------|--------|
-| 4 | ErrorBoundary no dark mode | `ErrorBoundary.tsx` | 76-103 | Medium |
-| 5 | SetupWizard hardcoded colors | `SetupWizard.module.css` | 6 | Low |
-| 6 | Missing theme toggle on login | `LoginPage.tsx` | - | Medium |
+| 4 | ErrorBoundary no dark mode | `ErrorBoundary.tsx` | 76-103 | ✅ Fixed |
+| 5 | SetupWizard hardcoded colors | `SetupWizard.module.css` | 6 | ✅ Fixed |
+| 6 | Missing theme toggle on login | `LoginPage.tsx` | - | Pending |
 
 ### P2 - Medium (Inconsistent)
 
@@ -379,6 +388,349 @@ Add to `frontend/src/styles/tokens.css`:
 | Config integration gaps | 3 | P0-P2 |
 
 **Total estimated effort:** 3-5 days for full remediation
+
+---
+
+## Implementation Roadmap (Step-by-Step)
+
+### Phase 1: Add Theme Toggle to Login (P1 #6)
+
+**Goal:** Allow users to switch dark/light theme before logging in.
+
+#### Step 1.1: Create ThemeToggle Component
+**File to create:** `frontend/src/common/components/atoms/ThemeToggle.tsx`
+
+```tsx
+import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '@config/ThemeProvider';
+
+interface ThemeToggleProps {
+  className?: string;
+}
+
+export function ThemeToggle({ className }: ThemeToggleProps) {
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
+
+  return (
+    <button
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      className={`p-2 rounded-lg transition-colors hover:bg-surface-elevated ${className}`}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {isDark ? (
+        <Sun className="w-5 h-5 text-text-secondary" />
+      ) : (
+        <Moon className="w-5 h-5 text-text-secondary" />
+      )}
+    </button>
+  );
+}
+```
+
+#### Step 1.2: Add to LoginPage Footer
+**File to modify:** `frontend/src/auth/pages/LoginPage.tsx`
+
+Find the footer section (around line 459) and add:
+
+```tsx
+import { ThemeToggle } from '@common/components/atoms/ThemeToggle';
+
+// In the footer JSX:
+<footer className="...">
+  <div className="flex items-center justify-between">
+    <span className="text-text-tertiary text-sm">
+      © 2026 {brandConfig?.company?.name || 'Your Company'}
+    </span>
+    <ThemeToggle />
+  </div>
+</footer>
+```
+
+#### Step 1.3: Ensure ThemeProvider Wraps Login
+**File to check:** `frontend/src/App.tsx`
+
+Make sure `ThemeProvider` wraps the login route:
+
+```tsx
+<ThemeProvider>
+  <Routes>
+    <Route path="/login" element={<LoginPage />} />
+    {/* ... */}
+  </Routes>
+</ThemeProvider>
+```
+
+---
+
+### Phase 2: Fix NetworkStepContent Colors (P2 #7)
+
+**Goal:** Replace hardcoded Tailwind colors with semantic tokens.
+
+**File:** `frontend/src/admin/components/wizard/NetworkStepContent.tsx`
+
+#### Step 2.1: Create Alert Variants
+Replace hardcoded info/warning/success/error boxes with a reusable pattern:
+
+```tsx
+// Define alert styles at top of file
+const alertStyles = {
+  info: 'bg-info-50 dark:bg-info-900/20 border-info-200 dark:border-info-800 text-info-800 dark:text-info-200',
+  warning: 'bg-warning-50 dark:bg-warning-900/20 border-warning-200 dark:border-warning-800 text-warning-800 dark:text-warning-200',
+  success: 'bg-success-50 dark:bg-success-900/20 border-success-200 dark:border-success-800 text-success-800 dark:text-success-200',
+  error: 'bg-error-50 dark:bg-error-900/20 border-error-200 dark:border-error-800 text-error-800 dark:text-error-200',
+};
+```
+
+#### Step 2.2: Replace Each Instance
+
+**Lines 200-210 (Info box):**
+```tsx
+// Before:
+className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+
+// After:
+className={`border ${alertStyles.info}`}
+```
+
+**Lines 215-225 (Warning box):**
+```tsx
+// Before:
+className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
+
+// After:
+className={`border ${alertStyles.warning}`}
+```
+
+**Lines 358-367 (Warning box):**
+Same pattern as above.
+
+**Lines 396-398 (Error box):**
+```tsx
+// Before:
+className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+
+// After:
+className={`border ${alertStyles.error}`}
+```
+
+---
+
+### Phase 3: Fix BackupsPage Colors (P2 #8)
+
+**Goal:** Replace status colors with semantic tokens.
+
+**File:** `frontend/src/admin/pages/BackupsPage.tsx`
+
+#### Step 3.1: Create Status Color Map
+
+```tsx
+const statusColors = {
+  success: 'text-success-500 dark:text-success-400',
+  error: 'text-error-500 dark:text-error-400',
+  warning: 'text-warning-500 dark:text-warning-400',
+  info: 'text-info-500 dark:text-info-400',
+};
+```
+
+#### Step 3.2: Replace Each Instance
+
+Search and replace:
+- `text-green-500` → `text-success-500 dark:text-success-400`
+- `text-green-400` → `text-success-400`
+- `text-red-500` → `text-error-500 dark:text-error-400`
+- `text-red-400` → `text-error-400`
+- `text-red-300` → `text-error-300`
+- `text-yellow-500` → `text-warning-500 dark:text-warning-400`
+- `text-yellow-400` → `text-warning-400`
+- `text-purple-500` → `text-purple-500 dark:text-purple-400`
+- `bg-red-900/20` → `bg-error-900/20`
+- `border-red-700` → `border-error-700`
+
+---
+
+### Phase 4: Fix ScopeBadge Dark Mode (P2 #9)
+
+**Goal:** Add dark mode support to scope badges.
+
+**File:** `frontend/src/common/components/atoms/ScopeBadge.tsx`
+
+#### Step 4.1: Update Badge Styles
+
+```tsx
+const scopeStyles = {
+  global: 'bg-success-500/20 text-success-600 dark:text-success-400 border-success-500/30',
+  store: 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30',
+  user: 'bg-warning-500/20 text-warning-600 dark:text-warning-400 border-warning-500/30',
+};
+```
+
+---
+
+### Phase 5: Fix ThemeEngine (P2 #10)
+
+**Goal:** Read theme from CSS variables instead of hardcoded values.
+
+**File:** `frontend/src/theme/ThemeEngine.ts`
+
+#### Step 5.1: Update getCurrentTheme Method
+
+```typescript
+getCurrentTheme(): ThemeConfig {
+  if (typeof window === 'undefined') {
+    return ThemeEngine.DEFAULT_THEME;
+  }
+  
+  const root = document.documentElement;
+  const style = getComputedStyle(root);
+  
+  const getVar = (name: string, fallback: string) => 
+    style.getPropertyValue(name).trim() || fallback;
+  
+  return {
+    accent: {
+      500: getVar('--color-primary-500', '#14b8a6'),
+      600: getVar('--color-primary-600', '#0d9488'),
+    },
+    background: {
+      primary: getVar('--color-background', '#0a0a0a'),
+      secondary: getVar('--color-surface', '#171717'),
+    },
+    // ... continue for other properties
+  };
+}
+```
+
+---
+
+### Phase 6: Add Semantic Tokens to tokens.css (P1)
+
+**Goal:** Add missing status color variants.
+
+**File:** `frontend/src/styles/tokens.css`
+
+#### Step 6.1: Add Status Color Variants
+
+Add these to the `:root` section:
+
+```css
+/* Status colors - full scale */
+--color-success-50: #f0fdf4;
+--color-success-100: #dcfce7;
+--color-success-200: #bbf7d0;
+--color-success-300: #86efac;
+--color-success-400: #4ade80;
+--color-success-500: #22c55e;
+--color-success-600: #16a34a;
+--color-success-700: #15803d;
+--color-success-800: #166534;
+--color-success-900: #14532d;
+
+--color-warning-50: #fffbeb;
+--color-warning-100: #fef3c7;
+--color-warning-200: #fde68a;
+--color-warning-300: #fcd34d;
+--color-warning-400: #fbbf24;
+--color-warning-500: #f59e0b;
+--color-warning-600: #d97706;
+--color-warning-700: #b45309;
+--color-warning-800: #92400e;
+--color-warning-900: #78350f;
+
+--color-error-50: #fef2f2;
+--color-error-100: #fee2e2;
+--color-error-200: #fecaca;
+--color-error-300: #fca5a5;
+--color-error-400: #f87171;
+--color-error-500: #ef4444;
+--color-error-600: #dc2626;
+--color-error-700: #b91c1c;
+--color-error-800: #991b1b;
+--color-error-900: #7f1d1d;
+
+--color-info-50: #eff6ff;
+--color-info-100: #dbeafe;
+--color-info-200: #bfdbfe;
+--color-info-300: #93c5fd;
+--color-info-400: #60a5fa;
+--color-info-500: #3b82f6;
+--color-info-600: #2563eb;
+--color-info-700: #1d4ed8;
+--color-info-800: #1e40af;
+--color-info-900: #1e3a8a;
+```
+
+---
+
+### Phase 7: P3 Cleanup (Optional)
+
+#### 7.1: SettingsSearch.tsx, PermissionMatrix.tsx, etc.
+
+Apply the same pattern as Phase 3 - replace Tailwind colors with semantic tokens.
+
+#### 7.2: defaultConfig.ts and brandConfig.ts
+
+Replace hardcoded "EasySale" with neutral placeholders:
+
+```typescript
+// defaultConfig.ts
+company: {
+  name: 'Your Company',  // was 'EasySale'
+  slug: 'your-company',  // was 'EasySale'
+},
+store: {
+  name: 'Your Store',    // was 'EasySale'
+},
+login: {
+  message: 'Welcome',    // was 'Welcome to EasySale'
+},
+```
+
+---
+
+## Quick Reference: Find & Replace Commands
+
+For bulk fixes, use these regex patterns in VS Code:
+
+### Replace Tailwind Status Colors
+```
+Find: text-green-(\d+)
+Replace: text-success-$1 dark:text-success-$1
+
+Find: text-red-(\d+)
+Replace: text-error-$1 dark:text-error-$1
+
+Find: text-yellow-(\d+)
+Replace: text-warning-$1 dark:text-warning-$1
+
+Find: bg-green-(\d+)
+Replace: bg-success-$1 dark:bg-success-$1
+
+Find: bg-red-(\d+)
+Replace: bg-error-$1 dark:bg-error-$1
+
+Find: bg-yellow-(\d+)
+Replace: bg-warning-$1 dark:bg-warning-$1
+```
+
+### Find Hardcoded Brand Names
+```
+Find: EasySale
+(Review each match - some are intentional in comments/docs)
+```
+
+---
+
+## Verification Checklist
+
+After each phase, verify:
+
+- [ ] No TypeScript errors (`npm run type-check`)
+- [ ] No lint errors (`npm run lint`)
+- [ ] Dark mode looks correct (toggle in browser dev tools)
+- [ ] Light mode looks correct
+- [ ] No hardcoded colors visible in browser inspector
+- [ ] Brand name shows correctly from config
 
 ---
 
