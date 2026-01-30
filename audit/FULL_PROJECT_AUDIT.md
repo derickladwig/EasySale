@@ -2,7 +2,7 @@
 
 **Date:** January 30, 2026  
 **Status:** Comprehensive audit of remaining work  
-**Total Issues:** 150+ across frontend, backend, and CI/CD
+**Total Issues:** 200+ across frontend, backend, CI/CD, security, and documentation
 
 ---
 
@@ -15,7 +15,10 @@
 | Theming/CSS | 3 | 10 | 5+ | 18+ |
 | Settings Architecture | 7 | 0 | 0 | 7 |
 | Test/CI Gaps | 3 | 4 | 2 | 9 |
-| **TOTAL** | **24** | **40** | **19+** | **83+** |
+| **Security Issues** | **2** | **2** | **2** | **6** |
+| **Code Quality** | **1** | **3** | **20+** | **24+** |
+| **Documentation** | **3** | **4** | **3** | **10** |
+| **TOTAL** | **30** | **49** | **44+** | **123+** |
 
 ---
 
@@ -297,4 +300,134 @@ From `DEVELOPMENT_LOG.md`:
 
 ---
 
-*Last Updated: 2026-01-30*
+## Security Issues
+
+### High Severity
+
+| # | Issue | File | Line | Fix |
+|---|-------|------|------|-----|
+| 1 | Auth token in localStorage | `AuthContext.tsx` | 119 | Move to httpOnly cookies |
+| 2 | Default webhook secret fallback | `webhooks.rs` | 47 | Fail if env var missing |
+
+### Medium Severity
+
+| # | Issue | File | Fix |
+|---|-------|------|-----|
+| 3 | No CSRF protection | API layer | Implement CSRF tokens |
+| 4 | Dynamic SQL table names | `sync_queue_processor.rs:557` | Validate against allowlist |
+
+### Low Severity
+
+| # | Issue | File | Fix |
+|---|-------|------|-----|
+| 5 | Input validation consistency | Various | Audit all input points |
+| 6 | Dynamic column names in UPDATE | `work_order.rs:304` | Validate column names |
+
+---
+
+## Code Quality Issues
+
+### High Severity
+
+| # | Issue | Files | Count |
+|---|-------|-------|-------|
+| 1 | Console.log in production | `components/review/*.tsx` | 8 files |
+
+### Medium Severity
+
+| # | Issue | Files | Count |
+|---|-------|-------|-------|
+| 2 | Missing error handling | Review components | 3 components |
+| 3 | Missing loading states | Review components | 3 components |
+| 4 | Missing error states | Review components | 4 components |
+
+### Low Severity (TypeScript `any` types)
+
+| # | File | Line(s) |
+|---|------|---------|
+| 1 | `ProductForm.tsx` | 77 |
+| 2 | `BillHistory.tsx` | 53, 76 |
+| 3 | `VendorMappings.tsx` | 58, 81 |
+| 4 | `BillUpload.tsx` | 159 |
+| 5 | `BackupsPage.tsx` | 1497 |
+| 6 | `lazyRoutes.tsx` | 33 |
+| 7 | `HardwareTemplates.tsx` | 11-15 |
+| 8 | `favicon.ts` | 59, 72, 90, 103 |
+| 9 | `UsersTab.tsx` | 317 |
+| 10 | `EntityEditorModal.tsx` | 60, 79, 118 |
+| 11 | `EditUserModal.tsx` | 124, 162 |
+| 12 | `settingsApi.ts` | 80, 85, 94, 99 |
+| 13 | `SettingsPersistence.ts` | 59, 95, 159, 176, 193 |
+| 14 | `EffectiveSettingsView.tsx` | 7, 15, 59, 101 |
+| 15 | `RolesTab.tsx` | 33, 38, 52, 58, 69 |
+| 16 | `SyncConfiguration.tsx` | 67, 97 |
+| 17 | `GuidedReviewView.tsx` | 21, 22 |
+| 18 | `DynamicWidget.tsx` | 45, 243 |
+| 19 | `DataTable.tsx` | 21 |
+
+---
+
+## Documentation Gaps
+
+### High Severity
+
+| # | Issue | Location | Fix |
+|---|-------|----------|-----|
+| 1 | Port mismatch in API docs | `docs/api/*.md` | Change 3000 → 8923 |
+| 2 | 100+ undocumented endpoints | Backend | Create API reference |
+| 3 | Broken link | `README.md:229` | Fix `docs/integrations/payments.md` |
+
+### Medium Severity
+
+| # | Issue | Fix |
+|---|-------|-----|
+| 4 | No OpenAPI/Swagger spec | Generate from code |
+| 5 | Missing permission docs | Document per endpoint |
+| 6 | CHANGELOG incomplete | Add recent changes |
+| 7 | No API versioning docs | Document strategy |
+
+### Low Severity
+
+| # | Issue | Fix |
+|---|-------|-----|
+| 8 | Missing request/response examples | Add to API docs |
+| 9 | No comprehensive error codes | Document all errors |
+| 10 | No API index | Create master endpoint list |
+
+---
+
+## Quick Wins (< 1 Hour Each)
+
+### Already Identified
+1. Fix duplicate `showCouponModal` state in SellPage.tsx
+2. Add theme toggle to login page
+3. Fix route mismatch `/admin/branding`
+4. Remove placeholder sections from AdminPage
+5. Fix hardcoded tenant IDs (search & replace)
+6. Add semantic tokens to tokens.css
+7. Fix time formatting in stats.rs
+
+### New Quick Wins
+8. Remove console.log from review components (8 files)
+9. Fix port numbers in API docs (3000 → 8923)
+10. Fix broken link in README.md
+11. Remove default_secret fallback in webhooks.rs
+12. Update CHANGELOG with recent changes
+
+---
+
+## Estimated Total Effort (Updated)
+
+| Area | Days |
+|------|------|
+| P0 Critical fixes | 8-13 |
+| P1 High impact | 4-6 |
+| Security fixes | 2-3 |
+| Code quality cleanup | 2-3 |
+| Documentation | 2-3 |
+| P2-P3 Cleanup | 3-6 |
+| **Total** | **21-34 days** |
+
+---
+
+*Last Updated: 2026-01-30 (Comprehensive Update)*

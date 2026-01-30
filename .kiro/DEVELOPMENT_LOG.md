@@ -911,7 +911,7 @@ This section documents a production-grade audit of the POS checkout flow.
 
 **Status:** P0 and most P1 fixes completed. Detailed roadmap provided for remaining work.
 
-### Full Project Audit (Jan 30, 2026)
+### Full Project Audit (Jan 30, 2026) - COMPREHENSIVE UPDATE
 **Document:** `audit/FULL_PROJECT_AUDIT.md`
 
 **Summary:**
@@ -922,7 +922,10 @@ This section documents a production-grade audit of the POS checkout flow.
 | Theming/CSS | 3 | 10 | 5+ | 18+ |
 | Settings Architecture | 7 | 0 | 0 | 7 |
 | Test/CI Gaps | 3 | 4 | 2 | 9 |
-| **TOTAL** | **24** | **40** | **19+** | **83+** |
+| Security Issues | 2 | 2 | 2 | 6 |
+| Code Quality | 1 | 3 | 20+ | 24+ |
+| Documentation | 3 | 4 | 3 | 10 |
+| **TOTAL** | **30** | **49** | **44+** | **123+** |
 
 **Critical P0 Issues (Blockers):**
 1. ConfigStore methods not implemented (6 methods throw errors)
@@ -931,7 +934,24 @@ This section documents a production-grade audit of the POS checkout flow.
 4. Export handlers are placeholders
 5. CSV exports return empty data
 
-**Estimated Total Effort:** 15-25 days for full completion
+**Security Issues Found:**
+- Auth token stored in localStorage (should use httpOnly cookies)
+- Default webhook secret fallback in production code
+- No CSRF protection implemented
+- Dynamic SQL table/column names without validation
+
+**Code Quality Issues:**
+- 8 files with console.log in production review components
+- 20+ files with TypeScript `any` types
+- Missing error/loading states in review components
+
+**Documentation Gaps:**
+- API docs use wrong port (3000 instead of 8923)
+- 100+ endpoints undocumented
+- Broken link in README.md
+- No OpenAPI/Swagger spec
+
+**Estimated Total Effort:** 21-34 days for full completion
 
 ---
 
