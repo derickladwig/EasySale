@@ -404,18 +404,12 @@
   /* Take remaining space but allow shrinking */
   flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  /* Hidden here - card body handles scrolling internally */
+  overflow: hidden;
   /* Minimal padding - card should fill the space */
   padding: clamp(10px, 1.25vw, 16px);
   display: flex;
   flex-direction: column;
-  /* Enable smooth scrolling */
-  scroll-behavior: smooth;
-  /* Ensure scrollbar is always visible when needed */
-  scrollbar-gutter: stable;
-  /* Ensure content can scroll when zoomed */
-  max-height: 100%;
 }
 
 @media (max-width: 768px) {
@@ -427,8 +421,9 @@
 /* Main content card - compact design */
 .card {
   width: 100%;
-  /* Don't use flex: 1 here - let content determine height */
-  /* Card will grow with content, scroll area handles overflow */
+  /* Fill available space but allow shrinking */
+  flex: 1 1 auto;
+  min-height: 0;
   background: var(--wizard-surface);
   border: 1px solid var(--wizard-border);
   border-radius: 10px;
@@ -500,10 +495,16 @@
   line-height: 1.4;
 }
 
-/* Card body - contains step content - compact */
+/* Card body - contains step content - scrollable when zoomed */
 .cardBody {
-  /* Let content determine height, scroll handled by contentScroll */
+  /* Allow card body to scroll when content overflows (e.g., when zoomed in) */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: clamp(12px, 1.5vw, 18px) clamp(14px, 2vw, 24px) clamp(14px, 1.5vw, 20px);
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
 }
 
 @media (max-width: 768px) {
