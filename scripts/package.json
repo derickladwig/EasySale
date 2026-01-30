@@ -8,7 +8,7 @@
     "convert-brand": "node convert-brand-assets.js"
   },
   "dependencies": {
-    "sharp": "^0.33.5"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {},
   "engines": {
