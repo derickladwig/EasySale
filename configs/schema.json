@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://EasySale.io/config-schema.json",
+  "$id": "config-schema.json",
   "title": "EasySale Tenant Configuration",
   "description": "Schema for EasySale tenant configuration files",
   "type": "object",
