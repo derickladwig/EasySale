@@ -10,6 +10,9 @@ export interface User {
   lastName?: string;
   display_name?: string; // Computed or stored display name
   permissions: string[];
+  store_id?: string;
+  station_id?: string;
+  station_policy?: string;
 }
 
 export interface LoginCredentials {
@@ -58,39 +61,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load token from localStorage on mount
+  // Check authentication status on mount using httpOnly cookie
   useEffect(() => {
-    const storedToken = localStorage.getItem('auth_token');
-    if (storedToken) {
-      setToken(storedToken);
-      // Fetch current user with the stored token
-      fetchCurrentUser(storedToken);
-    } else {
-      setIsLoading(false);
-    }
+    // Try to fetch current user - if cookie is valid, this will succeed
+    fetchCurrentUser();
   }, []);
 
-  const fetchCurrentUser = async (authToken: string) => {
+  const fetchCurrentUser = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        method: 'POST',
+        method: 'GET',
+        credentials: 'include', // Include httpOnly cookies
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
         },
       });
 
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
+        // Token is stored in httpOnly cookie, we don't have direct access
+        // but we can indicate authenticated state
+        setToken('httpOnly-cookie');
       } else {
-        // Token is invalid, clear it
-        localStorage.removeItem('auth_token');
+        // Not authenticated or token expired
+        setUser(null);
         setToken(null);
       }
     } catch (error) {
       devLog.error('Failed to fetch current user:', error);
-      localStorage.removeItem('auth_token');
+      setUser(null);
       setToken(null);
     } finally {
       setIsLoading(false);
@@ -102,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
+        credentials: 'include', // Include httpOnly cookies
         headers: {
           'Content-Type': 'application/json',
         },
@@ -114,9 +115,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      setToken(data.token);
+      // Token is now stored in httpOnly cookie by the server
+      // We keep a reference for backward compatibility but don't store in localStorage
+      setToken('httpOnly-cookie');
       setUser(data.user);
-      localStorage.setItem('auth_token', data.token);
+      // Note: We no longer store token in localStorage for security
     } catch (error) {
       devLog.error('Login error:', error);
       throw error;
@@ -126,35 +129,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    if (token) {
-      try {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      } catch (error) {
-        devLog.error('Logout error:', error);
-      }
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include', // Include httpOnly cookies
+      });
+    } catch (error) {
+      devLog.error('Logout error:', error);
     }
 
     setUser(null);
     setToken(null);
-    localStorage.removeItem('auth_token');
+    // Note: Cookie is cleared by the server response
   };
 
   const getCurrentUser = async () => {
-    if (!token) {
-      throw new Error('No authentication token');
-    }
-    await fetchCurrentUser(token);
+    await fetchCurrentUser();
   };
 
   const value: AuthContextType = {
     user,
     token,
-    isAuthenticated: !!user && !!token,
+    isAuthenticated: !!user,
     isLoading,
     login,
     logout,

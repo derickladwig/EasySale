@@ -1,13 +1,15 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Menu, X, Wifi, WifiOff, RefreshCw, Bell, Search, User } from 'lucide-react';
 import { usePermissions } from './common/contexts/PermissionsContext';
+import { useAuth } from './common/contexts/AuthContext';
 import { cn } from './common/utils/classNames';
 import { useConfig, useTheme, DynamicIcon } from './config';
 import { BottomNav, BottomNavItem } from './common/components/organisms/BottomNav';
 import { DemoModeIndicator } from './components/DemoModeIndicator';
 import { ProfileMenu } from './common/components/molecules/ProfileMenu';
 import { LogoWithFallback } from './common/components/atoms/LogoWithFallback';
+import { useStations } from './common/hooks/useStations';
 
 import { Permission } from './common/contexts/PermissionsContext';
 
@@ -30,6 +32,7 @@ import { Permission } from './common/contexts/PermissionsContext';
 
 export function AppLayout() {
   const { hasPermission } = usePermissions();
+  const { user } = useAuth();
   const { brandConfig, navigation, getLogo } = useConfig();
   const { mode: themeMode } = useTheme();
   const location = useLocation();
@@ -37,6 +40,18 @@ export function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [syncStatus] = useState<'online' | 'syncing' | 'offline'>('online');
+  
+  // Fetch stations to resolve station name from user's station_id
+  const { stations } = useStations(user?.store_id || undefined);
+  
+  // Get station name from user's session or default to "Station 1"
+  const stationName = useMemo(() => {
+    if (user?.station_id && stations.length > 0) {
+      const station = stations.find(s => s.id === user.station_id);
+      return station?.name || user.station_id;
+    }
+    return brandConfig.store?.station || 'Station 1';
+  }, [user?.station_id, stations, brandConfig.store?.station]);
 
   // Filter navigation items by permissions
   const filteredNavItems = navigation.filter(
@@ -211,7 +226,7 @@ export function AppLayout() {
             <div className="p-3 border-t border-border bg-surface-elevated">
               <div className="text-xs text-text-tertiary">
                 <div className="font-medium text-text-secondary">{brandConfig.store?.name || 'Store'}</div>
-                <div>Station: {brandConfig.store?.station || 'POS-001'}</div>
+                <div>Station: {stationName}</div>
               </div>
             </div>
           )}
