@@ -7,6 +7,8 @@ FROM rust:alpine AS builder
 
 # Build argument for feature selection
 ARG FEATURES=""
+# Build hash for version identification (set during docker build)
+ARG BUILD_HASH="prod"
 
 # Install build dependencies including OpenSSL for any dependencies that need it
 RUN apk add --no-cache musl-dev sqlite-dev sqlite-static pkgconfig openssl-dev openssl-libs-static
@@ -15,6 +17,8 @@ RUN apk add --no-cache musl-dev sqlite-dev sqlite-static pkgconfig openssl-dev o
 ENV OPENSSL_STATIC=1
 ENV OPENSSL_LIB_DIR=/usr/lib
 ENV OPENSSL_INCLUDE_DIR=/usr/include
+# Set BUILD_HASH for compile-time inclusion via option_env!
+ENV BUILD_HASH=${BUILD_HASH}
 
 WORKDIR /app
 
@@ -25,6 +29,7 @@ COPY backend/ .
 COPY backend/.sqlx ./.sqlx
 
 # Build application with selected features (default to export if not specified)
+# BUILD_HASH is embedded at compile time via option_env!("BUILD_HASH")
 RUN if [ -n "$FEATURES" ]; then \
         cargo build --release --no-default-features --features "$FEATURES"; \
     else \

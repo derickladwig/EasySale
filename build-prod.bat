@@ -135,11 +135,18 @@ if defined DO_VALIDATE (
 
 REM Clean up any old resources
 echo [4/11] Cleaning up legacy resources...
-docker-compose -p EasySale down -v >nul 2>&1
-docker-compose -p EasySale -f docker-compose.prod.yml down -v >nul 2>&1
+docker-compose -p easysale down -v >nul 2>&1
+docker-compose -p easysale -f docker-compose.prod.yml down -v >nul 2>&1
 docker rm -f easysale-frontend easysale-backend >nul 2>&1
 docker network rm easysale-network >nul 2>&1
 echo [OK] Legacy cleanup complete
+
+REM Generate build info for both frontend and backend
+for /f "tokens=*" %%a in ('powershell -Command "Get-Date -Format \"yyyy-MM-dd\""') do set "BUILD_DATE=%%a"
+for /f "tokens=*" %%a in ('git rev-parse --short HEAD 2^>nul') do set "GIT_HASH=%%a"
+if not defined GIT_HASH set "GIT_HASH=release"
+set "BUILD_HASH=%BUILD_DATE%-%GIT_HASH%"
+echo Build info: v0.1.0 / %BUILD_HASH%
 
 REM Build frontend
 echo [5/11] Building frontend image...
@@ -147,7 +154,7 @@ echo This may take several minutes...
 echo Removing old frontend image if exists...
 docker rmi easysale-frontend:latest >nul 2>&1
 echo Building with --no-cache to ensure fresh build...
-docker build --no-cache -t easysale-frontend:latest ./frontend
+docker build --no-cache --build-arg VITE_APP_VERSION="0.1.0" --build-arg VITE_BUILD_HASH="%GIT_HASH%" --build-arg VITE_BUILD_DATE="%BUILD_DATE%" --build-arg VITE_RUNTIME_PROFILE="prod" -t easysale-frontend:latest ./frontend
 if errorlevel 1 (
     echo.
     echo [ERROR] Frontend build failed!
@@ -182,14 +189,16 @@ echo This may take several minutes (optimized build)...
 echo Removing old backend image if exists...
 docker rmi easysale-backend:latest >nul 2>&1
 echo Building with --no-cache and --release profile...
+echo Build hash: %BUILD_HASH%
+
 if "%FEATURES%"=="" goto BUILD_LITE
 echo Building with features: %FEATURES%
-docker build --no-cache --build-arg FEATURES="%FEATURES%" -f Dockerfile.backend -t easysale-backend:latest .
+docker build --no-cache --build-arg FEATURES="%FEATURES%" --build-arg BUILD_HASH="%BUILD_HASH%" -f Dockerfile.backend -t easysale-backend:latest .
 goto CHECK_BACKEND_BUILD
 
 :BUILD_LITE
 echo Building LITE variant (no optional features)...
-docker build --no-cache --build-arg FEATURES="" -f Dockerfile.backend -t easysale-backend:latest .
+docker build --no-cache --build-arg FEATURES="" --build-arg BUILD_HASH="%BUILD_HASH%" -f Dockerfile.backend -t easysale-backend:latest .
 
 :CHECK_BACKEND_BUILD
 if errorlevel 1 (
@@ -207,11 +216,11 @@ echo.
 
 REM Stop any existing production containers
 echo [9/11] Stopping existing containers...
-docker-compose -p EasySale -f docker-compose.prod.yml down >nul 2>&1
+docker-compose -p easysale -f docker-compose.prod.yml down >nul 2>&1
 
 REM Start production environment
 echo [10/11] Starting production environment...
-docker-compose -p EasySale -f docker-compose.prod.yml up -d
+docker-compose -p easysale -f docker-compose.prod.yml up -d
 set COMPOSE_EXIT=%errorlevel%
 
 REM Check if containers are actually running (more reliable than exit code)
@@ -226,7 +235,7 @@ if errorlevel 1 (
     echo Checking backend logs:
     docker logs easysale-backend --tail 50 2>nul
     echo.
-    echo Try running: docker-compose -p EasySale -f docker-compose.prod.yml logs
+    echo Try running: docker-compose -p easysale -f docker-compose.prod.yml logs
     goto ERROR_EXIT
 )
 docker ps --filter "name=easysale-frontend" --format "{{.Status}}" | findstr /i "Up" >nul 2>&1
@@ -301,7 +310,7 @@ echo Network: easysale-network
 echo Volume:  easysale_easysale-data
 echo.
 echo Useful commands:
-echo   View logs:     docker-compose -p EasySale -f docker-compose.prod.yml logs -f
+echo   View logs:     docker-compose -p easysale -f docker-compose.prod.yml logs -f
 echo   Stop services: docker-stop.bat
 echo   Clean all:     docker-clean.bat
 echo.

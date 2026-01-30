@@ -3,6 +3,12 @@
 # Stage 1: Build
 FROM node:20-alpine AS builder
 
+# Build arguments for version info
+ARG VITE_APP_VERSION="0.1.0"
+ARG VITE_BUILD_HASH="prod"
+ARG VITE_BUILD_DATE=""
+ARG VITE_RUNTIME_PROFILE="prod"
+
 WORKDIR /app
 
 # Copy package files
@@ -15,7 +21,13 @@ RUN npm ci --legacy-peer-deps && npm cache clean --force
 # Copy source code
 COPY . .
 
-# Build application
+# Set build-time environment variables for Vite
+ENV VITE_APP_VERSION=${VITE_APP_VERSION}
+ENV VITE_BUILD_HASH=${VITE_BUILD_HASH}
+ENV VITE_BUILD_DATE=${VITE_BUILD_DATE}
+ENV VITE_RUNTIME_PROFILE=${VITE_RUNTIME_PROFILE}
+
+# Build application with production profile
 RUN npm run build
 
 # Stage 2: Production
