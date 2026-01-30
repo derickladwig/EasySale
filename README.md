@@ -1,11 +1,7 @@
 <p align="center">
   <img src="data/icon.png" alt="EasySale Logo" width="120" height="120">
 </p>
-
-<h1 align="center">EasySale</h1>
-
-<p align="center">
-  <strong>White-Label, Multi-Tenant Point of Sale System</strong>
+<p align="center"><strong>White-Label, Multi-Tenant Point of Sale System</strong>
 </p>
 
 <p align="center">
