@@ -288,14 +288,16 @@ function LoginPageContent({
             <img 
               src={headerLogo} 
               alt={branding.company.name}
-              className="h-8 w-auto"
+              className="h-10 w-auto max-w-[200px] object-contain"
             />
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-              <span className="text-text-inverse font-bold text-sm">{shortName}</span>
-            </div>
+            <>
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <span className="text-text-inverse font-bold text-sm">{shortName}</span>
+              </div>
+              <span className="text-text-primary font-semibold text-lg">{branding.company.name}</span>
+            </>
           )}
-          <span className="text-text-primary font-semibold text-lg">{branding.company.name}</span>
         </div>
       </header>
 
