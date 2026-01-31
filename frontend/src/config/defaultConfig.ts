@@ -131,12 +131,28 @@ export const defaultConfig: TenantConfig = {
         order: 1,
       },
       {
+        id: 'quotes',
+        label: 'Quotes',
+        icon: 'FileText',
+        route: '/quotes',
+        permission: 'access_sell',
+        order: 2,
+      },
+      {
+        id: 'transactions',
+        label: 'Transactions',
+        icon: 'Receipt',
+        route: '/transactions',
+        permission: 'access_sell',
+        order: 3,
+      },
+      {
         id: 'lookup',
         label: 'Lookup',
         icon: 'Search',
         route: '/lookup',
         permission: 'access_sell',
-        order: 2,
+        order: 4,
       },
       {
         id: 'customers',
@@ -144,7 +160,7 @@ export const defaultConfig: TenantConfig = {
         icon: 'Users',
         route: '/customers',
         permission: 'access_sell',
-        order: 3,
+        order: 5,
       },
       {
         id: 'inventory',
@@ -152,7 +168,7 @@ export const defaultConfig: TenantConfig = {
         icon: 'Package',
         route: '/inventory',
         permission: 'access_inventory',
-        order: 4,
+        order: 6,
       },
       {
         id: 'documents',
@@ -160,7 +176,7 @@ export const defaultConfig: TenantConfig = {
         icon: 'FileText',
         route: '/documents',
         permission: 'access_inventory',
-        order: 5,
+        order: 7,
       },
       {
         id: 'review',
@@ -169,7 +185,7 @@ export const defaultConfig: TenantConfig = {
         route: '/review',
         permission: 'review_vendor_bills',
         badge: 'needsReview',
-        order: 6,
+        order: 8,
       },
       {
         id: 'reporting',
@@ -177,7 +193,7 @@ export const defaultConfig: TenantConfig = {
         icon: 'BarChart3',
         route: '/reporting',
         permission: 'access_admin',
-        order: 7,
+        order: 9,
       },
       {
         id: 'admin',
@@ -185,7 +201,7 @@ export const defaultConfig: TenantConfig = {
         icon: 'Settings',
         route: '/admin',
         permission: 'access_admin',
-        order: 8,
+        order: 10,
       },
       {
         id: 'sales',
@@ -193,7 +209,7 @@ export const defaultConfig: TenantConfig = {
         icon: 'DollarSign',
         route: '/sales',
         permission: 'access_admin',
-        order: 9,
+        order: 11,
       },
     ],
     quickActions: [

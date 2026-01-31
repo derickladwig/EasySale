@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Quotes System**: Full quote creation and management
+  - Save cart as quote with 7-day expiration
+  - QuotesPage for viewing, printing, and converting quotes
+  - Convert quote to sale functionality
+  - Quote printing with professional formatting
+- **Enhanced Navigation**: Added Quotes and Transactions to main navigation
+- **Customer Improvements**:
+  - New Sale button navigates to POS with customer pre-selected
+  - Customer action menu (edit, new sale, view orders, delete)
+  - Loyalty points and store credit display
+- **Inventory Improvements**:
+  - Filter modal with status, location, and stock range filters
+  - Bulk actions (Print Labels, Adjust Stock, Transfer) now functional
+  - Row action menu for individual items
+  - Reorder button in Alerts tab
+- **Receipt System**: Post-sale receipt modal with print and email options
+- **Integration Documentation**: Setup guides linked from Integrations page
 - **Backend Features Implementation**: Complete implementation of previously stubbed backend features
   - Customer sales statistics (totalSpent, orderCount, lastOrder) via sales_transactions join
   - Customer recent orders endpoint (`GET /api/customers/{id}/orders`)

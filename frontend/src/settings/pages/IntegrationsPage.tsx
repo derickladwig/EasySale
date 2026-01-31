@@ -961,6 +961,25 @@ export const IntegrationsPage: React.FC = () => {
                 case 'quickbooks':
                   return (
                     <>
+                      <div className="p-2 bg-warning/10 border border-warning/30 rounded-lg mb-3">
+                        <p className="text-xs text-warning font-medium">
+                          ⚠️ OAuth Setup Required
+                        </p>
+                        <p className="text-xs text-text-tertiary mt-1">
+                          QuickBooks requires OAuth 2.0 authentication. You need to:
+                        </p>
+                        <ol className="text-xs text-text-tertiary mt-1 ml-4 list-decimal">
+                          <li>Create a QuickBooks Developer account</li>
+                          <li>Register your app to get Client ID/Secret</li>
+                          <li>Configure environment variables on the server</li>
+                        </ol>
+                        <button
+                          onClick={() => window.open('/docs/guides/EasySale_Provider_Setup_Checklist_Pack/EasySale_Provider_Setup_Checklist.md', '_blank')}
+                          className="text-xs text-primary-400 hover:text-primary-300 mt-2 inline-flex items-center gap-1"
+                        >
+                          View Setup Guide →
+                        </button>
+                      </div>
                       <Input
                         label="Realm ID"
                         value={qbRealmId}
@@ -968,9 +987,6 @@ export const IntegrationsPage: React.FC = () => {
                         placeholder="Enter QuickBooks Realm ID"
                         size="sm"
                       />
-                      <p className="text-xs text-text-tertiary">
-                        OAuth authentication required. Contact support for setup.
-                      </p>
                       <Button
                         onClick={() => handleViewLogs('quickbooks')}
                         variant="ghost"
@@ -1461,16 +1477,37 @@ export const IntegrationsPage: React.FC = () => {
 
               <div className="p-3 bg-surface-base rounded-lg">
                 <div className="font-medium text-text-secondary mb-1">Support</div>
-                <p>
-                  Need help setting up integrations? Visit our{' '}
-                  <a
-                    href="#"
-                    className="text-primary-400 hover:text-primary-300 inline-flex items-center gap-1"
-                  >
-                    documentation <ExternalLink className="w-3 h-3" />
-                  </a>{' '}
-                  or contact support.
+                <p className="text-text-tertiary text-sm mb-2">
+                  Need help setting up integrations? Check our setup guides:
                 </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      // Open Stripe setup guide
+                      window.open('/docs/guides/EasySale_Stripe_Connect_OAuth_Setup_Pack/stripe-connect-setup.md', '_blank');
+                    }}
+                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-primary-400 hover:text-primary-300 inline-flex items-center gap-1"
+                  >
+                    Stripe Setup <ExternalLink className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Open Provider setup checklist
+                      window.open('/docs/guides/EasySale_Provider_Setup_Checklist_Pack/EasySale_Provider_Setup_Checklist.md', '_blank');
+                    }}
+                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-primary-400 hover:text-primary-300 inline-flex items-center gap-1"
+                  >
+                    Provider Checklist <ExternalLink className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      window.open('/docs/integrations/payments.md', '_blank');
+                    }}
+                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-primary-400 hover:text-primary-300 inline-flex items-center gap-1"
+                  >
+                    Payment Docs <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
