@@ -14,9 +14,9 @@ function securityHeadersPlugin(): Plugin {
           'Content-Security-Policy',
           [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'", // unsafe-inline needed for Vite HMR in dev
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-inline for Vite HMR, unsafe-eval for validation libs
             "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data: https:",
+            "img-src 'self' data: https: blob:",
             "font-src 'self' data:",
             "connect-src 'self' http://localhost:* ws://localhost:* http://127.0.0.1:* ws://127.0.0.1:*", // Allow API and HMR
             "frame-ancestors 'none'",
