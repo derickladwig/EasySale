@@ -754,20 +754,21 @@ pub async fn adjust_stock(
     // Get current product
     let service = ProductService::new(pool_ref.clone(), config_loader.get_ref().clone());
     let product = match service.get_product(&product_id, &tenant_id).await {
-        Ok(Some(p)) => p,
-        Ok(None) => {
-            return HttpResponse::NotFound().json(serde_json::json!({
-                "error": "Product not found"
-            }));
-        }
+        Ok(p) => p,
         Err(errors) => {
+            // Check if it's a "not found" error
+            if errors.iter().any(|e| e.message.contains("not found")) {
+                return HttpResponse::NotFound().json(serde_json::json!({
+                    "error": "Product not found"
+                }));
+            }
             return HttpResponse::BadRequest().json(serde_json::json!({
                 "errors": errors
             }));
         }
     };
 
-    let old_quantity = product.quantity_on_hand.unwrap_or(0);
+    let old_quantity = product.quantity_on_hand as i32;
     let new_quantity = match body.adjustment_type.as_str() {
         "add" => old_quantity + body.quantity,
         "subtract" => (old_quantity - body.quantity).max(0),

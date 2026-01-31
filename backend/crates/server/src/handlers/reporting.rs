@@ -65,9 +65,11 @@ pub async fn get_sales_report(
         .await;
 
     // Calculate previous period for comparison
+    let start_str = date_range.start_date.map(|d| d.format("%Y-%m-%d").to_string());
+    let end_str = date_range.end_date.map(|d| d.format("%Y-%m-%d").to_string());
     let (prev_start, prev_end) = calculate_previous_period(
-        date_range.start_date.as_deref(),
-        date_range.end_date.as_deref(),
+        start_str.as_deref(),
+        end_str.as_deref(),
     );
 
     // Query previous period

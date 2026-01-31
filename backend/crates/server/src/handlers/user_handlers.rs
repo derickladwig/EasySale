@@ -201,28 +201,43 @@ pub async fn get_user(
     user_id: web::Path<String>,
 ) -> Result<HttpResponse> {
     let user_id_value = user_id.into_inner();
-    let user = sqlx::query_as!(
-        UserResponse,
+    let user_row: Result<Option<(String, String, String, String, String, Option<String>, Option<String>, Option<String>, i32, String, String, Option<String>)>, _> = sqlx::query_as(
         r#"
         SELECT 
-            id as "id!", username, email, 
-            display_name as "display_name!: String",
+            id, username, email, 
+            display_name,
             role,
             store_id,
             station_policy,
             station_id,
-            is_active as "is_active: bool",
-            created_at, updated_at
+            is_active,
+            created_at, updated_at,
+            last_login_at
         FROM users
         WHERE id = ?
-        "#,
-        user_id_value
+        "#
     )
+    .bind(&user_id_value)
     .fetch_optional(pool.get_ref())
     .await;
 
-    match user {
-        Ok(Some(user)) => Ok(HttpResponse::Ok().json(user)),
+    match user_row {
+        Ok(Some((id, username, email, display_name, role, store_id, station_policy, station_id, is_active, created_at, updated_at, last_login_at))) => {
+            Ok(HttpResponse::Ok().json(UserResponse {
+                id,
+                username,
+                email,
+                display_name,
+                role,
+                store_id,
+                station_policy,
+                station_id,
+                is_active: is_active == 1,
+                created_at,
+                updated_at,
+                last_login_at,
+            }))
+        },
         Ok(None) => Ok(HttpResponse::NotFound().json(serde_json::json!({
             "error": "User not found"
         }))),
