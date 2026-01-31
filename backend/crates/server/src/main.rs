@@ -30,7 +30,13 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Load environment variables from .env file
-    dotenv().ok();
+    // Try current directory first, then parent directories (for running from backend/)
+    if dotenv().is_err() {
+        // Try parent directory (project root when running from backend/)
+        let _ = dotenv::from_filename("../.env");
+        // Try two levels up (project root when running from backend/crates/server/)
+        let _ = dotenv::from_filename("../../../.env");
+    }
 
     // Initialize tracing/logging
     tracing_subscriber::registry()

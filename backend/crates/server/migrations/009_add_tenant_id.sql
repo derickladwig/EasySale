@@ -6,7 +6,7 @@
 -- Risk: VERY LOW (minimal data, full backup created)
 
 -- This migration adds tenant_id to all tables to enable multi-tenant architecture.
--- All existing data will be assigned to 'default-tenant' (change via TENANT_ID env var before running).
+-- All existing data will be assigned to 'default' (change via TENANT_ID env var before running).
 -- Indexes are created for query performance.
 
 -- NOTE: No explicit transaction - each ALTER TABLE is atomic in SQLite
@@ -16,89 +16,89 @@
 -- ============================================================================
 
 -- Users table (3 rows)
-ALTER TABLE users ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE users ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Sessions table (0 rows)
-ALTER TABLE sessions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE sessions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Audit log table (0 rows)
-ALTER TABLE audit_log ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE audit_log ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- ============================================================================
 -- SALES & CUSTOMER TABLES (17 tables)
 -- ============================================================================
 
 -- Customer management
-ALTER TABLE customers ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE vehicles ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE customers ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE vehicles ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Layaway system
-ALTER TABLE layaways ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE layaway_payments ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE layaway_items ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE layaways ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE layaway_payments ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE layaway_items ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Work orders
-ALTER TABLE work_orders ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE work_order_lines ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE work_orders ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE work_order_lines ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Commission tracking
-ALTER TABLE commissions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE commission_rules ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE commission_splits ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE commissions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE commission_rules ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE commission_splits ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Loyalty program
-ALTER TABLE loyalty_transactions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE price_levels ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE loyalty_transactions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE price_levels ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Credit accounts
-ALTER TABLE credit_accounts ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE credit_transactions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE credit_accounts ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE credit_transactions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Gift cards
-ALTER TABLE gift_cards ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE gift_card_transactions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE gift_cards ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE gift_card_transactions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- Promotions
-ALTER TABLE promotions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE promotion_usage ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE promotions ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE promotion_usage ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- ============================================================================
 -- SYNC TABLES (4 tables)
 -- ============================================================================
 
-ALTER TABLE sync_log ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE sync_conflicts ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE sync_queue ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE sync_state ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE sync_log ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE sync_conflicts ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE sync_queue ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE sync_state ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- ============================================================================
 -- PRODUCT TABLES (2 tables)
 -- ============================================================================
 
-ALTER TABLE products ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE vehicle_fitment ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE products ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE vehicle_fitment ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- ============================================================================
 -- STORE & STATION TABLES (2 tables)
 -- ============================================================================
 
-ALTER TABLE stores ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE stations ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE stores ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE stations ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- ============================================================================
 -- OTHER TABLES (3 tables)
 -- ============================================================================
 
-ALTER TABLE ar_statements ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE offline_credit_verifications ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE maintenance_schedules ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE ar_statements ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE offline_credit_verifications ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE maintenance_schedules ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- ============================================================================
 -- BACKUP TABLES (2 tables)
 -- ============================================================================
 
-ALTER TABLE backup_jobs ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
-ALTER TABLE backup_settings ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default-tenant';
+ALTER TABLE backup_jobs ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
+ALTER TABLE backup_settings ADD COLUMN tenant_id VARCHAR(255) NOT NULL DEFAULT 'default';
 
 -- ============================================================================
 -- CREATE INDEXES FOR PERFORMANCE
@@ -190,7 +190,7 @@ UNION ALL
 SELECT tenant_id, COUNT(*) FROM products GROUP BY tenant_id
 UNION ALL
 SELECT tenant_id, COUNT(*) FROM stores GROUP BY tenant_id;
--- Should show 'default-tenant' for all
+-- Should show 'default' for all
 
 -- Verify indexes created
 SELECT 'Checking indexes created...' AS status;

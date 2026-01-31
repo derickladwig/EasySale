@@ -600,7 +600,7 @@ pub async fn create_first_admin(
     let now = Utc::now().to_rfc3339();
     let display_name = req.display_name.clone().unwrap_or_else(|| req.username.clone());
     let user_id = uuid::Uuid::new_v4().to_string();
-    let tenant_id = "default-tenant"; // First admin gets default tenant
+    let tenant_id = "default"; // First admin gets default tenant - must match TEST_TENANT_ID
 
     // Insert admin user
     let result = sqlx::query(
