@@ -1,0 +1,40 @@
+:root{
+  /* EasySale Brand Tokens */
+  --es-navy-950: #0b1420;
+  --es-navy-900: #0f1b2b;
+  --es-navy-800: #15263b;
+  --es-white:    #ffffff;
+
+  /* Accent (transaction/success) */
+  --es-teal-500: #18b7b0;
+  --es-teal-600: #12a39d;
+
+  --es-slate-200:#e6edf5;
+  --es-slate-400:#9fb0c6;
+}
+
+[data-theme="dark"]{
+  --surface-bg: var(--es-navy-950);
+  --surface-card: var(--es-navy-900);
+  --text-primary: var(--es-white);
+  --accent: var(--es-teal-500);
+}
+
+[data-theme="light"]{
+  --surface-bg: #ffffff;
+  --surface-card: #f6f8fb;
+  --text-primary: #0b1420;
+  --accent: var(--es-teal-600);
+}
+
+.brand-logo{ height: 32px; width: auto; display:inline-block; }
+.brand-icon{ height: 28px; width: 28px; display:inline-block; }
+
+@media (prefers-color-scheme: dark){
+  .brand-logo--auto{ content: url("../logos/easysale-logo.dark.w512.png"); }
+  .brand-icon--auto{ content: url("../icons/easysale-icon.dark.64x64.png"); }
+}
+@media (prefers-color-scheme: light){
+  .brand-logo--auto{ content: url("../logos/easysale-logo.light.w512.png"); }
+  .brand-icon--auto{ content: url("../icons/easysale-icon.light.64x64.png"); }
+}
