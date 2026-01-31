@@ -40,8 +40,7 @@ export function ReportingPage() {
   const isLoading = salesLoading || categoryLoading;
   const error = salesError ? salesError.message : null;
   const salesSummary = salesData?.summary;
-  // Period changes are not currently returned by the API - use 0 as default
-  const periodChanges = { revenue_change: 0, transaction_change: 0, avg_transaction_change: 0, items_change: 0 };
+  const periodChanges = salesData?.changes;
 
   // Calculate summary cards from API data with period comparison
   const summaryCards = salesSummary ? [
@@ -329,7 +328,7 @@ export function ReportingPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-surface-elevated rounded-lg p-4 text-center">
                     <DollarSign className="w-8 h-8 mx-auto mb-2 text-primary-500" />
-                    <p className="text-2xl font-bold text-white">${salesSummary.total_sales.toFixed(0)}</p>
+                    <p className="text-2xl font-bold text-white">${salesSummary.total_revenue.toFixed(0)}</p>
                     <p className="text-xs text-text-tertiary">Total Revenue</p>
                   </div>
                   <div className="bg-surface-elevated rounded-lg p-4 text-center">

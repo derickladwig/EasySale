@@ -123,9 +123,8 @@ export const BulkOperations: React.FC<BulkOperationsProps> = ({
         format: exportFormat,
       });
 
-      // Create download link - response.data is the export content
-      const exportData = (response as { data: string }).data;
-      const blob = new Blob([exportData], {
+      // Create download link
+      const blob = new Blob([response.data], {
         type: exportFormat === 'json' ? 'application/json' : 'text/csv',
       });
       const url = window.URL.createObjectURL(blob);

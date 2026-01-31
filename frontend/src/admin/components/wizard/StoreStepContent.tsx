@@ -12,7 +12,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@common/components/atoms/Button';
 import { cn } from '@common/utils/classNames';
-import type { StepContentProps, StoreStepData } from './types';
+import type { StepContentProps, StoreStepData, TaxRate } from './types';
 import wizardStyles from '../../pages/SetupWizard.module.css';
 import {
   CURRENCY_OPTIONS,

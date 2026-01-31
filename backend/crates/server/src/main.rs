@@ -234,9 +234,11 @@ async fn main() -> std::io::Result<()> {
                     .route("/config", web::get().to(handlers::network::get_config))
                     .route("/config", web::post().to(handlers::network::save_config))
             )
-            // Setup wizard data import endpoint (public - no auth required during first-run setup)
-            // This is separate from the protected /api/data-management/import endpoint
+            // Setup wizard data import endpoints (public - no auth required during first-run setup)
+            // These are separate from the protected /api/data-management endpoints
             .route("/api/setup/import", web::post().to(handlers::data_management::import_data))
+            .route("/api/setup/import-demo", web::post().to(handlers::data_management::import_demo_data))
+            .route("/api/setup/clear-demo", web::delete().to(handlers::data_management::clear_demo_data))
             .wrap(ContextExtractor) // Extract user context from JWT for all routes EXCEPT those registered above
             // Fresh install endpoints (public - no auth required for fresh install)
             // Gated by ProfileGate middleware - allowed in prod only if database is empty

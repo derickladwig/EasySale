@@ -227,6 +227,10 @@ export const LazyProductImportPage = lazyWithFallback(
   () => import('../products/pages/ProductImportPage').then(m => ({ default: m.ProductImportPage }))
 );
 
+export const LazyCategoryLookupPage = lazyWithFallback(
+  () => import('../products/pages/CategoryLookupPage').then(m => ({ default: m.CategoryLookupPage }))
+);
+
 // ============================================================================
 // Inventory (Parts Mapping is specialized)
 // ============================================================================

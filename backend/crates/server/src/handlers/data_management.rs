@@ -8,6 +8,19 @@ use crate::models::CreateProductRequest;
 use crate::services::ProductService;
 use crate::config::loader::ConfigLoader;
 
+/// Escape a CSV field value to prevent injection and handle special characters
+fn escape_csv_field(value: &str) -> String {
+    // If the value contains comma, quote, newline, or starts with special chars, wrap in quotes
+    if value.contains(',') || value.contains('"') || value.contains('\n') || value.contains('\r')
+        || value.starts_with('=') || value.starts_with('+') || value.starts_with('-') || value.starts_with('@')
+    {
+        // Double any existing quotes and wrap in quotes
+        format!("\"{}\"", value.replace('"', "\"\""))
+    } else {
+        value.to_string()
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct BackupInfo {
     pub id: i64,
@@ -402,8 +415,10 @@ async fn generate_entity_export(
     
     match entity_type {
         "products" => {
-            let rows: Vec<(String, String, String, Option<String>, f64, f64, f64, String)> = sqlx::query_as(
-                r"SELECT id, sku, name, description, unit_price, cost, quantity_on_hand, category 
+            // Enhanced product export with attributes and vendor info
+            let rows: Vec<(String, String, String, Option<String>, f64, f64, f64, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+                r"SELECT id, sku, name, description, unit_price, cost, quantity_on_hand, category, 
+                         subcategory, barcode, barcode_type, attributes, store_id
                   FROM products WHERE tenant_id = ? AND is_active = 1 ORDER BY name"
             )
             .bind(tenant_id)
@@ -411,17 +426,84 @@ async fn generate_entity_export(
             .await?;
             
             if format == "csv" {
-                writeln!(file, "ID,SKU,Name,Description,Price,Cost,Quantity,Category")?;
-                for (id, sku, name, desc, price, cost, qty, cat) in &rows {
-                    writeln!(file, "{},{},{},{},{:.2},{:.2},{:.2},{}", 
-                        id, sku, name.replace(',', ";"), desc.as_deref().unwrap_or("").replace(',', ";"), 
-                        price, cost, qty, cat)?;
+                // Enhanced headers with custom attributes and vendor columns
+                writeln!(file, "sku,name,category,unit_price,cost,store_id,description,subcategory,quantity,barcode,barcode_type,attr_color,attr_size,attr_brand,attr_weight,attr_material,attr_custom_1,attr_custom_2,attr_custom_3,vendor_1_name,vendor_1_sku,vendor_1_cost,notes,tax_class")?;
+                
+                for (id, sku, name, desc, price, cost, qty, cat, subcat, barcode, barcode_type, attrs_json, store_id) in &rows {
+                    // Parse attributes JSON
+                    let attrs: serde_json::Value = attrs_json
+                        .as_ref()
+                        .and_then(|s| serde_json::from_str(s).ok())
+                        .unwrap_or(serde_json::json!({}));
+                    
+                    let get_attr = |key: &str| -> String {
+                        attrs.get(key)
+                            .and_then(|v| v.as_str())
+                            .map(|s| escape_csv_field(s))
+                            .unwrap_or_default()
+                    };
+                    
+                    // Extract vendor info from attributes
+                    let vendors = attrs.get("vendors").and_then(|v| v.as_array());
+                    let (v1_name, v1_sku, v1_cost) = if let Some(vendors) = vendors {
+                        if let Some(v1) = vendors.first() {
+                            (
+                                v1.get("name").and_then(|v| v.as_str()).map(escape_csv_field).unwrap_or_default(),
+                                v1.get("sku").and_then(|v| v.as_str()).map(escape_csv_field).unwrap_or_default(),
+                                v1.get("cost").and_then(|v| v.as_str()).map(escape_csv_field).unwrap_or_default(),
+                            )
+                        } else {
+                            (String::new(), String::new(), String::new())
+                        }
+                    } else {
+                        // Try legacy vendor format
+                        let vendor = attrs.get("vendor");
+                        (
+                            vendor.and_then(|v| v.get("name")).and_then(|v| v.as_str()).map(escape_csv_field).unwrap_or_default(),
+                            vendor.and_then(|v| v.get("sku")).and_then(|v| v.as_str()).map(escape_csv_field).unwrap_or_default(),
+                            vendor.and_then(|v| v.get("cost")).and_then(|v| v.as_str()).map(escape_csv_field).unwrap_or_default(),
+                        )
+                    };
+                    
+                    writeln!(file, "{},{},{},{:.2},{:.2},{},{},{},{:.2},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}", 
+                        escape_csv_field(sku),
+                        escape_csv_field(name),
+                        escape_csv_field(cat),
+                        price,
+                        cost,
+                        escape_csv_field(store_id.as_deref().unwrap_or("default-store")),
+                        escape_csv_field(desc.as_deref().unwrap_or("")),
+                        escape_csv_field(subcat.as_deref().unwrap_or("")),
+                        qty,
+                        escape_csv_field(barcode.as_deref().unwrap_or("")),
+                        escape_csv_field(barcode_type.as_deref().unwrap_or("")),
+                        get_attr("color"),
+                        get_attr("size"),
+                        get_attr("brand"),
+                        get_attr("weight"),
+                        get_attr("material"),
+                        get_attr("custom_1"),
+                        get_attr("custom_2"),
+                        get_attr("custom_3"),
+                        v1_name,
+                        v1_sku,
+                        v1_cost,
+                        get_attr("notes"),
+                        get_attr("tax_class"),
+                    )?;
                 }
             } else {
-                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, sku, name, desc, price, cost, qty, cat)| {
+                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, sku, name, desc, price, cost, qty, cat, subcat, barcode, barcode_type, attrs_json, store_id)| {
+                    let attrs: serde_json::Value = attrs_json
+                        .as_ref()
+                        .and_then(|s| serde_json::from_str(s).ok())
+                        .unwrap_or(serde_json::json!({}));
+                    
                     serde_json::json!({
                         "id": id, "sku": sku, "name": name, "description": desc,
-                        "price": price, "cost": cost, "quantity": qty, "category": cat
+                        "price": price, "cost": cost, "quantity": qty, "category": cat,
+                        "subcategory": subcat, "barcode": barcode, "barcode_type": barcode_type,
+                        "store_id": store_id, "attributes": attrs
                     })
                 }).collect();
                 serde_json::to_writer_pretty(&file, &json_rows)?;
@@ -1339,6 +1421,254 @@ pub async fn cleanup_data(
         deleted_count,
         operation: req.operation.clone(),
     }))
+}
+
+/// Demo import request
+#[derive(Debug, Deserialize)]
+pub struct DemoImportRequest {
+    pub entity_types: Vec<String>,
+}
+
+/// Demo import response
+#[derive(Debug, Serialize)]
+pub struct DemoImportResponse {
+    pub imported: DemoImportCounts,
+}
+
+#[derive(Debug, Serialize)]
+pub struct DemoImportCounts {
+    pub products: i64,
+    pub customers: i64,
+    pub vendors: i64,
+}
+
+/// Import demo data from bundled CSV files
+/// POST /api/setup/import-demo
+pub async fn import_demo_data(
+    pool: web::Data<SqlitePool>,
+    config_loader: web::Data<ConfigLoader>,
+    req: web::Json<DemoImportRequest>,
+) -> Result<HttpResponse> {
+    let tenant_id = get_current_tenant_id();
+    let mut counts = DemoImportCounts {
+        products: 0,
+        customers: 0,
+        vendors: 0,
+    };
+    
+    // Demo data directory - check multiple possible locations
+    let demo_dirs = vec![
+        "./data/demo-import",
+        "../data/demo-import",
+        "/app/data/demo-import",
+        "/data/demo-import",
+    ];
+    
+    let demo_dir = demo_dirs.iter()
+        .find(|dir| std::path::Path::new(dir).exists())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| "./data/demo-import".to_string());
+    
+    for entity_type in &req.entity_types {
+        match entity_type.as_str() {
+            "products" => {
+                let csv_path = format!("{}/demo_products.csv", demo_dir);
+                if let Ok(csv_data) = std::fs::read_to_string(&csv_path) {
+                    // Filter out comment lines (starting with #)
+                    let filtered_csv: String = csv_data
+                        .lines()
+                        .filter(|line| !line.trim().starts_with('#'))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    
+                    match import_products(pool.clone(), config_loader.clone(), &filtered_csv, &tenant_id).await {
+                        Ok(response) => {
+                            if let Ok(body) = response.into_body().try_into_bytes() {
+                                if let Ok(import_resp) = serde_json::from_slice::<ImportResponse>(&body) {
+                                    counts.products = import_resp.imported;
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            tracing::error!("Failed to import demo products: {:?}", e);
+                        }
+                    }
+                } else {
+                    tracing::warn!("Demo products CSV not found at: {}", csv_path);
+                }
+            }
+            "customers" => {
+                let csv_path = format!("{}/demo_customers.csv", demo_dir);
+                if let Ok(csv_data) = std::fs::read_to_string(&csv_path) {
+                    // Filter out comment lines
+                    let filtered_csv: String = csv_data
+                        .lines()
+                        .filter(|line| !line.trim().starts_with('#'))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    
+                    // For customers, we need to transform first_name + last_name to name
+                    let transformed_csv = transform_customer_csv(&filtered_csv);
+                    
+                    match import_customers(pool.clone(), &transformed_csv, &tenant_id).await {
+                        Ok(response) => {
+                            if let Ok(body) = response.into_body().try_into_bytes() {
+                                if let Ok(import_resp) = serde_json::from_slice::<ImportResponse>(&body) {
+                                    counts.customers = import_resp.imported;
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            tracing::error!("Failed to import demo customers: {:?}", e);
+                        }
+                    }
+                } else {
+                    tracing::warn!("Demo customers CSV not found at: {}", csv_path);
+                }
+            }
+            "vendors" => {
+                let csv_path = format!("{}/demo_vendors.csv", demo_dir);
+                if let Ok(csv_data) = std::fs::read_to_string(&csv_path) {
+                    // Filter out comment lines
+                    let filtered_csv: String = csv_data
+                        .lines()
+                        .filter(|line| !line.trim().starts_with('#'))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    
+                    match import_vendors(pool.clone(), &filtered_csv, &tenant_id).await {
+                        Ok(response) => {
+                            if let Ok(body) = response.into_body().try_into_bytes() {
+                                if let Ok(import_resp) = serde_json::from_slice::<ImportResponse>(&body) {
+                                    counts.vendors = import_resp.imported;
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            tracing::error!("Failed to import demo vendors: {:?}", e);
+                        }
+                    }
+                } else {
+                    tracing::warn!("Demo vendors CSV not found at: {}", csv_path);
+                }
+            }
+            _ => {
+                tracing::warn!("Unknown entity type for demo import: {}", entity_type);
+            }
+        }
+    }
+    
+    Ok(HttpResponse::Ok().json(DemoImportResponse { imported: counts }))
+}
+
+/// Transform customer CSV from first_name/last_name format to name format
+fn transform_customer_csv(csv_data: &str) -> String {
+    let mut reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .flexible(true)
+        .trim(csv::Trim::All)
+        .from_reader(csv_data.as_bytes());
+    
+    let headers = match reader.headers() {
+        Ok(h) => h.clone(),
+        Err(_) => return csv_data.to_string(),
+    };
+    
+    // Find first_name and last_name columns
+    let first_name_idx = headers.iter().position(|h| h.trim_end_matches('*').to_lowercase() == "first_name");
+    let last_name_idx = headers.iter().position(|h| h.trim_end_matches('*').to_lowercase() == "last_name");
+    
+    if first_name_idx.is_none() || last_name_idx.is_none() {
+        return csv_data.to_string();
+    }
+    
+    let first_idx = first_name_idx.unwrap();
+    let last_idx = last_name_idx.unwrap();
+    
+    // Build new headers (replace first_name with name, skip last_name)
+    let mut new_headers: Vec<String> = Vec::new();
+    for (i, h) in headers.iter().enumerate() {
+        if i == first_idx {
+            new_headers.push("name".to_string());
+        } else if i == last_idx {
+            // Skip last_name column
+            continue;
+        } else {
+            new_headers.push(h.trim_end_matches('*').to_string());
+        }
+    }
+    
+    let mut output = vec![new_headers.join(",")];
+    
+    for result in reader.records() {
+        if let Ok(record) = result {
+            let mut new_row: Vec<String> = Vec::new();
+            let first_name = record.get(first_idx).unwrap_or("").trim();
+            let last_name = record.get(last_idx).unwrap_or("").trim();
+            let full_name = format!("{} {}", first_name, last_name).trim().to_string();
+            
+            for (i, field) in record.iter().enumerate() {
+                if i == first_idx {
+                    new_row.push(format!("\"{}\"", full_name));
+                } else if i == last_idx {
+                    // Skip last_name
+                    continue;
+                } else {
+                    new_row.push(format!("\"{}\"", field.trim()));
+                }
+            }
+            output.push(new_row.join(","));
+        }
+    }
+    
+    output.join("\n")
+}
+
+/// Clear demo data
+/// DELETE /api/setup/clear-demo
+pub async fn clear_demo_data(
+    pool: web::Data<SqlitePool>,
+) -> Result<HttpResponse> {
+    let tenant_id = get_current_tenant_id();
+    
+    // Delete products with DEMO- prefix
+    let products_deleted = sqlx::query(
+        "DELETE FROM products WHERE tenant_id = ? AND sku LIKE 'DEMO-%'"
+    )
+    .bind(&tenant_id)
+    .execute(pool.get_ref())
+    .await
+    .map(|r| r.rows_affected())
+    .unwrap_or(0);
+    
+    // Delete customers imported from demo (check for demo email patterns or notes)
+    // For safety, only delete customers with specific demo markers
+    let customers_deleted = sqlx::query(
+        "DELETE FROM customers WHERE tenant_id = ? AND (email LIKE '%@email.com' OR email LIKE '%@example.com')"
+    )
+    .bind(&tenant_id)
+    .execute(pool.get_ref())
+    .await
+    .map(|r| r.rows_affected())
+    .unwrap_or(0);
+    
+    // Delete vendors with demo keywords
+    let vendors_deleted = sqlx::query(
+        "DELETE FROM vendors WHERE tenant_id = ? AND (name LIKE 'Tech Distributors%' OR name LIKE 'Textile World%' OR name LIKE 'Home Goods Inc%' OR name LIKE 'Tool Supply Co%' OR name LIKE 'Food Distributors%' OR name LIKE 'Audio Wholesale%' OR name LIKE 'Fashion Supply%' OR name LIKE 'General Supplies%')"
+    )
+    .bind(&tenant_id)
+    .execute(pool.get_ref())
+    .await
+    .map(|r| r.rows_affected())
+    .unwrap_or(0);
+    
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "cleared": {
+            "products": products_deleted,
+            "customers": customers_deleted,
+            "vendors": vendors_deleted
+        }
+    })))
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {

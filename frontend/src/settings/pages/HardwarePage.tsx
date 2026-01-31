@@ -65,7 +65,7 @@ interface CashDrawer {
 interface PaymentTerminal {
   id: number;
   name: string;
-  type: 'Stripe Terminal' | 'Square' | 'PAX' | 'Ingenico' | 'Manual Entry';
+  type: 'Stripe Terminal' | 'Square' | 'PAX' | 'Ingenico';
   connection_settings: string;
   status: 'connected' | 'disconnected';
   is_default: boolean;

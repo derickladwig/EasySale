@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* global process, console */
 /**
  * Bundle Budget Checker (Enhanced CI Version)
  * 
@@ -25,14 +24,13 @@
  *   BUNDLE_BUDGET_JSON=true      Output JSON format
  */
 
-import { readdirSync, statSync, existsSync, readFileSync } from 'fs';
+import { readdirSync, statSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { gzipSync, brotliCompressSync } from 'zlib';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-// __dirname available for path resolution if needed
-const _dirname = dirname(__filename);
+const __dirname = dirname(__filename);
 
 // Parse command line arguments
 const args = process.argv.slice(2);

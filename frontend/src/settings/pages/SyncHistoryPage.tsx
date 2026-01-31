@@ -25,7 +25,7 @@ import {
   Eye,
   AlertTriangle,
 } from 'lucide-react';
-import { syncApi } from '../../services/syncApi';
+import { syncApi, SyncStatus } from '../../services/syncApi';
 import { SyncDetailsModal, useSyncDetailsModal } from '../components/SyncDetailsModal';
 import { useStores } from '../../admin/hooks/useStores';
 import { useCapabilities } from '@common/contexts';

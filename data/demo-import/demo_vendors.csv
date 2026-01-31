@@ -1,0 +1,14 @@
+# Demo Vendors Import - Sample Supplier Base
+# Fields marked with * are REQUIRED
+# This demo data includes suppliers for electronics, apparel, home goods, tools, and food
+# Keywords help with automatic vendor detection during document processing
+#
+name*,email,phone,address,website,tax_id,contact_name,payment_terms,notes,keywords
+"Tech Distributors","orders@techdist.com","555-0200","789 Industrial Blvd, Commerce City, TX 75001","https://techdistributors.com","12-3456789","Bob Wilson","Net 30","Primary electronics and tech supplier - reliable delivery","TECH DIST,TD,TECHDIST,TECH DISTRIBUTORS"
+"Textile World","sales@textileworld.com","555-0201","321 Factory Road, Detroit, MI 48201","https://textileworld.com","23-4567890","Alice Brown","Net 15","Clothing and fabric supplier - quality materials","TEXTILE,TW,TEXTILE WORLD,TEXTILEWORLD"
+"Home Goods Inc","purchasing@homegoods.com","555-0202","456 Warehouse Way, Chicago, IL 60601","https://homegoodsinc.com","34-5678901","Charlie Davis","Net 30","Kitchen and home products - wide selection","HOME GOODS,HG,HOMEGOODS,HOME GOODS INC"
+"Tool Supply Co","orders@toolsupply.com","555-0203","890 Hardware Lane, Cleveland, OH 44101","https://toolsupplyco.com","45-6789012","Diana Evans","Net 45","Professional and DIY tools - competitive pricing","TOOL SUPPLY,TSC,TOOLSUPPLY,TOOL SUPPLY CO"
+"Food Distributors","wholesale@fooddist.com","555-0204","234 Fresh Market Drive, Atlanta, GA 30301","https://fooddistributors.com","56-7890123","Edward Foster","Net 15","Organic and specialty food items - weekly delivery","FOOD DIST,FD,FOODDIST,FOOD DISTRIBUTORS"
+"Audio Wholesale","sales@audiowholesale.com","555-0205","567 Sound Street, Nashville, TN 37201","https://audiowholesale.com","67-8901234","Fiona Green","Net 30","Audio equipment and accessories - authorized dealer","AUDIO WHOLESALE,AW,AUDIOWHOLESALE"
+"Fashion Supply","orders@fashionsupply.com","555-0206","123 Style Avenue, Los Angeles, CA 90001","https://fashionsupply.com","78-9012345","George Harris","Net 30","Footwear and fashion accessories - trend-forward","FASHION SUPPLY,FS,FASHIONSUPPLY"
+"General Supplies Co","info@generalsupplies.com","555-0207","456 Main Street, Denver, CO 80201","","89-0123456","Helen Irving","Net 30","General merchandise - backup supplier","GENERAL SUPPLIES,GSC,GENERAL"

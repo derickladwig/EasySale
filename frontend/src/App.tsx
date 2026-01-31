@@ -47,6 +47,7 @@ import {
   LazyHardwarePage,
   LazyNetworkPage,
   LazyNetworkSettingsPage,
+  LazyBrandingSettingsPage,
   LazyPerformancePage,
   LazyFeatureFlagsPage,
   LazyLocalizationPage,
@@ -66,6 +67,7 @@ import {
   LazyTransactionHistoryPage,
   LazyPartsMappingPage,
   LazyOAuthCallbackPage,
+  LazyCategoryLookupPage,
 } from './routes/lazyRoutes';
 
 // Create a client
@@ -319,6 +321,7 @@ function App() {
                             <Route path="data" element={<LazyDataManagementPage />} />
                             <Route path="data/parts-mapping" element={<LazyPartsMappingPage />} />
                             <Route path="data/import" element={<LazyProductImportPage />} />
+                            <Route path="data/categories" element={<LazyCategoryLookupPage />} />
                             {ENABLE_EXPORTS && <Route path="exports" element={<LazyExportsPage />} />}
                             <Route path="capabilities" element={<LazyCapabilitiesDashboardPage />} />
                             <Route path="health" element={<LazySyncDashboardPage />} />

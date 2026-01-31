@@ -20,7 +20,7 @@
 import React from 'react';
 import { Card } from '@common/components/molecules/Card';
 import { Button } from '@common/components/atoms/Button';
-import { usePermissions } from '@common/contexts/PermissionsContext';
+import { usePermissions, Permission } from '@common/contexts/PermissionsContext';
 import { 
   CheckCircle, 
   XCircle, 
@@ -89,7 +89,7 @@ export interface IntegrationCardProps {
 type DisplayState = 'connected' | 'not_connected' | 'error' | 'syncing' | 'bug' | 'disabled';
 
 export const IntegrationCard: React.FC<IntegrationCardProps> = ({
-  id: _id,
+  id,
   name,
   description,
   status,

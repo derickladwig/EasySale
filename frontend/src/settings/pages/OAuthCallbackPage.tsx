@@ -26,18 +26,6 @@ export const OAuthCallbackPage: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [platform, setPlatform] = useState<string>('');
 
-  // Helper function - declared before useEffect that uses it
-  const formatPlatformName = (p: string): string => {
-    const names: Record<string, string> = {
-      quickbooks: 'QuickBooks',
-      stripe: 'Stripe',
-      clover: 'Clover',
-      woocommerce: 'WooCommerce',
-      square: 'Square',
-    };
-    return names[p.toLowerCase()] || p;
-  };
-
   useEffect(() => {
     const platformParam = searchParams.get('platform') || '';
     const successParam = searchParams.get('success');
@@ -93,6 +81,17 @@ export const OAuthCallbackPage: React.FC = () => {
       window.close();
     }, 2000);
   }, [searchParams]);
+
+  const formatPlatformName = (p: string): string => {
+    const names: Record<string, string> = {
+      quickbooks: 'QuickBooks',
+      stripe: 'Stripe',
+      clover: 'Clover',
+      woocommerce: 'WooCommerce',
+      square: 'Square',
+    };
+    return names[p.toLowerCase()] || p;
+  };
 
   const renderIcon = () => {
     switch (status) {

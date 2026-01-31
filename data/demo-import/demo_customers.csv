@@ -1,0 +1,21 @@
+# Demo Customers Import - Sample Customer Base
+# Fields marked with * are REQUIRED
+# This demo data includes retail, wholesale, and VIP customers
+# All customers have realistic contact information for testing
+#
+first_name*,last_name*,email,phone,company,address,city,state,zip,country,pricing_tier,credit_limit,tax_exempt,notes
+"John","Anderson","john.anderson@email.com","555-0101","","123 Oak Street","Springfield","IL","62701","US","retail","500.00","false","Regular customer since 2024"
+"Sarah","Mitchell","sarah.mitchell@techcorp.com","555-0102","TechCorp Industries","456 Innovation Drive","Austin","TX","78701","US","wholesale","5000.00","true","Wholesale account - Net 30 terms"
+"Michael","Chen","m.chen@email.com","555-0103","","789 Maple Avenue","San Francisco","CA","94102","US","retail","750.00","false","Prefers email communication"
+"Emily","Rodriguez","emily.r@globalretail.com","555-0104","Global Retail Solutions","321 Commerce Blvd","Miami","FL","33101","US","wholesale","10000.00","true","Large volume buyer - priority shipping"
+"David","Thompson","david.thompson@email.com","555-0105","","567 Pine Road","Seattle","WA","98101","US","vip","2000.00","false","VIP member - 10% discount"
+"Jennifer","Williams","j.williams@email.com","555-0106","Williams & Associates","890 Business Park","Denver","CO","80201","US","retail","1000.00","false","Referred by David Thompson"
+"Robert","Garcia","rgarcia@constructionplus.com","555-0107","Construction Plus LLC","234 Industrial Way","Phoenix","AZ","85001","US","wholesale","7500.00","true","Construction supplies buyer"
+"Amanda","Lee","amanda.lee@email.com","555-0108","","678 Sunset Boulevard","Los Angeles","CA","90001","US","retail","500.00","false","New customer - first purchase Jan 2026"
+"Christopher","Brown","c.brown@brownenterprises.com","555-0109","Brown Enterprises","901 Executive Plaza","Chicago","IL","60601","US","vip","15000.00","true","Long-term VIP - special pricing"
+"Jessica","Martinez","jessica.m@email.com","555-0110","","345 Garden Lane","Portland","OR","97201","US","retail","600.00","false","Eco-friendly product preference"
+"William","Davis","w.davis@davisgroup.com","555-0111","Davis Group Inc","567 Tower Street","New York","NY","10001","US","wholesale","8000.00","true","East coast distribution"
+"Ashley","Wilson","ashley.wilson@email.com","555-0112","","890 Riverside Drive","Nashville","TN","37201","US","retail","400.00","false","Music industry professional"
+"James","Taylor","j.taylor@taylortech.com","555-0113","Taylor Tech Solutions","123 Tech Park","Boston","MA","02101","US","vip","12000.00","true","IT equipment buyer - quarterly orders"
+"Stephanie","Moore","s.moore@email.com","555-0114","","456 College Avenue","Atlanta","GA","30301","US","retail","550.00","false","Student discount eligible"
+"Daniel","Jackson","daniel.j@jacksonhome.com","555-0115","Jackson Home Goods","789 Retail Row","Dallas","TX","75201","US","wholesale","6000.00","true","Home goods retailer - monthly orders"

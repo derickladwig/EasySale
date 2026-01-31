@@ -130,7 +130,7 @@ test.describe('Document Workflow', () => {
     // Check for filter elements (state, vendor, date filters)
     // These may be in a collapsed state or visible
     const filterSection = page.locator('[class*="filter"], [class*="Filter"]').first();
-    const _hasFilters = await filterSection.isVisible().catch(() => false);
+    const hasFilters = await filterSection.isVisible().catch(() => false);
     
     // Either filters are visible or we have a simple list view
     expect(true).toBeTruthy(); // Page loads without error

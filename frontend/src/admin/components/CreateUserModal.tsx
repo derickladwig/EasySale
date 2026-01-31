@@ -19,7 +19,7 @@ export function CreateUserModal({
   isOpen,
   onClose,
   stores,
-  stations: _stations,
+  stations,
   onSave,
 }: CreateUserModalProps) {
   const roles = [
