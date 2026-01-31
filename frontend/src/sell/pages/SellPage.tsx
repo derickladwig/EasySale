@@ -266,12 +266,16 @@ export function SellPage() {
           ${lastSale.customer ? `<p>Customer: ${lastSale.customer.name}</p>` : ''}
         </div>
         <div class="items">
-          ${lastSale.items.map(item => `
-            <div class="item">
-              <span>${item.product.name} x${item.quantity}</span>
-              <span>${formatCurrency((item.product.unitPrice || 0) * item.quantity)}</span>
-            </div>
-          `).join('')}
+          ${lastSale.items.map(item => {
+            const attrs = item.product.attributes || {};
+            const attrStr = Object.entries(attrs).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(', ');
+            return `
+              <div class="item">
+                <span>${item.product.name} x${item.quantity}${attrStr ? `<br><small style="color:#666">${attrStr}</small>` : ''}</span>
+                <span>${formatCurrency((item.product.unitPrice || 0) * item.quantity)}</span>
+              </div>
+            `;
+          }).join('')}
         </div>
         <div class="total">
           <div class="item">
@@ -882,6 +886,16 @@ export function SellPage() {
                             <span className="text-text-secondary">{formatCurrency(originalPrice)} each</span>
                           )}
                         </div>
+                        {/* Display product attributes (size, color, brand, etc.) */}
+                        {item.product.attributes && Object.keys(item.product.attributes).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {Object.entries(item.product.attributes).slice(0, 3).map(([key, value]) => (
+                              <span key={key} className="text-xs px-1.5 py-0.5 bg-surface-2 rounded text-text-tertiary">
+                                {key}: {String(value)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {item.discountReason && (
                           <p className="text-xs text-warning mt-1">{item.discountReason}</p>
                         )}

@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@common/contexts/AuthContext';
 import { useConfig } from '../../config/ConfigProvider';
 import { useAppInfo } from '@common/hooks/useAppInfo';
@@ -209,6 +209,7 @@ function LoginPageContent({
   onLoginError,
 }: LoginPageProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const { branding, profile, presetPack } = useConfig();
   
@@ -255,7 +256,9 @@ function LoginPageContent({
 
       await login(loginPayload);
       onLoginSuccess?.('user-authenticated');
-      navigate('/');
+      // Redirect to the page user was trying to access, or home
+      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+      navigate(from, { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Login failed';
       setError(msg);

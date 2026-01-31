@@ -92,8 +92,8 @@ pub async fn create_sale(
     let discount_amount = body.discount_amount.unwrap_or(0.0);
     subtotal -= discount_amount;
     
-    // Calculate tax (13% - should come from config in production)
-    let tax_rate = 0.13;
+    // Get tax rate from localization settings or default to 13%
+    let tax_rate = get_tenant_tax_rate(&pool, &tenant_id).await;
     let tax_amount = subtotal * tax_rate;
     let total_amount = subtotal + tax_amount;
     
@@ -629,6 +629,44 @@ struct ReceiptLineItem {
     unit_price: f64,
     total: f64,
     product_name: Option<String>,
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/// Get the tax rate for a tenant from localization settings or tax_rules table
+async fn get_tenant_tax_rate(pool: &SqlitePool, tenant_id: &str) -> f64 {
+    // First try to get default tax rule
+    let tax_rule: Option<(f64,)> = sqlx::query_as(
+        "SELECT rate FROM tax_rules WHERE tenant_id = ? AND is_default = 1 LIMIT 1"
+    )
+    .bind(tenant_id)
+    .fetch_optional(pool)
+    .await
+    .ok()
+    .flatten();
+    
+    if let Some((rate,)) = tax_rule {
+        return rate / 100.0; // Convert percentage to decimal
+    }
+    
+    // Fall back to localization settings
+    let localization: Option<(f64,)> = sqlx::query_as(
+        "SELECT tax_rate FROM localization_settings WHERE tenant_id = ?"
+    )
+    .bind(tenant_id)
+    .fetch_optional(pool)
+    .await
+    .ok()
+    .flatten();
+    
+    if let Some((rate,)) = localization {
+        return rate / 100.0; // Convert percentage to decimal
+    }
+    
+    // Default to 13% if no settings found
+    0.13
 }
 
 // ============================================================================

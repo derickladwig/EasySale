@@ -768,6 +768,62 @@ pub async fn undo_decision(
     }
 }
 
+/// GET /api/cases/:id/file
+/// Download the source file for a review case
+pub async fn download_case_file(
+    pool: web::Data<SqlitePool>,
+    path: web::Path<String>,
+    req: HttpRequest,
+) -> HttpResponse {
+    let case_id = path.into_inner();
+    let tenant_id = req.extensions()
+        .get::<crate::middleware::context::UserContext>()
+        .map(|ctx| ctx.tenant_id.clone())
+        .unwrap_or_else(|| "default".to_string());
+    
+    // Get file path from database
+    let result: Option<(String, Option<String>)> = sqlx::query_as(
+        "SELECT source_file_path, source_file_type FROM review_cases WHERE id = ? AND tenant_id = ?"
+    )
+    .bind(&case_id)
+    .bind(&tenant_id)
+    .fetch_optional(pool.get_ref())
+    .await
+    .ok()
+    .flatten();
+    
+    match result {
+        Some((file_path, file_type)) => {
+            // Read file from disk
+            match std::fs::read(&file_path) {
+                Ok(contents) => {
+                    let mime_type = file_type.unwrap_or_else(|| "application/octet-stream".to_string());
+                    let filename = std::path::Path::new(&file_path)
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("document");
+                    
+                    HttpResponse::Ok()
+                        .content_type(mime_type)
+                        .insert_header(("Content-Disposition", format!("attachment; filename=\"{}\"", filename)))
+                        .body(contents)
+                }
+                Err(e) => {
+                    tracing::error!("Failed to read file {}: {:?}", file_path, e);
+                    HttpResponse::NotFound().json(serde_json::json!({
+                        "error": "File not found on disk"
+                    }))
+                }
+            }
+        }
+        None => {
+            HttpResponse::NotFound().json(serde_json::json!({
+                "error": "Case not found"
+            }))
+        }
+    }
+}
+
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/api/cases")
@@ -776,6 +832,10 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     .service(
         web::resource("/api/cases/{id}")
             .route(web::get().to(get_case))
+    )
+    .service(
+        web::resource("/api/cases/{id}/file")
+            .route(web::get().to(download_case_file))
     )
     .service(
         web::resource("/api/cases/{id}/decide")

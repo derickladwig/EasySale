@@ -467,46 +467,107 @@ export function ProductImportPage() {
     </div>
   );
 
-  // Render mapping step
-  const renderMapping = () => (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl font-semibold text-text-primary mb-2">Review Column Mapping</h2>
-        <p className="text-text-secondary">We detected {csvHeaders.length} columns in your file</p>
-      </div>
+  // Parse CSV data for preview
+  const getPreviewData = useCallback(() => {
+    if (!csvData) return [];
+    const lines = csvData.split('\n').filter(l => l.trim());
+    const dataLines = lines.slice(1, 6); // First 5 data rows
+    return dataLines.map(line => {
+      const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+      const row: Record<string, string> = {};
+      csvHeaders.forEach((header, idx) => {
+        row[header] = values[idx] || '';
+      });
+      return row;
+    });
+  }, [csvData, csvHeaders]);
 
-      <div className="bg-surface-base border border-border rounded-xl p-6">
-        <h3 className="font-medium text-text-primary mb-4">Detected Columns</h3>
-        <div className="flex flex-wrap gap-2">
-          {csvHeaders.map((header, idx) => {
-            const isRequired = PRODUCT_FIELDS.required.some(f => f.name === header.toLowerCase());
-            return (
-              <span
-                key={idx}
-                className={`px-3 py-1 rounded text-sm ${
-                  isRequired
-                    ? 'bg-success-500/10 text-success-400 border border-success-500/30'
-                    : 'bg-surface-elevated text-text-secondary'
-                }`}
-              >
-                {header}
-                {isRequired && <CheckCircle2 className="w-3 h-3 inline ml-1" />}
-              </span>
-            );
-          })}
+  // Render mapping step
+  const renderMapping = () => {
+    const previewData = getPreviewData();
+    
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-text-primary mb-2">Review Column Mapping</h2>
+          <p className="text-text-secondary">We detected {csvHeaders.length} columns in your file</p>
+        </div>
+
+        <div className="bg-surface-base border border-border rounded-xl p-6">
+          <h3 className="font-medium text-text-primary mb-4">Detected Columns</h3>
+          <div className="flex flex-wrap gap-2">
+            {csvHeaders.map((header, idx) => {
+              const isRequired = PRODUCT_FIELDS.required.some(f => f.name === header.toLowerCase());
+              return (
+                <span
+                  key={idx}
+                  className={`px-3 py-1 rounded text-sm ${
+                    isRequired
+                      ? 'bg-success-500/10 text-success-400 border border-success-500/30'
+                      : 'bg-surface-elevated text-text-secondary'
+                  }`}
+                >
+                  {header}
+                  {isRequired && <CheckCircle2 className="w-3 h-3 inline ml-1" />}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Data Preview Table */}
+        {previewData.length > 0 && (
+          <div className="bg-surface-base border border-border rounded-xl p-6">
+            <h3 className="font-medium text-text-primary mb-4">Data Preview (First 5 Rows)</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    {csvHeaders.slice(0, 8).map((header, idx) => (
+                      <th key={idx} className="px-3 py-2 text-left text-text-secondary font-medium">
+                        {header}
+                      </th>
+                    ))}
+                    {csvHeaders.length > 8 && (
+                      <th className="px-3 py-2 text-left text-text-tertiary">
+                        +{csvHeaders.length - 8} more
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewData.map((row, rowIdx) => (
+                    <tr key={rowIdx} className="border-b border-border/50 hover:bg-surface-elevated/50">
+                      {csvHeaders.slice(0, 8).map((header, colIdx) => (
+                        <td key={colIdx} className="px-3 py-2 text-text-primary truncate max-w-[150px]">
+                          {row[header] || <span className="text-text-tertiary italic">empty</span>}
+                        </td>
+                      ))}
+                      {csvHeaders.length > 8 && (
+                        <td className="px-3 py-2 text-text-tertiary">...</td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-text-tertiary mt-3">
+              Showing {previewData.length} of {csvData.split('\n').filter(l => l.trim()).length - 1} rows
+            </p>
+          </div>
+        )}
+
+        <div className="flex justify-between">
+          <Button variant="ghost" onClick={() => { setStep('upload'); setFile(null); setCsvData(''); }}>
+            Choose Different File
+          </Button>
+          <Button variant="primary" onClick={handleValidate}>
+            Validate Data
+          </Button>
         </div>
       </div>
-
-      <div className="flex justify-between">
-        <Button variant="ghost" onClick={() => { setStep('upload'); setFile(null); setCsvData(''); }}>
-          Choose Different File
-        </Button>
-        <Button variant="primary" onClick={handleValidate}>
-          Validate Data
-        </Button>
-      </div>
-    </div>
-  );
+    );
+  };
 
 
   // Render validate step

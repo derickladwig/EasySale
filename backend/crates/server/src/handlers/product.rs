@@ -728,6 +728,10 @@ pub struct StockAdjustmentRequest {
     pub reason: String,
     /// Optional notes
     pub notes: Option<String>,
+    /// Optional store ID for multi-store tracking
+    pub store_id: Option<String>,
+    /// Optional location ID for multi-location tracking
+    pub location_id: Option<String>,
 }
 
 /// POST /api/products/:id/stock/adjust
@@ -784,13 +788,15 @@ pub async fn adjust_stock(
     let adjustment_id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().to_rfc3339();
     
+    let store_id = body.store_id.clone().unwrap_or_else(|| "default".to_string());
+    
     let audit_result = sqlx::query(
         r#"
         INSERT INTO stock_adjustments (
             id, product_id, tenant_id, user_id,
             adjustment_type, quantity_before, quantity_after, quantity_change,
-            reason, notes, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            reason, notes, store_id, location_id, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#
     )
     .bind(&adjustment_id)
@@ -803,6 +809,8 @@ pub async fn adjust_stock(
     .bind(new_quantity - old_quantity)
     .bind(&body.reason)
     .bind(&body.notes)
+    .bind(&store_id)
+    .bind(&body.location_id)
     .bind(&now)
     .execute(pool_ref)
     .await;

@@ -32,6 +32,11 @@ export const ENABLE_EXPORTS =
   import.meta.env.VITE_ENABLE_EXPORTS !== 'false' && (IS_EXPORT_MODE || IS_FULL_MODE);
 export const ENABLE_REVIEW =
   import.meta.env.VITE_ENABLE_REVIEW !== 'false' && IS_FULL_MODE;
+// Additional feature flags for full build only
+export const ENABLE_INTEGRATIONS =
+  import.meta.env.VITE_ENABLE_INTEGRATIONS !== 'false' && IS_FULL_MODE;
+export const ENABLE_DATA_MANAGER =
+  import.meta.env.VITE_ENABLE_DATA_MANAGER !== 'false' && !IS_LITE_MODE;
 
 /**
  * Check if a specific feature is enabled in the current build
@@ -50,6 +55,10 @@ export function isFeatureEnabled(feature: string): boolean {
       return ENABLE_EXPORTS;
     case 'review':
       return ENABLE_REVIEW;
+    case 'integrations':
+      return ENABLE_INTEGRATIONS;
+    case 'data-manager':
+      return ENABLE_DATA_MANAGER;
     default:
       // Core features are always enabled
       return true;
@@ -84,6 +93,8 @@ export function getEnabledFeatures(): string[] {
   if (ENABLE_DOCUMENTS) features.push('documents');
   if (ENABLE_EXPORTS) features.push('exports');
   if (ENABLE_REVIEW) features.push('review');
+  if (ENABLE_INTEGRATIONS) features.push('integrations');
+  if (ENABLE_DATA_MANAGER) features.push('data-manager');
 
   return features;
 }

@@ -10,7 +10,7 @@ import { DemoModeIndicator } from './components/DemoModeIndicator';
 import { ProfileMenu } from './common/components/molecules/ProfileMenu';
 import { LogoWithFallback } from './common/components/atoms/LogoWithFallback';
 import { useStations } from './admin/hooks/useStations';
-import { ENABLE_DOCUMENTS, ENABLE_REVIEW, ENABLE_ADMIN, ENABLE_REPORTING } from './common/utils/buildVariant';
+import { ENABLE_DOCUMENTS, ENABLE_REVIEW, ENABLE_ADMIN, ENABLE_REPORTING, ENABLE_VENDOR_BILLS, ENABLE_EXPORTS, ENABLE_INTEGRATIONS, ENABLE_DATA_MANAGER } from './common/utils/buildVariant';
 
 import { Permission } from './common/contexts/PermissionsContext';
 
@@ -65,6 +65,10 @@ export function AppLayout() {
     if (item.id === 'review' && !ENABLE_REVIEW) return false;
     if (item.id === 'admin' && !ENABLE_ADMIN) return false;
     if (item.id === 'reporting' && !ENABLE_REPORTING) return false;
+    if (item.id === 'vendor-bills' && !ENABLE_VENDOR_BILLS) return false;
+    if (item.id === 'exports' && !ENABLE_EXPORTS) return false;
+    if (item.id === 'integrations' && !ENABLE_INTEGRATIONS) return false;
+    if (item.id === 'data-manager' && !ENABLE_DATA_MANAGER) return false;
     return true;
   });
 

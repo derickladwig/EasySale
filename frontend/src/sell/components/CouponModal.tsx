@@ -46,7 +46,7 @@ export function CouponModal({
 
     try {
       // Try to validate coupon via API
-      const response = await apiClient.post<CouponValidation>('/api/promotions/validate-coupon', {
+      const response = await apiClient.post<CouponValidation>('/api/promotions/evaluate', {
         code: couponCode.trim().toUpperCase(),
         subtotal,
       });

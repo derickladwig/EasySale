@@ -81,9 +81,9 @@ docker volume rm dynamous-kiro-hackathon_pos-data 2>/dev/null || true
 docker network rm dynamous-kiro-hackathon_caps-network 2>/dev/null || true
 
 # Build frontend
-echo -e "${BLUE}[INFO]${NC} Building frontend..."
-docker build -t easysale-frontend:latest ./frontend
-echo -e "${GREEN}[OK]${NC} Frontend built"
+echo -e "${BLUE}[INFO]${NC} Building frontend (variant: $BUILD_VARIANT)..."
+docker build --build-arg VITE_BUILD_VARIANT="$BUILD_VARIANT" -t easysale-frontend:latest ./frontend
+echo -e "${GREEN}[OK]${NC} Frontend built (variant: $BUILD_VARIANT)"
 
 # Build backend
 echo -e "${BLUE}[INFO]${NC} Building backend (variant: $BUILD_VARIANT)..."

@@ -39,6 +39,22 @@ docker --version
 
 ---
 
+## Build Times
+
+Approximate times on modern hardware (8-core CPU, 16GB RAM):
+
+| Build Type | First Build | Cached/Incremental |
+|------------|-------------|-------------------|
+| Docker Production | 10-20 minutes | 2-5 minutes |
+| Local Rust | 3-6 minutes | 10-30 seconds |
+| Frontend | 30-60 seconds | 5-10 seconds |
+
+**Fresh Install Total**: ~20-30 minutes (first time with Docker)
+
+> **Note**: First-time Docker builds download dependencies and compile from scratch. Subsequent builds are significantly faster due to caching.
+
+---
+
 ## Quick Start (Docker - Recommended)
 
 The fastest way to get EasySale running is with Docker.

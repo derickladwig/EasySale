@@ -81,17 +81,35 @@ export function BrandingStepContent({
   // Validate hex color
   const isValidHex = (hex: string): boolean => /^#[0-9A-Fa-f]{6}$/.test(hex);
 
+  // Max file size: 2MB
+  const MAX_LOGO_SIZE = 2 * 1024 * 1024;
+
   const handleLogoUpload = (type: 'light' | 'dark') => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size
+      if (file.size > MAX_LOGO_SIZE) {
+        toast.error('Logo file is too large. Maximum size is 2MB.');
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file (PNG, JPG, SVG, etc.)');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({
           ...prev,
           [type === 'light' ? 'logoLight' : 'logoDark']: reader.result as string,
         }));
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read logo file');
       };
       reader.readAsDataURL(file);
     }

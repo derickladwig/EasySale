@@ -248,16 +248,22 @@ export function SetupWizardPage({
         hardware: stepData.hardware,
       };
 
-      // Submit setup data to backend
-      const response = await fetch('/api/setup/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(setupData)
-      });
+      // Submit setup data to backend - try both endpoints for compatibility
+      try {
+        const response = await fetch('/api/tenant/setup-complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(setupData)
+        });
 
-      if (!response.ok) {
-        // Graceful fallback - setup can still complete locally
-        console.warn('Backend setup save failed, continuing with local setup');
+        if (!response.ok) {
+          // Graceful fallback - setup can still complete locally
+          console.warn('Backend setup save failed, continuing with local setup');
+        }
+      } catch {
+        // Endpoint may not exist in lite builds - that's OK
+        console.warn('Setup endpoint not available, continuing with local setup');
       }
 
       setShowCompletionScreen(true);

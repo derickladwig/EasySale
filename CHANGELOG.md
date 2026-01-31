@@ -5,6 +5,43 @@ All notable changes to EasySale will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-31
+
+### Added
+- **Complete Feature Flag System**: All build variants now properly gated
+  - Added `ENABLE_INTEGRATIONS` and `ENABLE_DATA_MANAGER` flags
+  - All navigation items properly filtered by build variant
+  - Routes gated at compile time for smaller bundles
+- **Product Import Enhancements**:
+  - Data preview table showing first 5 rows before import
+  - Better column detection and validation feedback
+- **Product Attributes Display**:
+  - Attributes shown in cart line items (size, color, brand)
+  - Attributes included on printed receipts
+  - Full attribute display in product detail view
+- **Document Management**:
+  - File download endpoints for review cases (`GET /api/cases/{id}/file`)
+  - File download endpoints for vendor bills (`GET /api/vendor-bills/{id}/file`)
+  - Migration 056: bill_files table for file metadata
+- **Multi-Store Tracking**:
+  - Migration 057: Added store_id and location_id to stock_adjustments
+  - Stock adjustments now track which store/location
+
+### Changed
+- Setup wizard now uses correct API endpoint (`/api/tenant/setup-complete`)
+- Logo upload validates file size (max 2MB) and type
+- Build scripts pass VITE_BUILD_VARIANT to frontend Docker builds
+- Tax rate now fetched from settings instead of hardcoded 13%
+
+### Fixed
+- Category API endpoint path (`/api/products/categories`)
+- Coupon validation endpoint (`/api/promotions/evaluate`)
+- Login redirect now returns to original page after auth
+- 401 responses now redirect to login automatically
+- Setup wizard error handling improved
+
+---
+
 ## [1.1.0] - 2026-01-30
 
 ### Added

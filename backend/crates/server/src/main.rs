@@ -699,6 +699,11 @@ async fn main() -> std::io::Result<()> {
                             .wrap(require_permission("view_vendor_bills"))
                     );
                     _cfg.service(
+                        web::resource("/api/vendor-bills/{id}/file")
+                            .route(web::get().to(handlers::vendor_bill::download_bill_file))
+                            .wrap(require_permission("view_vendor_bills"))
+                    );
+                    _cfg.service(
                         web::resource("/api/vendor-bills/{id}/matches")
                             .route(web::put().to(handlers::vendor_bill::update_matches))
                             .wrap(require_permission("review_vendor_bills"))

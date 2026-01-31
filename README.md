@@ -56,6 +56,26 @@ EasySale is a production-ready, white-label point-of-sale system designed for re
 | Rust | ≥1.75 | Yes |
 | Docker | ≥20.10 | Optional |
 
+### System Requirements
+
+| Resource | Minimum | Recommended |
+|----------|---------|-------------|
+| RAM | 4 GB | 8 GB |
+| Disk | 10 GB | 20 GB |
+| CPU | 2 cores | 4+ cores |
+
+### Build Times
+
+Approximate times on modern hardware (8-core CPU, 16GB RAM):
+
+| Build Type | First Build | Cached/Incremental |
+|------------|-------------|-------------------|
+| Docker Production | 10-20 minutes | 2-5 minutes |
+| Local Rust | 3-6 minutes | 10-30 seconds |
+| Frontend | 30-60 seconds | 5-10 seconds |
+
+**Fresh Install Total**: ~20-30 minutes (first time with Docker)
+
 ### Installation
 
 ```bash

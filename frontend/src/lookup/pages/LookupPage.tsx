@@ -13,6 +13,7 @@ import {
   Plus,
   Edit,
   Trash2,
+  Tag,
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 import { useConfig, DynamicIcon } from '../../config';
@@ -357,6 +358,26 @@ export function LookupPage() {
                         <div>
                           <div className="text-sm text-text-tertiary mb-1">Description</div>
                           <div className="text-text-primary">{selectedProduct.description}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Product Attributes */}
+                    {selectedProduct.attributes && Object.keys(selectedProduct.attributes).filter(k => k !== 'brand' && k !== 'location').length > 0 && (
+                      <div className="flex items-start gap-3">
+                        <Tag className="text-text-tertiary flex-shrink-0 mt-0.5" size={20} />
+                        <div className="flex-1">
+                          <div className="text-sm text-text-tertiary mb-2">Attributes</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {Object.entries(selectedProduct.attributes)
+                              .filter(([key]) => key !== 'brand' && key !== 'location')
+                              .map(([key, value]) => (
+                                <div key={key} className="p-2 bg-surface-elevated rounded-lg">
+                                  <div className="text-xs text-text-tertiary capitalize">{key.replace(/_/g, ' ')}</div>
+                                  <div className="text-sm text-text-primary">{String(value)}</div>
+                                </div>
+                              ))}
+                          </div>
                         </div>
                       </div>
                     )}

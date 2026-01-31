@@ -24,7 +24,7 @@ export function CategoryManagement() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/product/categories', { credentials: 'include' });
+      const response = await fetch('/api/products/categories', { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setCategories(buildCategoryTree(data));

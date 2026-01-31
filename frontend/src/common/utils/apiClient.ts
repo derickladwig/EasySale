@@ -79,6 +79,18 @@ class ApiClient {
         }
       }
 
+      // Handle 401 Unauthorized - redirect to login
+      if (response.status === 401) {
+        // Clear any stale auth state and redirect to login
+        // Store current location so we can redirect back after login
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/login' && currentPath !== '/auth/login') {
+          // Use sessionStorage to preserve redirect target across page reload
+          sessionStorage.setItem('auth_redirect', currentPath);
+          window.location.href = '/login';
+        }
+      }
+
       // Log error
       logError('API request failed', {
         url: response.url,
