@@ -767,34 +767,160 @@ pub async fn get_layaway_report(
 /// Work order reporting
 #[get("/api/reports/work-orders")]
 pub async fn get_work_order_report(
-    _pool: web::Data<SqlitePool>,
-    _query: web::Query<SalesReportParams>,
+    pool: web::Data<SqlitePool>,
+    query: web::Query<SalesReportParams>,
 ) -> impl Responder {
-    tracing::info!("Generating work order report - stub implementation");
+    tracing::info!("Generating work order report");
 
-    // Stub implementation - work_orders table may not exist
-    HttpResponse::Ok().json(serde_json::json!({
-        "total_orders": 0,
-        "completed_count": 0,
-        "in_progress_count": 0,
-        "total_revenue": 0.0,
-        "message": "Work order reporting not fully implemented"
-    }))
+    let tenant_id = get_current_tenant_id();
+    
+    // Validate date inputs
+    let date_range = match ValidatedDateRange::new(
+        query.start_date.as_deref(),
+        query.end_date.as_deref(),
+    ) {
+        Ok(range) => range,
+        Err(_) => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Invalid date format or range"
+            }));
+        }
+    };
+
+    // Build query with tenant isolation
+    let mut query_builder = QueryBuilder::new(
+        "SELECT 
+            COUNT(*) as total_orders,
+            COUNT(CASE WHEN status = 'Completed' THEN 1 END) as completed_count,
+            COUNT(CASE WHEN status = 'In Progress' THEN 1 END) as in_progress_count,
+            COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending_count,
+            COUNT(CASE WHEN status = 'Cancelled' THEN 1 END) as cancelled_count,
+            COALESCE(SUM(CASE WHEN status = 'Completed' THEN total_amount END), 0.0) as total_revenue,
+            COALESCE(AVG(CASE WHEN status = 'Completed' THEN total_amount END), 0.0) as average_order_value
+        FROM work_orders
+        WHERE tenant_id = "
+    );
+    query_builder.push_bind(tenant_id);
+
+    if let Some(start_date) = &date_range.start_date {
+        query_builder.push(" AND created_at >= ");
+        query_builder.push_bind(start_date);
+    }
+    if let Some(end_date) = &date_range.end_date {
+        query_builder.push(" AND created_at <= ");
+        query_builder.push_bind(end_date);
+    }
+
+    let result = query_builder.build().fetch_one(pool.get_ref()).await;
+
+    match result {
+        Ok(row) => {
+            let report = serde_json::json!({
+                "total_orders": row.try_get::<i64, _>("total_orders").unwrap_or(0),
+                "completed_count": row.try_get::<i64, _>("completed_count").unwrap_or(0),
+                "in_progress_count": row.try_get::<i64, _>("in_progress_count").unwrap_or(0),
+                "pending_count": row.try_get::<i64, _>("pending_count").unwrap_or(0),
+                "cancelled_count": row.try_get::<i64, _>("cancelled_count").unwrap_or(0),
+                "total_revenue": row.try_get::<f64, _>("total_revenue").unwrap_or(0.0),
+                "average_order_value": row.try_get::<f64, _>("average_order_value").unwrap_or(0.0),
+            });
+
+            HttpResponse::Ok().json(report)
+        }
+        Err(e) => {
+            tracing::error!("Failed to generate work order report: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to generate work order report"
+            }))
+        }
+    }
 }
 
 /// GET /api/reports/promotions
 /// Promotion effectiveness reporting
 #[get("/api/reports/promotions")]
 pub async fn get_promotion_report(
-    _pool: web::Data<SqlitePool>,
+    pool: web::Data<SqlitePool>,
 ) -> impl Responder {
-    tracing::info!("Generating promotion effectiveness report - stub implementation");
+    tracing::info!("Generating promotion effectiveness report");
 
-    // Stub implementation - promotions table may not exist
-    HttpResponse::Ok().json(serde_json::json!({
-        "promotions": [],
-        "message": "Promotion reporting not fully implemented"
-    }))
+    let tenant_id = get_current_tenant_id();
+    
+    // Query promotions with usage statistics
+    let result = sqlx::query(
+        "SELECT 
+            p.id,
+            p.name,
+            p.promotion_type,
+            p.discount_type,
+            p.discount_value,
+            p.start_date,
+            p.end_date,
+            p.is_active,
+            COUNT(pu.id) as usage_count,
+            COALESCE(SUM(pu.discount_amount), 0.0) as total_discount_given,
+            COALESCE(SUM(pu.transaction_total), 0.0) as total_sales_with_promo
+        FROM promotions p
+        LEFT JOIN promotion_usage pu ON p.id = pu.promotion_id AND pu.tenant_id = p.tenant_id
+        WHERE p.tenant_id = ?
+        GROUP BY p.id
+        ORDER BY usage_count DESC, p.created_at DESC
+        LIMIT 50"
+    )
+    .bind(&tenant_id)
+    .fetch_all(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(rows) => {
+            let promotions: Vec<serde_json::Value> = rows
+                .iter()
+                .map(|row| {
+                    serde_json::json!({
+                        "id": row.try_get::<String, _>("id").unwrap_or_default(),
+                        "name": row.try_get::<String, _>("name").unwrap_or_default(),
+                        "promotion_type": row.try_get::<String, _>("promotion_type").unwrap_or_default(),
+                        "discount_type": row.try_get::<String, _>("discount_type").unwrap_or_default(),
+                        "discount_value": row.try_get::<f64, _>("discount_value").unwrap_or(0.0),
+                        "start_date": row.try_get::<String, _>("start_date").unwrap_or_default(),
+                        "end_date": row.try_get::<String, _>("end_date").unwrap_or_default(),
+                        "is_active": row.try_get::<bool, _>("is_active").unwrap_or(false),
+                        "usage_count": row.try_get::<i64, _>("usage_count").unwrap_or(0),
+                        "total_discount_given": row.try_get::<f64, _>("total_discount_given").unwrap_or(0.0),
+                        "total_sales_with_promo": row.try_get::<f64, _>("total_sales_with_promo").unwrap_or(0.0),
+                    })
+                })
+                .collect();
+
+            // Calculate summary statistics
+            let total_promotions = promotions.len();
+            let active_promotions = promotions.iter()
+                .filter(|p| p["is_active"].as_bool().unwrap_or(false))
+                .count();
+            let total_usage: i64 = promotions.iter()
+                .map(|p| p["usage_count"].as_i64().unwrap_or(0))
+                .sum();
+            let total_discount: f64 = promotions.iter()
+                .map(|p| p["total_discount_given"].as_f64().unwrap_or(0.0))
+                .sum();
+
+            HttpResponse::Ok().json(serde_json::json!({
+                "promotions": promotions,
+                "summary": {
+                    "total_promotions": total_promotions,
+                    "active_promotions": active_promotions,
+                    "total_usage": total_usage,
+                    "total_discount_given": total_discount,
+                }
+            }))
+        }
+        Err(e) => {
+            tracing::error!("Failed to generate promotion report: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to generate promotion report"
+            }))
+        }
+    }
 }
 
 /// GET /api/reports/dashboard

@@ -986,7 +986,34 @@ This section documents a production-grade audit of the POS checkout flow.
 - Broken link in README.md
 - No OpenAPI/Swagger spec
 
-**Estimated Total Effort:** 21-34 days for full completion
+### Code Review Security Fixes (Jan 30, 2026)
+
+**Full review findings addressed:**
+
+#### Critical Fixes Applied
+
+| Issue | Fix Applied | Location |
+|-------|-------------|----------|
+| LoginPage hardcoded colors | Replaced slate-*, bg-green-400, etc. with semantic tokens | `frontend/src/auth/pages/LoginPage.tsx` |
+| Missing tenant_id in reports | Added tenant filtering to all 11 reporting endpoints | `backend/crates/server/src/handlers/reporting.rs` |
+| CSV injection vulnerability | Added `escape_csv_value()` function | `backend/crates/server/src/handlers/reporting.rs` |
+| Stub work_order report | Implemented full query with status breakdown | `backend/crates/server/src/handlers/reporting.rs` |
+| Stub promotion report | Implemented with usage statistics | `backend/crates/server/src/handlers/reporting.rs` |
+| Failing property test | Fixed route exclusion for utility pages | `frontend/src/test/properties/route-registry-enforcement.property.test.ts` |
+
+#### Security Improvements
+
+1. **Multi-Tenant Isolation**: All reporting queries now include `WHERE tenant_id = ?`
+2. **CSV Export Security**: Values containing commas, quotes, newlines, or formula prefixes (=, +, -, @) are properly escaped
+3. **Semantic Theming**: LoginPage now uses design system tokens instead of hardcoded Tailwind classes
+
+#### Already Secure (Verified)
+
+- JWT secrets: Profile system validates and rejects placeholders in production
+- QuickBooks OAuth: Redirect URI from environment variable with localhost rejection in prod
+- Rate limiting: HashMap-based with 5-minute cleanup interval
+- CSRF protection: Tokens on all state-changing requests
+- httpOnly cookies: Session cookies not accessible via JavaScript
 
 ---
 

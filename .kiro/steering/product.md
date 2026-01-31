@@ -166,3 +166,34 @@ This addendum reconciles later repo changes and evidence-based audits into the p
 
 ### Pointer
 - Truth-sync audit package: `audit/truth_sync_2026-01-25/*`
+
+---
+
+## [2026-01-30] Product Status Update — Code Review Fixes Applied
+
+### Issues Resolved from 2026-01-25 Audit
+
+#### Export Functionality [FIXED]
+- **Report export** (`POST /api/reports/export`) now fully implemented with:
+  - Proper CSV generation with tenant isolation
+  - CSV injection prevention (escapes special characters, formula prefixes)
+  - Date range validation
+- **Work Order Report** (`GET /api/reports/work-orders`) now queries actual `work_orders` table
+- **Promotion Report** (`GET /api/reports/promotions`) now queries actual `promotions` table with usage statistics
+
+#### Security Improvements [FIXED]
+- **Multi-Tenant Isolation**: All 11 reporting endpoints now include `tenant_id` filtering
+- **LoginPage Theming**: Replaced hardcoded Tailwind colors with semantic tokens
+- **QuickBooks OAuth**: Redirect URI now read from `QUICKBOOKS_REDIRECT_URI` environment variable with production validation
+
+#### Domain Intent [CONFIRMED]
+- EasySale is a **universal white-label POS system** supporting any retail business type
+- Vehicle/automotive-specific code has been intentionally removed
+- Configuration-driven architecture allows customization for any industry
+
+### Current Production Status
+- All critical security issues from code review addressed
+- All reporting endpoints have proper tenant isolation
+- Export functionality fully implemented with security measures
+- Login page uses semantic design tokens for proper theming
+- Setup wizard functional with branding and import capabilities

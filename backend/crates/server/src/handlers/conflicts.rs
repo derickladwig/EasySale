@@ -4,11 +4,12 @@
  * API endpoints for viewing and resolving sync conflicts.
  */
 
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, web, HttpResponse, Responder, HttpRequest, HttpMessage};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 
 use crate::services::ConflictResolver;
+use crate::models::UserContext;
 
 /// GET /api/sync/conflicts
 /// List all pending sync conflicts
@@ -170,6 +171,7 @@ pub async fn get_conflict(
 #[post("/api/sync/conflicts/{id}/resolve")]
 pub async fn resolve_conflict(
     pool: web::Data<SqlitePool>,
+    http_req: HttpRequest,
     path: web::Path<String>,
     req: web::Json<ResolveConflictRequest>,
 ) -> impl Responder {

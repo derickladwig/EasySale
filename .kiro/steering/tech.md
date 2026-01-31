@@ -361,3 +361,50 @@ This addendum records evidence-backed changes discovered during an insert-only t
 
 ### Pointer
 - Truth-sync audit package: `audit/truth_sync_2026-01-25/*`
+
+---
+
+## [2026-01-30] Technical Status Update — Code Review Fixes Applied
+
+### Issues Resolved from 2026-01-25 Audit
+
+#### Hardcoded QuickBooks OAuth redirect URI [FIXED]
+- **Previous**: Hardcoded `http://localhost:7945/api/integrations/quickbooks/callback`
+- **Current**: Now reads from `QUICKBOOKS_REDIRECT_URI` environment variable
+- **Validation**: Production builds reject localhost URIs (`cfg!(not(debug_assertions))` check)
+- Location: `backend/crates/server/src/handlers/integrations.rs` lines 191-196
+
+#### Report export stub [FIXED]
+- **Previous**: Returned placeholder "Export functionality coming soon"
+- **Current**: Fully implemented CSV export with:
+  - Parameterized queries via `QueryBuilder`
+  - Tenant isolation (`tenant_id` filtering)
+  - CSV injection prevention (`escape_csv_value()` function)
+- Location: `backend/crates/server/src/handlers/reporting.rs`
+
+#### Reporting SQL injection risk [FIXED]
+- **Previous**: Some queries used `format!()` for SQL construction
+- **Current**: All queries use `QueryBuilder` with `push_bind()` for parameterized queries
+- All 11 reporting endpoints updated with proper parameterization
+
+#### Backend startup defaults [DOCUMENTED]
+- Default `STORE_ID`/`TENANT_ID` values are intentional for development/demo
+- Production profile (`prod.toml`) requires explicit configuration
+- Profile system validates secrets and rejects placeholders in production
+
+### Security Improvements Applied
+
+| Issue | Status | Fix |
+|-------|--------|-----|
+| Hardcoded OAuth URI | ✅ Fixed | Environment variable + validation |
+| SQL injection in reports | ✅ Fixed | QueryBuilder parameterization |
+| Missing tenant isolation | ✅ Fixed | tenant_id on all report queries |
+| CSV injection | ✅ Fixed | escape_csv_value() function |
+| Hardcoded Tailwind colors | ✅ Fixed | Semantic tokens in LoginPage |
+| Stub report endpoints | ✅ Fixed | work_orders, promotions implemented |
+
+### Fresh Install Wiring [CONFIRMED WORKING]
+- Fresh install routes are properly wired in `frontend/src/App.tsx`
+- Setup wizard accessible at `/fresh-install`
+- Backend tenant operations endpoint functional
+- Setup completion properly tracked in settings table
