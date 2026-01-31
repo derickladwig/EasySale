@@ -216,16 +216,18 @@ backend/crates/
 | Vendor Bill Workflow | — | — | ✅ |
 | Review Queue | — | — | ✅ |
 
-### Latest Features (v1.1.0)
+### Latest Features (v1.2.3)
 
 | Feature | Description |
 |---------|-------------|
-| **Per-Item Cart Adjustments** | Override prices and apply discounts per line item with reason tracking |
+| **Demo Data Import** | One-click demo data loading for Products, Customers, Vendors |
+| **Enhanced Import Wizard** | Collapsible field docs, custom attribute support, better UX |
+| **Category Browser** | Hierarchical category management with search and product counts |
+| **Quote Actions** | Email quotes directly to customers |
+| **Inventory Management** | Delete items, bulk actions, filter modal |
+| **Receipt Branding** | Dynamic company info, logo, and tax display on receipts |
+| **Per-Item Cart Adjustments** | Override prices and apply discounts per line item |
 | **Stock Validation** | Real-time stock check prevents overselling |
-| **Stock Adjustment API** | Full audit trail for inventory changes with reasons |
-| **Quotes System** | Save carts as quotes, convert to sales later |
-| **Custom Date Reporting** | Filter reports by any date range |
-| **Period Comparison** | See percentage changes vs previous period |
 
 ---
 

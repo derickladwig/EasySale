@@ -1,6 +1,6 @@
 use actix_web::{get, post, put, web, HttpResponse, Responder};
 use chrono::Utc;
-use sqlx::{SqlitePool, Transaction, Sqlite, QueryBuilder};
+use sqlx::{SqlitePool, Transaction, Sqlite};
 use uuid::Uuid;
 
 use crate::middleware::tenant::get_current_tenant_id;

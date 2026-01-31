@@ -8,53 +8,6 @@ use std::collections::HashSet;
 use regex::Regex;
 use once_cell::sync::Lazy;
 
-/// Validation error with row and field context
-#[derive(Debug, Clone)]
-pub struct ValidationError {
-    pub row: usize,
-    pub field: String,
-    pub message: String,
-    pub severity: ValidationSeverity,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ValidationSeverity {
-    Error,   // Import will fail
-    Warning, // Import will proceed with warning
-}
-
-/// Result of validation pass
-#[derive(Debug, Default)]
-pub struct ValidationResult {
-    pub errors: Vec<ValidationError>,
-    pub warnings: Vec<ValidationError>,
-    pub cleaned_values: std::collections::HashMap<(usize, String), String>,
-}
-
-impl ValidationResult {
-    pub fn has_errors(&self) -> bool {
-        !self.errors.is_empty()
-    }
-    
-    pub fn add_error(&mut self, row: usize, field: &str, message: &str) {
-        self.errors.push(ValidationError {
-            row,
-            field: field.to_string(),
-            message: message.to_string(),
-            severity: ValidationSeverity::Error,
-        });
-    }
-    
-    pub fn add_warning(&mut self, row: usize, field: &str, message: &str) {
-        self.warnings.push(ValidationError {
-            row,
-            field: field.to_string(),
-            message: message.to_string(),
-            severity: ValidationSeverity::Warning,
-        });
-    }
-}
-
 // =============================================================================
 // String Cleaning Functions (Non-Destructive)
 // =============================================================================
@@ -512,15 +465,103 @@ pub fn validate_vendor_references(
 mod tests {
     use super::*;
     
+    // =========================================================================
+    // Empty String Handling Tests
+    // =========================================================================
+    
+    #[test]
+    fn test_empty_string_handling() {
+        // All cleaning functions should handle empty strings gracefully
+        assert_eq!(clean_trim(""), "");
+        assert_eq!(clean_email(""), "");
+        assert_eq!(clean_phone(""), "");
+        assert_eq!(clean_url(""), "");
+        assert_eq!(clean_boolean(""), None);
+        assert_eq!(clean_sku(""), "");
+        assert_eq!(clean_state_code(""), "");
+        assert_eq!(clean_country_code(""), "");
+        assert_eq!(clean_keywords(""), "");
+        assert_eq!(clean_barcode_type(""), "");
+        assert_eq!(clean_pricing_tier(""), "retail"); // Default
+        assert_eq!(clean_payment_terms(""), "");
+        assert_eq!(clean_tax_class(""), "");
+    }
+    
+    #[test]
+    fn test_whitespace_only_handling() {
+        assert_eq!(clean_trim("   "), "");
+        assert_eq!(clean_email("   "), "");
+        assert_eq!(clean_phone("   "), "");
+        assert_eq!(clean_sku("   "), "");
+    }
+    
+    // =========================================================================
+    // Unicode Character Tests
+    // =========================================================================
+    
+    #[test]
+    fn test_unicode_in_names() {
+        // Names with accents and special characters
+        assert_eq!(clean_trim("José García"), "José García");
+        assert_eq!(clean_trim("北京公司"), "北京公司");
+        assert_eq!(clean_trim("Müller GmbH"), "Müller GmbH");
+        assert_eq!(clean_trim("Café René"), "Café René");
+    }
+    
+    #[test]
+    fn test_unicode_in_email() {
+        // Email should lowercase but preserve structure
+        assert_eq!(clean_email("José@Example.COM"), "josé@example.com");
+    }
+    
+    #[test]
+    fn test_unicode_in_keywords() {
+        // Keywords with unicode
+        let result = clean_keywords("électronique, café, naïve");
+        assert!(result.contains("ÉLECTRONIQUE"));
+        assert!(result.contains("CAFÉ"));
+        assert!(result.contains("NAÏVE"));
+    }
+    
+    // =========================================================================
+    // Very Long String Tests
+    // =========================================================================
+    
+    #[test]
+    fn test_very_long_strings() {
+        let long_string = "A".repeat(10000);
+        
+        // Should handle without panic
+        assert_eq!(clean_trim(&long_string).len(), 10000);
+        assert_eq!(clean_email(&long_string).len(), 10000);
+        assert_eq!(clean_sku(&long_string).len(), 10000);
+    }
+    
+    #[test]
+    fn test_long_sku_validation() {
+        let long_sku = "A".repeat(51);
+        assert!(!validate_sku(&long_sku)); // Should fail - too long
+        
+        let valid_sku = "A".repeat(50);
+        assert!(validate_sku(&valid_sku)); // Should pass - exactly 50
+    }
+    
+    // =========================================================================
+    // Original Tests (Enhanced)
+    // =========================================================================
+    
     #[test]
     fn test_clean_email() {
         assert_eq!(clean_email("  Test@Example.COM  "), "test@example.com");
+        assert_eq!(clean_email("USER@DOMAIN.ORG"), "user@domain.org");
     }
     
     #[test]
     fn test_clean_phone() {
         assert_eq!(clean_phone("555-123-4567"), "5551234567");
         assert_eq!(clean_phone("+1 (555) 123-4567"), "+15551234567");
+        assert_eq!(clean_phone("  +44 20 7946 0958  "), "+442079460958");
+        assert_eq!(clean_phone("(800) CALL-NOW"), "800"); // Letters stripped
     }
     
     #[test]
@@ -528,43 +569,183 @@ mod tests {
         assert_eq!(clean_boolean("true"), Some(true));
         assert_eq!(clean_boolean("YES"), Some(true));
         assert_eq!(clean_boolean("1"), Some(true));
+        assert_eq!(clean_boolean("active"), Some(true));
+        assert_eq!(clean_boolean("on"), Some(true));
         assert_eq!(clean_boolean("false"), Some(false));
         assert_eq!(clean_boolean("NO"), Some(false));
         assert_eq!(clean_boolean("0"), Some(false));
+        assert_eq!(clean_boolean("inactive"), Some(false));
+        assert_eq!(clean_boolean("off"), Some(false));
         assert_eq!(clean_boolean(""), None);
+        assert_eq!(clean_boolean("maybe"), None);
     }
     
     #[test]
     fn test_clean_decimal() {
         assert_eq!(clean_decimal("$1,234.56").unwrap(), 1234.56);
         assert_eq!(clean_decimal("99.99").unwrap(), 99.99);
+        assert_eq!(clean_decimal("€1,000.00").unwrap(), 1000.0);
+        assert_eq!(clean_decimal("£500").unwrap(), 500.0);
+        assert_eq!(clean_decimal("  123.45  ").unwrap(), 123.45);
+        assert!(clean_decimal("not a number").is_err());
+        assert!(clean_decimal("").is_err());
+    }
+    
+    #[test]
+    fn test_clean_integer() {
+        assert_eq!(clean_integer("1,234").unwrap(), 1234);
+        assert_eq!(clean_integer("99.9").unwrap(), 99); // Truncates
+        assert_eq!(clean_integer("  100  ").unwrap(), 100);
+        assert!(clean_integer("abc").is_err());
     }
     
     #[test]
     fn test_clean_sku() {
         assert_eq!(clean_sku("  demo elec 001  "), "DEMO-ELEC-001");
+        assert_eq!(clean_sku("sku-123"), "SKU-123");
+        assert_eq!(clean_sku("Product Name"), "PRODUCT-NAME");
     }
     
     #[test]
     fn test_clean_state_code() {
         assert_eq!(clean_state_code("California"), "CA");
         assert_eq!(clean_state_code("TX"), "TX");
+        assert_eq!(clean_state_code("new york"), "NY");
+        assert_eq!(clean_state_code("District of Columbia"), "DC");
+        assert_eq!(clean_state_code("Unknown State"), "UNKNOWN STATE");
     }
+    
+    #[test]
+    fn test_clean_country_code() {
+        assert_eq!(clean_country_code("USA"), "US");
+        assert_eq!(clean_country_code("United States"), "US");
+        assert_eq!(clean_country_code("Canada"), "CA");
+        assert_eq!(clean_country_code("UK"), "GB");
+        assert_eq!(clean_country_code("DE"), "DE");
+    }
+    
+    #[test]
+    fn test_clean_url() {
+        assert_eq!(clean_url("example.com"), "https://example.com");
+        assert_eq!(clean_url("https://secure.com"), "https://secure.com");
+        assert_eq!(clean_url("http://insecure.com"), "http://insecure.com");
+        assert_eq!(clean_url("  WWW.EXAMPLE.COM  "), "https://www.example.com");
+    }
+    
+    #[test]
+    fn test_clean_barcode_type() {
+        assert_eq!(clean_barcode_type("UPC"), "UPC-A");
+        assert_eq!(clean_barcode_type("ean-13"), "EAN-13");
+        assert_eq!(clean_barcode_type("code 128"), "Code128");
+        assert_eq!(clean_barcode_type("qrcode"), "QR");
+        assert_eq!(clean_barcode_type("custom"), "CUSTOM");
+    }
+    
+    #[test]
+    fn test_clean_pricing_tier() {
+        assert_eq!(clean_pricing_tier("standard"), "retail");
+        assert_eq!(clean_pricing_tier("bulk"), "wholesale");
+        assert_eq!(clean_pricing_tier("premium"), "vip");
+        assert_eq!(clean_pricing_tier("custom_tier"), "custom_tier");
+    }
+    
+    #[test]
+    fn test_clean_payment_terms() {
+        assert_eq!(clean_payment_terms("net30"), "Net 30");
+        assert_eq!(clean_payment_terms("30 days"), "Net 30");
+        assert_eq!(clean_payment_terms("cash on delivery"), "COD");
+        assert_eq!(clean_payment_terms("prepay"), "Prepaid");
+    }
+    
+    #[test]
+    fn test_clean_tax_class() {
+        assert_eq!(clean_tax_class("taxable"), "standard");
+        assert_eq!(clean_tax_class("apparel"), "clothing");
+        assert_eq!(clean_tax_class("food"), "grocery");
+        assert_eq!(clean_tax_class("non-taxable"), "exempt");
+    }
+    
+    // =========================================================================
+    // Validation Tests
+    // =========================================================================
     
     #[test]
     fn test_validate_email() {
         assert!(validate_email("test@example.com"));
+        assert!(validate_email("user.name+tag@domain.co.uk"));
         assert!(validate_email("")); // Empty is valid (optional)
         assert!(!validate_email("invalid"));
         assert!(!validate_email("test@"));
+        assert!(!validate_email("@domain.com"));
+        assert!(!validate_email("test@domain"));
+    }
+    
+    #[test]
+    fn test_validate_sku() {
+        assert!(validate_sku("SKU-001"));
+        assert!(validate_sku("ABC_123"));
+        assert!(validate_sku("simple"));
+        assert!(!validate_sku("")); // Empty is invalid (required)
+        assert!(!validate_sku("SKU 001")); // Spaces not allowed
+        assert!(!validate_sku("SKU@001")); // Special chars not allowed
     }
     
     #[test]
     fn test_validate_barcode() {
         assert!(validate_barcode("012345678901")); // 12 digits
+        assert!(validate_barcode("01onal2345678")); // 8 digits extracted
         assert!(validate_barcode("")); // Empty is valid
         assert!(!validate_barcode("12345")); // Too short
+        assert!(!validate_barcode("123456789012345")); // Too long (15 digits)
     }
+    
+    #[test]
+    fn test_validate_barcode_type() {
+        assert!(validate_barcode_type("UPC-A"));
+        assert!(validate_barcode_type("ean-13"));
+        assert!(validate_barcode_type("Code128"));
+        assert!(validate_barcode_type("QR"));
+        assert!(validate_barcode_type("")); // Empty is valid
+        assert!(!validate_barcode_type("INVALID"));
+    }
+    
+    #[test]
+    fn test_validate_us_zip() {
+        assert!(validate_us_zip("12345"));
+        assert!(validate_us_zip("12345-6789"));
+        assert!(validate_us_zip("123456789"));
+        assert!(validate_us_zip("")); // Empty is valid
+        assert!(!validate_us_zip("1234")); // Too short
+        assert!(!validate_us_zip("1234567")); // Wrong length
+    }
+    
+    #[test]
+    fn test_validate_tax_id() {
+        assert!(validate_tax_id("12-3456789")); // Valid EIN
+        assert!(validate_tax_id("")); // Empty is valid
+        assert!(validate_tax_id("123456789")); // Non-EIN format allowed
+        assert!(!validate_tax_id("1-23456789")); // Wrong first part length
+        assert!(!validate_tax_id("12-345678")); // Wrong second part length
+    }
+    
+    #[test]
+    fn test_validate_price_cost_relationship() {
+        assert!(validate_price_cost_relationship(100.0, 50.0)); // Price > cost
+        assert!(validate_price_cost_relationship(50.0, 50.0)); // Price = cost
+        assert!(!validate_price_cost_relationship(40.0, 50.0)); // Price < cost
+    }
+    
+    #[test]
+    fn test_validate_non_negative() {
+        assert!(validate_non_negative(0.0));
+        assert!(validate_non_negative(100.0));
+        assert!(!validate_non_negative(-0.01));
+        assert!(!validate_non_negative(-100.0));
+    }
+    
+    // =========================================================================
+    // Duplicate Detection Tests
+    // =========================================================================
     
     #[test]
     fn test_find_duplicate_skus() {
@@ -578,5 +759,57 @@ mod tests {
         let duplicates = find_duplicate_skus(&skus);
         assert_eq!(duplicates.len(), 1);
         assert_eq!(duplicates[0].0, 4);
+    }
+    
+    #[test]
+    fn test_find_duplicate_skus_empty() {
+        let skus: Vec<(usize, String, String)> = vec![];
+        let duplicates = find_duplicate_skus(&skus);
+        assert!(duplicates.is_empty());
+    }
+    
+    #[test]
+    fn test_find_duplicate_vendor_names() {
+        let names = vec![
+            (1, "Acme Corp".to_string()),
+            (2, "Beta Inc".to_string()),
+            (3, "ACME CORP".to_string()), // Duplicate (case-insensitive)
+        ];
+        
+        let duplicates = find_duplicate_vendor_names(&names);
+        assert_eq!(duplicates.len(), 1);
+        assert_eq!(duplicates[0].0, 3);
+    }
+    
+    #[test]
+    fn test_find_duplicate_emails() {
+        let emails = vec![
+            (1, "test@example.com".to_string()),
+            (2, "other@example.com".to_string()),
+            (3, "TEST@EXAMPLE.COM".to_string()), // Duplicate
+            (4, "".to_string()), // Empty - should be skipped
+            (5, "".to_string()), // Empty - should be skipped (not duplicate)
+        ];
+        
+        let duplicates = find_duplicate_emails(&emails);
+        assert_eq!(duplicates.len(), 1);
+        assert_eq!(duplicates[0].0, 3);
+    }
+    
+    #[test]
+    fn test_validate_vendor_references() {
+        let mut vendor_names = HashSet::new();
+        vendor_names.insert("acme corp".to_string());
+        vendor_names.insert("beta inc".to_string());
+        
+        let product_vendors = vec![
+            (1, "Acme Corp".to_string()), // Valid (case-insensitive)
+            (2, "Unknown Vendor".to_string()), // Invalid
+            (3, "".to_string()), // Empty - should be skipped
+        ];
+        
+        let missing = validate_vendor_references(&product_vendors, &vendor_names);
+        assert_eq!(missing.len(), 1);
+        assert_eq!(missing[0].0, 2);
     }
 }
