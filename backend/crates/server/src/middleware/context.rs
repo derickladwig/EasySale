@@ -88,18 +88,24 @@ where
         };
 
         // Validate token and extract claims
+        // If token is invalid/expired, continue without context (allows public endpoints to work
+        // even with stale cookies) - protected endpoints will check for UserContext presence
         let claims = match validate_token(&token, &config.jwt_secret) {
             Ok(claims) => claims,
             Err(JwtError::ExpiredToken) => {
-                tracing::warn!("Expired token in request");
+                tracing::debug!("Expired token in request, continuing without context");
+                let fut = self.service.call(req);
                 return Box::pin(async move {
-                    Err(actix_web::error::ErrorUnauthorized("Token has expired"))
+                    let res = fut.await?;
+                    Ok(res)
                 });
             }
             Err(_) => {
-                tracing::warn!("Invalid token in request");
+                tracing::debug!("Invalid token in request, continuing without context");
+                let fut = self.service.call(req);
                 return Box::pin(async move {
-                    Err(actix_web::error::ErrorUnauthorized("Invalid token"))
+                    let res = fut.await?;
+                    Ok(res)
                 });
             }
         };
