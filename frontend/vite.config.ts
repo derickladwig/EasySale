@@ -87,6 +87,19 @@ export default defineConfig(({ mode }) => {
       port: parseInt(env.VITE_PORT || '7945'),
       host: true,
       strictPort: false,
+      // Proxy API and auth requests to backend in development
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8923',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/auth': {
+          target: 'http://localhost:8923',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
 
     // Build configuration
