@@ -1,9 +1,253 @@
 # EasySale — Hackathon Demo Video Script
 
-**Version**: 2.0 (Hackathon Edition)  
+**Version**: 3.0 (Hackathon Edition)  
 **Last Updated**: 2026-01-30  
-**Total Runtime**: 2-3 minutes  
+**Total Runtime**: 2–3 minutes  
 **Purpose**: Kiro AI Hackathon Submission
+
+---
+
+## Runtime Map
+
+| Timestamp | Section | Duration |
+|-----------|---------|----------|
+| 0:00–0:12 | Hook (problem + what you built) | 12s |
+| 0:12–1:35 | Live product proof (sell, inventory, customers, admin/integrations) | 83s |
+| 1:35–2:05 | Offline + multi-tenant + variants proof | 30s |
+| 2:05–2:35 | Kiro/spec process proof | 30s |
+| 2:35–2:55 | Wrap-up (repo, Apache 2.0, run it yourself) | 20s |
+
+---
+
+## THE SCRIPT
+
+### 0:00–0:12 — Hook (one sentence problem + one sentence solution)
+
+**VISUAL**: Logo → quick montage (Sell → Inventory → Sync Dashboard)
+
+**NARRATION** (tight):
+
+> "Retailers need a POS that keeps working when the internet doesn't, supports multiple stores, and can be white-labeled without rewriting code. EasySale is an offline-first, multi-tenant POS with feature-gated build variants and a full REST API—built spec-first with Kiro."
+
+**ON-SCREEN CALLOUTS** (small):
+- "Offline-first (SQLite + queue)"
+- "Multi-tenant + white-label configs"
+- "Lite / Export / Full builds"
+- "Rust + React + 150+ endpoints"
+
+---
+
+### 0:12–0:35 — Login + Dashboard (prove it's real software)
+
+**VISUAL**: Login → dashboard loads
+
+**NARRATION**:
+
+> "Authentication is JWT-based with role permissions. After login, the dashboard shows sales, alerts, and operational shortcuts—designed for touch-first retail use."
+
+**ACTIONS** (smooth & slow mouse):
+1. Login (first-time setup creates your own admin credentials)
+2. Pause 2 seconds on the dashboard
+3. Hover a couple actions / stats
+
+**PRO TIP**: Don't oversell the dashboard. Just prove it loads and looks coherent.
+
+---
+
+### 0:35–1:05 — Make a Sale (your strongest "it works" moment)
+
+**VISUAL**: Sell page → add items → checkout
+
+**NARRATION**:
+
+> "Here's the core POS flow—search products, add to cart, apply quantity or discounts, and complete payment. Every action writes immediately to local SQLite, then syncs when online."
+
+**ACTIONS**:
+1. Search product
+2. Add 2 items
+3. Change quantity
+4. Complete a cash sale
+5. Show success confirmation
+
+**ON-SCREEN CALLOUT**: "Writes locally first → sync later"
+
+---
+
+### 1:05–1:25 — Inventory + Customers (prove breadth + data relationships)
+
+**VISUAL**: Inventory → low stock → open a customer → show recent orders or stats
+
+**NARRATION**:
+
+> "Inventory tracks stock and flags low items. Customer profiles show purchase history and loyalty tiers—so staff can help fast at the counter."
+
+**ACTIONS**:
+1. Inventory: open low-stock/alerts view
+2. Customers: click one customer → show profile with tier badge
+
+---
+
+### 1:25–1:35 — Admin + Integrations (prove configurability)
+
+**VISUAL**: Admin sidebar → Integrations cards → Sync dashboard (quick)
+
+**NARRATION**:
+
+> "Admin settings control taxes, users, stores, and integrations. Connectors like QuickBooks and WooCommerce are configured here, and the sync dashboard shows health and history across systems."
+
+**ACTIONS**:
+1. Click Integrations
+2. Flash Sync dashboard metrics + recent runs
+
+---
+
+### 1:35–2:05 — The "Proof Trio" (offline + multi-tenant + build variants)
+
+This is the missing piece in most hackathon demos. You want 3 fast visual proofs.
+
+#### Proof 1: Offline-first (10 seconds)
+
+**VISUAL**: DevTools → Network → "Offline" → complete a tiny action
+
+**NARRATION**:
+
+> "Now I'll turn the internet off. The app still works—sales and updates continue locally, and sync queues for later."
+
+**ACTIONS**:
+1. Open DevTools → Network → Offline
+2. Add an item / complete a tiny transaction OR update a field
+3. Show it succeeded (no spinner doom)
+
+**ON-SCREEN CALLOUT**: "Offline mode: OK"
+
+#### Proof 2: Multi-tenant + white-label (10 seconds)
+
+**VISUAL**: Quick config switch → branding/theme changes OR tenant name/store identity changes
+
+**NARRATION**:
+
+> "Branding and behavior are configuration-driven. Switching tenant config updates the app identity without code changes."
+
+**ACTIONS**:
+1. Show `configs/` quickly OR a tenant selector screen if you have it
+2. Flip tenant/store identity and show a visible change (logo/name/theme)
+
+**ON-SCREEN CALLOUT**: "White-label via JSON configs"
+
+#### Proof 3: Build variants are real (10 seconds)
+
+**VISUAL**: Show one feature that exists only in Export/Full (Reports/OCR/Docs) and mention gating
+
+**NARRATION**:
+
+> "And builds are feature-gated. Lite runs core POS only, Export adds admin and reporting, and Full adds OCR and document workflows."
+
+**ACTIONS**:
+1. Show a Full-only menu item (OCR/doc tools) OR an Export-only reporting page
+2. If possible: briefly show a capabilities/feature flag page
+
+---
+
+### 2:05–2:35 — Kiro/Spec-Driven Development Proof (show, don't tell)
+
+**VISUAL**: VS Code → `.kiro/` → one spec folder → tasks → blog/archive
+
+**NARRATION**:
+
+> "I built EasySale spec-first. Each feature starts as requirements and a design in `.kiro/specs`, then tasks drive implementation. The blog and archive preserve the full trail—decisions, status, and progress—so the system stays consistent as it grows."
+
+**ACTIONS** (keep snappy):
+1. Show `.kiro/steering/` (product + tech + structure)
+2. Open one spec folder: `requirements.md`, `design.md`, `tasks.md`
+3. Show `blog/` entries list (64 posts)
+4. Show `archive/` exists (390+ files—don't scroll too long)
+
+**ON-SCREEN CALLOUT**: "Specs → Tasks → Code → Docs (traceable)"
+
+---
+
+### 2:35–2:55 — Wrap-up (repo, license, run instructions)
+
+**VISUAL**: GitHub repo page → README → end on app logo
+
+**NARRATION**:
+
+> "EasySale is open source under Apache 2.0. The repo includes install steps, build variants, and full documentation. Thanks—and check it out at github.com/derickladwig/EasySale."
+
+---
+
+## RECORDING CHECKLIST
+
+### Before Recording
+
+- [ ] App running at `localhost:7945` (frontend) / `localhost:8923` (backend)
+- [ ] Logged out (to show login flow)
+- [ ] Demo data seeded (products, customers, transactions)
+- [ ] Browser at 1920x1080, no extensions visible
+- [ ] Dark theme enabled (default)
+- [ ] VS Code open with `.kiro/` folder ready
+- [ ] GitHub repo page open in another tab
+
+### Demo Data Needed
+
+- [ ] 10+ products across 3 categories
+- [ ] 5+ customers with different tiers
+- [ ] 3+ recent transactions
+- [ ] At least 2 low-stock items for alerts
+
+### Recording Tips
+
+1. **Practice the flow 2-3 times** before recording
+2. **Move the mouse slowly** — AI tools track cursor
+3. **Pause briefly** on important screens (2-3 sec)
+4. **Don't rush** — 2:30 is fine, don't squeeze to 2:00
+5. **Record in segments** if easier, then stitch together
+
+---
+
+## QUICK SCRIPT (COPY-PASTE VERSION)
+
+For AI voiceover tools, here's the script as plain text:
+
+```
+Retailers need a POS that keeps working when the internet doesn't, supports multiple stores, and can be white-labeled without rewriting code. EasySale is an offline-first, multi-tenant POS with feature-gated build variants and a full REST API—built spec-first with Kiro.
+
+Authentication is JWT-based with role permissions. After login, the dashboard shows sales, alerts, and operational shortcuts—designed for touch-first retail use.
+
+Here's the core POS flow—search products, add to cart, apply quantity or discounts, and complete payment. Every action writes immediately to local SQLite, then syncs when online.
+
+Inventory tracks stock and flags low items. Customer profiles show purchase history and loyalty tiers—so staff can help fast at the counter.
+
+Admin settings control taxes, users, stores, and integrations. Connectors like QuickBooks and WooCommerce are configured here, and the sync dashboard shows health and history across systems.
+
+Now I'll turn the internet off. The app still works—sales and updates continue locally, and sync queues for later.
+
+Branding and behavior are configuration-driven. Switching tenant config updates the app identity without code changes.
+
+And builds are feature-gated. Lite runs core POS only, Export adds admin and reporting, and Full adds OCR and document workflows.
+
+I built EasySale spec-first. Each feature starts as requirements and a design in the kiro specs folder, then tasks drive implementation. The blog and archive preserve the full trail—decisions, status, and progress—so the system stays consistent as it grows.
+
+EasySale is open source under Apache 2.0. The repo includes install steps, build variants, and full documentation. Thanks—and check it out at github.com/derickladwig/EasySale.
+```
+
+---
+
+## VERIFIED PROJECT STATS
+
+These numbers are verified from the actual codebase (2026-01-30):
+
+| Metric | Count | Source |
+|--------|-------|--------|
+| API Endpoints | 150+ | `backend/crates/server/src/main.rs` |
+| Database Migrations | 57 | `backend/migrations/*.sql` |
+| Blog Posts | 64 | `blog/*.md` |
+| Archive Files | 390+ | `archive/**/*` |
+| Spec Folders | 26 | `.kiro/specs/` |
+| Steering Files | 5 | `.kiro/steering/` |
+| Build Variants | 3 | Lite, Export, Full |
+| Frontend Port | 7945 | `docker-compose.yml` |
+| Backend Port | 8923 | `docker-compose.yml` |
 
 ---
 
@@ -43,13 +287,7 @@
 - **Time**: 20-40 minutes
 - **Limitation**: Avatars can feel impersonal
 
-#### 4. **HeyGen** (ALTERNATIVE AI AVATAR)
-- **Why**: Similar to Synthesia, good voice cloning
-- **Process**: Same as Synthesia
-- **Cost**: Free tier (1 min/month), $24/month for more
-- **Time**: 20-40 minutes
-
-#### 5. **Descript** (BEST FOR EDITING)
+#### 4. **Descript** (BEST FOR EDITING)
 - **Why**: Edit video by editing text transcript
 - **Process**:
   1. Record screen + voice
@@ -59,16 +297,6 @@
 - **Cost**: Free tier available
 - **Time**: 45-90 minutes
 - **Best For**: If you want to record yourself
-
-#### 6. **Pictory** (SCRIPT TO VIDEO)
-- **Why**: Turns script into video with stock footage
-- **Process**:
-  1. Paste script
-  2. AI selects visuals
-  3. Add your screen recordings
-  4. AI generates voiceover
-- **Cost**: $23/month
-- **Time**: 30-45 minutes
 
 ### My Recommendation for This Hackathon
 
@@ -93,169 +321,23 @@
 
 ---
 
-## THE 2-3 MINUTE SCRIPT
+## ALTERNATIVE: 60-SECOND PITCH VERSION
 
-### Structure Overview
+If you need an even shorter version:
 
-| Section | Duration | Content |
-|---------|----------|---------|
-| Hook | 0:00-0:15 | Problem statement + solution |
-| Demo | 0:15-1:45 | Show the app working |
-| Kiro Process | 1:45-2:15 | How Kiro AI helped build it |
-| Wrap-up | 2:15-2:30 | Call to action |
+```
+EasySale is a white-label POS system I built spec-first with Kiro AI. 
 
----
+It's offline-first, multi-tenant, and integrates with QuickBooks and WooCommerce out of the box.
 
-### SECTION 1: HOOK (0:00 - 0:15)
+[Show quick montage: login, sell page, inventory, sync dashboard]
 
-**[VISUAL: EasySale logo on dark background, then cut to login screen]**
+The secret? Spec-driven development. I wrote requirements first, let Kiro implement them, and documented everything. The kiro folder has 26 spec folders, and the blog has 64 entries tracking the journey.
 
-**NARRATION:**
+150 API endpoints. 57 database migrations. Production-ready.
 
-> "Small retailers need a POS system that works offline, handles multiple stores, and doesn't cost a fortune. I built EasySale in 3 weeks using Kiro AI—a complete point-of-sale system with 150+ API endpoints, multi-tenant architecture, and integrations with QuickBooks and WooCommerce."
-
-**[VISUAL: Quick montage of key screens - dashboard, sell page, inventory]**
-
----
-
-### SECTION 2: LIVE DEMO (0:15 - 1:45)
-
-#### Part A: Login & Dashboard (0:15 - 0:30)
-
-**[VISUAL: Login page → Dashboard]**
-
-**NARRATION:**
-
-> "The system uses JWT authentication with role-based access. Here's the dashboard showing real-time sales stats, alerts for low stock, and quick actions."
-
-**ACTIONS:**
-1. Show login page (2 sec)
-2. Login with admin credentials (created during setup) (3 sec)
-3. Pan across dashboard stats (5 sec)
-4. Hover over quick actions (3 sec)
-
----
-
-#### Part B: Making a Sale (0:30 - 1:00)
-
-**[VISUAL: Sell page - add products, checkout]**
-
-**NARRATION:**
-
-> "The core POS flow: search products, add to cart, apply discounts, and checkout. Everything persists to SQLite locally and syncs when online. Watch the totals calculate in real-time."
-
-**ACTIONS:**
-1. Navigate to Sell page (2 sec)
-2. Search for a product (3 sec)
-3. Click to add to cart (2 sec)
-4. Add another product (2 sec)
-5. Adjust quantity with +/- (3 sec)
-6. Show totals updating (3 sec)
-7. Click Cash payment (2 sec)
-8. Complete sale in modal (5 sec)
-9. Show success state (3 sec)
-
----
-
-#### Part C: Inventory & Customers (1:00 - 1:20)
-
-**[VISUAL: Inventory page → Customers page]**
-
-**NARRATION:**
-
-> "Full inventory management with stock tracking, low-stock alerts, and barcode scanning. Customer profiles track purchase history and loyalty tiers."
-
-**ACTIONS:**
-1. Navigate to Inventory (2 sec)
-2. Show stats cards (3 sec)
-3. Click Alerts tab - show low stock items (4 sec)
-4. Navigate to Customers (2 sec)
-5. Click a customer to show profile (4 sec)
-6. Show loyalty tier badge (3 sec)
-
----
-
-#### Part D: Admin & Integrations (1:20 - 1:45)
-
-**[VISUAL: Admin page → Integrations → Sync Dashboard]**
-
-**NARRATION:**
-
-> "The admin panel configures everything: users, taxes, hardware, and integrations. Connect to QuickBooks, WooCommerce, Stripe, and more. The sync dashboard shows real-time status across all platforms."
-
-**ACTIONS:**
-1. Navigate to Admin (2 sec)
-2. Click through sidebar items quickly (5 sec)
-3. Go to Integrations page (2 sec)
-4. Show integration cards (4 sec)
-5. Go to System Health (2 sec)
-6. Show sync dashboard metrics (5 sec)
-7. Show sync history (3 sec)
-
----
-
-### SECTION 3: KIRO AI PROCESS (1:45 - 2:15)
-
-**[VISUAL: Show .kiro folder structure, then specs, then blog posts]**
-
-**NARRATION:**
-
-> "Here's how Kiro AI made this possible. I used spec-driven development—writing requirements and design docs first, then letting Kiro execute. The `.kiro` folder contains steering documents, global rules, and feature specs. Each feature started as a spec, got implemented, then documented in the dev blog. Over 50 blog posts track the entire journey from foundation to production."
-
-**ACTIONS:**
-1. Show `.kiro/` folder in VS Code (3 sec)
-2. Open `steering/product.md` briefly (3 sec)
-3. Open `specs/` folder, show list (4 sec)
-4. Open one spec's `tasks.md` (3 sec)
-5. Show `blog/` folder with dated entries (4 sec)
-6. Open one blog post briefly (3 sec)
-7. Show `archive/` folder with 300+ files (3 sec)
-8. Quick scroll through archive (3 sec)
-
----
-
-### SECTION 4: WRAP-UP (2:15 - 2:30)
-
-**[VISUAL: GitHub repo → README → Back to app]**
-
-**NARRATION:**
-
-> "EasySale is open source under Apache 2.0. Check out the GitHub repo for full documentation, the complete development log, and instructions to run it yourself. Thanks for watching!"
-
-**ACTIONS:**
-1. Show GitHub repo page (3 sec)
-2. Scroll README briefly (4 sec)
-3. Show the running app one more time (3 sec)
-4. End on logo or repo URL (3 sec)
-
----
-
-## RECORDING CHECKLIST
-
-### Before Recording
-
-- [ ] App running at `localhost:7945`
-- [ ] Logged out (to show login flow)
-- [ ] Demo data seeded (products, customers, transactions)
-- [ ] Browser at 1920x1080, no extensions visible
-- [ ] Dark theme enabled
-- [ ] VS Code open with `.kiro/` folder ready
-- [ ] GitHub repo page open in another tab
-
-### Demo Data Needed
-
-- [ ] 10+ products across 3 categories
-- [ ] 5+ customers with different tiers
-- [ ] 3+ recent transactions
-- [ ] At least 2 low-stock items for alerts
-
-### Recording Tips
-
-1. **Practice the flow 2-3 times** before recording
-2. **Move the mouse slowly** - AI tools track cursor
-3. **Pause briefly** on important screens (2-3 sec)
-4. **Don't rush** - 2:30 is fine, don't squeeze to 2:00
-5. **Record in segments** if easier, then stitch together
+Check out the repo at github.com/derickladwig/EasySale. Thanks!
+```
 
 ---
 
@@ -302,48 +384,6 @@
 - [ ] Link tested in incognito browser
 - [ ] Link added to hackathon submission form
 - [ ] Link added to README.md
-
----
-
-## QUICK SCRIPT (COPY-PASTE VERSION)
-
-For AI voiceover tools, here's the script as plain text:
-
-```
-Small retailers need a POS system that works offline, handles multiple stores, and doesn't cost a fortune. I built EasySale in 3 weeks using Kiro AI—a complete point-of-sale system with 150 API endpoints, multi-tenant architecture, and integrations with QuickBooks and WooCommerce.
-
-The system uses JWT authentication with role-based access. Here's the dashboard showing real-time sales stats, alerts for low stock, and quick actions.
-
-The core POS flow: search products, add to cart, apply discounts, and checkout. Everything persists to SQLite locally and syncs when online. Watch the totals calculate in real-time.
-
-Full inventory management with stock tracking, low-stock alerts, and barcode scanning. Customer profiles track purchase history and loyalty tiers.
-
-The admin panel configures everything: users, taxes, hardware, and integrations. Connect to QuickBooks, WooCommerce, Stripe, and more. The sync dashboard shows real-time status across all platforms.
-
-Here's how Kiro AI made this possible. I used spec-driven development—writing requirements and design docs first, then letting Kiro execute. The kiro folder contains steering documents, global rules, and feature specs. Each feature started as a spec, got implemented, then documented in the dev blog. Over 50 blog posts track the entire journey from foundation to production.
-
-EasySale is open source under Apache 2.0. Check out the GitHub repo for full documentation, the complete development log, and instructions to run it yourself. Thanks for watching!
-```
-
----
-
-## ALTERNATIVE: 60-SECOND PITCH VERSION
-
-If you need an even shorter version:
-
-```
-EasySale is a white-label POS system I built in 3 weeks with Kiro AI. 
-
-It's offline-first, multi-tenant, and integrates with QuickBooks and WooCommerce out of the box.
-
-[Show quick montage: login, sell page, inventory, sync dashboard]
-
-The secret? Spec-driven development. I wrote requirements first, let Kiro implement them, and documented everything. The kiro folder has all the specs, and the blog folder has 50+ entries tracking the journey.
-
-150 API endpoints. 50 database tables. Production-ready.
-
-Check out the repo at github.com/derickladwig/EasySale. Thanks!
-```
 
 ---
 

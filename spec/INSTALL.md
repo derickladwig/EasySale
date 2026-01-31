@@ -1,7 +1,7 @@
 # EasySale — Installation Guide
 
-**Version**: 1.0  
-**Last Updated**: 2026-01-29  
+**Version**: 1.1  
+**Last Updated**: 2026-01-30  
 **Platforms**: Windows 10/11, Linux, macOS (Docker)
 
 ---

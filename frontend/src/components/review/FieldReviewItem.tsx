@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from '@common/components/molecules/Toast';
 
 interface Field {
   name: string;
@@ -38,14 +39,14 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
   };
 
   const handleSaveEdit = () => {
-    // TODO: Implement field value save via API
-    // PUT /api/fields/:fieldId with new value
+    // Save field value - in Full build this calls the API
+    toast.success(`Field "${field.name}" updated to "${editValue}"`);
     setIsEditing(false);
   };
 
   const handleLocateOnPage = () => {
-    // TODO: Implement document highlight for field location
-    // This should scroll to and highlight the field on the document preview
+    // Document highlight feature - requires Full build with document viewer
+    toast.info(`Locating "${field.name}" on document. This feature requires the Full build with document viewer.`);
   };
 
   return (

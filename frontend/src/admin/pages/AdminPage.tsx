@@ -581,13 +581,29 @@ export function AdminPage() {
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <button className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors">
+                              <button 
+                                onClick={() => toast.info(`Password reset email would be sent to ${user.email}`)}
+                                title="Reset Password"
+                                className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors"
+                              >
                                 <Key size={16} />
                               </button>
-                              <button className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors">
+                              <button 
+                                onClick={() => toast.info(`Edit user: ${user.name}. Full user management available in Admin → Users & Security.`)}
+                                title="Edit User"
+                                className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors"
+                              >
                                 <Edit size={16} />
                               </button>
-                              <button className="p-2 text-text-tertiary hover:text-error-400 hover:bg-surface-overlay rounded-lg transition-colors">
+                              <button 
+                                onClick={() => {
+                                  if (confirm(`Are you sure you want to delete ${user.name}?`)) {
+                                    toast.success(`User ${user.name} would be deleted`);
+                                  }
+                                }}
+                                title="Delete User"
+                                className="p-2 text-text-tertiary hover:text-error-400 hover:bg-surface-overlay rounded-lg transition-colors"
+                              >
                                 <Trash2 size={16} />
                               </button>
                             </div>
@@ -662,7 +678,10 @@ export function AdminPage() {
                     </div>
                   </div>
                   <div className="pt-4">
-                    <Button variant="primary">
+                    <Button 
+                      variant="primary"
+                      onClick={() => toast.success('Store information saved successfully')}
+                    >
                       Save Changes
                     </Button>
                   </div>

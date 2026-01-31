@@ -398,3 +398,13 @@
 2. Quick start (5 minutes - Chapters 2, 4, 5 only)
 3. Admin guide (5 minutes - Chapter 8 expanded)
 4. Individual chapter clips for help system
+
+---
+
+## Hackathon Edition (2-3 minutes)
+
+For the hackathon submission, see the condensed script at [spec/VIDEO_GUIDE_SCRIPT.md](../spec/VIDEO_GUIDE_SCRIPT.md).
+
+---
+
+*Last Updated: 2026-01-30*

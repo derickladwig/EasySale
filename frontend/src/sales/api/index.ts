@@ -408,14 +408,16 @@ export const creditApi = {
     availableCredit: number;
     reason?: string;
   }> => {
-    return apiClient.post('/api/credit/check', { customer_id: customerId, amount });
+    // Backend endpoint: POST /api/customers/{id}/check-credit
+    return apiClient.post(`/api/customers/${customerId}/check-credit`, { amount });
   },
 
   verifyOfflineTransactions: async (transactionIds: string[]): Promise<{
     verified: string[];
     failed: Array<{ id: string; reason: string }>;
   }> => {
-    return apiClient.post('/api/credit/verify-offline', { transaction_ids: transactionIds });
+    // Backend endpoint: POST /api/transactions/verify-offline
+    return apiClient.post('/api/transactions/verify-offline', { transaction_ids: transactionIds });
   },
 
   getPendingVerifications: async (): Promise<Array<{
@@ -424,7 +426,8 @@ export const creditApi = {
     amount: number;
     createdAt: string;
   }>> => {
-    return apiClient.get('/api/credit/pending-verifications');
+    // Backend endpoint: GET /api/transactions/pending-verifications
+    return apiClient.get('/api/transactions/pending-verifications');
   },
 };
 

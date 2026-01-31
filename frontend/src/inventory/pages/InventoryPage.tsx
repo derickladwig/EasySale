@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 import { useInventoryQuery } from '../hooks/useInventoryQuery';
+import { useUpdateProductMutation } from '@domains/product/hooks';
 import { EmptyState } from '@common/components/molecules/EmptyState';
 import { toast } from '@common/utils/toast';
 import { Button } from '@common/components/atoms/Button';
@@ -386,10 +387,22 @@ export function InventoryPage() {
     }, 1500);
   };
 
-  const handleStockAdjustment = (adjustments: { id: string; newStock: number; reason: string }[]) => {
-    // In production, this would call the API
-    toast.success(`Adjusted stock for ${adjustments.length} items`);
-    setSelectedItems([]);
+  const updateProduct = useUpdateProductMutation();
+  
+  const handleStockAdjustment = async (adjustments: { id: string; newStock: number; reason: string }[]) => {
+    try {
+      // Update each product's stock via API
+      for (const adj of adjustments) {
+        await updateProduct.mutateAsync({
+          id: adj.id,
+          updates: { quantity_on_hand: adj.newStock }
+        });
+      }
+      toast.success(`Adjusted stock for ${adjustments.length} items`);
+      setSelectedItems([]);
+    } catch (error) {
+      toast.error('Failed to adjust stock. Please try again.');
+    }
   };
 
   const handleTransfer = () => {

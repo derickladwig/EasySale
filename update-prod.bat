@@ -258,7 +258,8 @@ if not defined NO_RESTART (
     timeout /t 3 /nobreak >nul
     set /a RETRIES+=1
     
-    curl -s http://localhost:8923/health >nul 2>&1
+    REM Check backend health using PowerShell (more reliable on Windows)
+    powershell -Command "try { $null = Invoke-WebRequest -Uri 'http://localhost:8923/health' -UseBasicParsing -TimeoutSec 5; exit 0 } catch { exit 1 }" >nul 2>&1
     if errorlevel 1 (
         if %RETRIES% lss 20 (
             echo   Waiting for backend... [%RETRIES%/20]
@@ -270,7 +271,8 @@ if not defined NO_RESTART (
         echo [OK] Backend is healthy
     )
     
-    curl -s http://localhost:7945 >nul 2>&1
+    REM Check frontend using PowerShell
+    powershell -Command "try { $null = Invoke-WebRequest -Uri 'http://localhost:7945' -UseBasicParsing -TimeoutSec 5; exit 0 } catch { exit 1 }" >nul 2>&1
     if errorlevel 1 (
         echo [WARNING] Frontend may not be ready yet
     ) else (

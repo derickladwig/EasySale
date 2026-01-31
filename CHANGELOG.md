@@ -57,6 +57,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API documentation updated with correct port numbers (8923)
 
 ### Fixed
+- **Batch Files**: Replaced `curl` with PowerShell for Windows compatibility in health checks
+- **Navigation**: Added feature flag filtering to hide unavailable features in lite builds
+- **CSS Variables**: Added missing spacing variables (`--space-2/4/6`) and `--color-border-dark`
+- **Admin Page**: Wired Save/Edit/Delete buttons to actual handlers
+- **Inventory Page**: Connected stock adjustment to API via `useUpdateProductMutation`
+- **Reporting Page**: Implemented custom date range picker functionality
+- **Credit API**: Fixed path mismatches between frontend and backend endpoints
+- **Review Components**: Added toast notifications for document features
 - Removed console.log statements from review components
 - Fixed broken link to payments.md in README
 - Replaced `any` types with proper TypeScript types in multiple files

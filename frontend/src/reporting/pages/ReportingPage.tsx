@@ -19,12 +19,15 @@ import { toast } from '@common/components/molecules/Toast';
 import { Button } from '@common/components/atoms/Button';
 
 type ReportType = 'sales' | 'inventory' | 'customers' | 'products';
-type DateRange = 'today' | 'week' | 'month' | 'quarter' | 'year';
+type DateRange = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
 export function ReportingPage() {
   const [reportType, setReportType] = useState<ReportType>('sales');
   const [dateRange, setDateRange] = useState<DateRange>('month');
   const [isExporting, setIsExporting] = useState(false);
+  const [showCustomRange, setShowCustomRange] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
   useConfig(); // Config context for potential future use
 
   // Calculate date range params
@@ -152,10 +155,55 @@ export function ReportingPage() {
           leftIcon={<Calendar size={18} />}
           rightIcon={<ChevronDown size={16} />}
           className="ml-auto"
+          onClick={() => setShowCustomRange(!showCustomRange)}
         >
           Custom Range
         </Button>
       </div>
+
+      {/* Custom Date Range Picker */}
+      {showCustomRange && (
+        <div className="bg-surface-base border border-border rounded-lg p-4 mb-6 flex items-end gap-4">
+          <div>
+            <label className="block text-sm text-text-secondary mb-1">Start Date</label>
+            <input
+              type="date"
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              className="px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-text-secondary mb-1">End Date</label>
+            <input
+              type="date"
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              className="px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary"
+            />
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => {
+              if (customStartDate && customEndDate) {
+                setDateRange('custom');
+                toast.success(`Report updated for ${customStartDate} to ${customEndDate}`);
+                setShowCustomRange(false);
+              } else {
+                toast.error('Please select both start and end dates');
+              }
+            }}
+          >
+            Apply
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => setShowCustomRange(false)}
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
 
       {/* Error State */}
       {error && (

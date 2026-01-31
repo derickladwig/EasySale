@@ -1,7 +1,7 @@
 # EasySale — Checklists
 
-**Version**: 1.0  
-**Last Updated**: 2026-01-29  
+**Version**: 1.1  
+**Last Updated**: 2026-01-30  
 **Purpose**: Operational checklists for development, QA, release, and onboarding
 
 ---

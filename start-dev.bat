@@ -114,11 +114,11 @@ if %RETRIES% geq %MAX_RETRIES% goto HEALTH_TIMEOUT
 timeout /t 3 /nobreak >nul
 set /a RETRIES+=1
 
-REM Check backend health endpoint
-curl -s -o nul -w "%%{http_code}" http://localhost:8923/health 2>nul | findstr "200" >nul
+REM Check backend health endpoint using PowerShell (more reliable on Windows)
+powershell -Command "try { $null = Invoke-WebRequest -Uri 'http://localhost:8923/health' -UseBasicParsing -TimeoutSec 5; exit 0 } catch { exit 1 }" >nul 2>&1
 if not errorlevel 1 (
     REM Backend is ready, check frontend
-    curl -s -o nul -w "%%{http_code}" http://localhost:7945 2>nul | findstr "200" >nul
+    powershell -Command "try { $null = Invoke-WebRequest -Uri 'http://localhost:7945' -UseBasicParsing -TimeoutSec 5; exit 0 } catch { exit 1 }" >nul 2>&1
     if not errorlevel 1 (
         set "READY=1"
         goto HEALTH_LOOP

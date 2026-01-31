@@ -10,6 +10,7 @@ import { DemoModeIndicator } from './components/DemoModeIndicator';
 import { ProfileMenu } from './common/components/molecules/ProfileMenu';
 import { LogoWithFallback } from './common/components/atoms/LogoWithFallback';
 import { useStations } from './admin/hooks/useStations';
+import { ENABLE_DOCUMENTS, ENABLE_REVIEW, ENABLE_ADMIN, ENABLE_REPORTING } from './common/utils/buildVariant';
 
 import { Permission } from './common/contexts/PermissionsContext';
 
@@ -53,10 +54,19 @@ export function AppLayout() {
     return brandConfig.store?.station || 'Station 1';
   }, [user?.station_id, stations, brandConfig.store?.station]);
 
-  // Filter navigation items by permissions
-  const filteredNavItems = navigation.filter(
-    (item) => !item.permission || hasPermission(item.permission as Permission)
-  );
+  // Filter navigation items by permissions AND feature flags
+  const filteredNavItems = navigation.filter((item) => {
+    // Check permissions first
+    if (item.permission && !hasPermission(item.permission as Permission)) {
+      return false;
+    }
+    // Check feature flags for build-variant-gated features
+    if (item.id === 'documents' && !ENABLE_DOCUMENTS) return false;
+    if (item.id === 'review' && !ENABLE_REVIEW) return false;
+    if (item.id === 'admin' && !ENABLE_ADMIN) return false;
+    if (item.id === 'reporting' && !ENABLE_REPORTING) return false;
+    return true;
+  });
 
   const handleNavClick = (path: string) => {
     navigate(path);
