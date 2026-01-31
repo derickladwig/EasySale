@@ -45,6 +45,9 @@ import { useTaxRulesQuery, getApplicableTaxRate } from '../../settings/hooks/use
 interface CartItem {
   product: Product;
   quantity: number;
+  priceOverride?: number; // Optional price override for this line item
+  itemDiscount?: number; // Optional discount amount for this line item
+  discountReason?: string; // Reason for the discount
 }
 
 export function SellPage() {
@@ -120,8 +123,16 @@ export function SellPage() {
     return matchesSearch && matchesCategory;
   });
 
-  // Cart functions
+  // Cart functions with stock validation
   const addToCart = (product: Product) => {
+    const currentInCart = cart.find((item) => item.product.id === product.id)?.quantity || 0;
+    const availableStock = product.quantityOnHand ?? Infinity;
+    
+    if (currentInCart >= availableStock) {
+      toast.warning(`Only ${availableStock} ${product.name} available in stock`);
+      return;
+    }
+    
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -134,19 +145,38 @@ export function SellPage() {
   };
 
   const updateQuantity = (productId: string, delta: number) => {
-    setCart((prev) =>
-      prev
+    setCart((prev) => {
+      const item = prev.find((i) => i.product.id === productId);
+      if (item && delta > 0) {
+        const availableStock = item.product.quantityOnHand ?? Infinity;
+        if (item.quantity >= availableStock) {
+          toast.warning(`Only ${availableStock} ${item.product.name} available in stock`);
+          return prev;
+        }
+      }
+      return prev
         .map((item) =>
           item.product.id === productId
             ? { ...item, quantity: Math.max(0, item.quantity + delta) }
             : item
         )
-        .filter((item) => item.quantity > 0)
-    );
+        .filter((item) => item.quantity > 0);
+    });
   };
 
   const removeFromCart = (productId: string) => {
     setCart((prev) => prev.filter((item) => item.product.id !== productId));
+  };
+
+  // Update line item price or discount
+  const updateLineItem = (productId: string, updates: { priceOverride?: number; itemDiscount?: number; discountReason?: string }) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.product.id === productId
+          ? { ...item, ...updates }
+          : item
+      )
+    );
   };
 
   const clearCart = () => {
@@ -156,9 +186,16 @@ export function SellPage() {
     setCouponCode(null);
   };
 
+  // Calculate line item price (with override support)
+  const getLineItemPrice = (item: CartItem): number => {
+    const basePrice = item.priceOverride ?? item.product.unitPrice ?? 0;
+    const lineDiscount = item.itemDiscount ?? 0;
+    return Math.max(0, basePrice - lineDiscount);
+  };
+
   // Calculate totals
   const subtotal = cart.reduce(
-    (sum, item) => sum + (item.product.unitPrice || 0) * item.quantity,
+    (sum, item) => sum + getLineItemPrice(item) * item.quantity,
     0
   );
   const discountedSubtotal = subtotal - discount;
@@ -822,47 +859,112 @@ export function SellPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {cart.map((item) => (
-                <div
-                  key={item.product.id}
-                  className="bg-surface-3 rounded-lg p-3 flex items-center gap-3"
-                >
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-text-primary truncate">{item.product.name}</h4>
-                    <p className="text-sm text-text-secondary">
-                      {formatCurrency(item.product.unitPrice || 0)} each
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => updateQuantity(item.product.id, -1)}
-                      className="w-8 h-8 rounded-lg bg-surface-2 hover:bg-surface-1 flex items-center justify-center text-text-primary transition-colors"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className="w-8 text-center font-medium text-text-primary">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQuantity(item.product.id, 1)}
-                      className="w-8 h-8 rounded-lg bg-surface-2 hover:bg-surface-1 flex items-center justify-center text-text-primary transition-colors"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                  <div className="w-20 text-right">
-                    <div className="font-bold text-text-primary">
-                      {formatCurrency((item.product.unitPrice || 0) * item.quantity)}
+              {cart.map((item) => {
+                const effectivePrice = getLineItemPrice(item);
+                const hasOverride = item.priceOverride !== undefined || item.itemDiscount !== undefined;
+                const originalPrice = item.product.unitPrice || 0;
+                
+                return (
+                  <div
+                    key={item.product.id}
+                    className="bg-surface-3 rounded-lg p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-text-primary truncate">{item.product.name}</h4>
+                        <div className="flex items-center gap-2 text-sm">
+                          {hasOverride ? (
+                            <>
+                              <span className="text-text-muted line-through">{formatCurrency(originalPrice)}</span>
+                              <span className="text-success">{formatCurrency(effectivePrice)}</span>
+                            </>
+                          ) : (
+                            <span className="text-text-secondary">{formatCurrency(originalPrice)} each</span>
+                          )}
+                        </div>
+                        {item.discountReason && (
+                          <p className="text-xs text-warning mt-1">{item.discountReason}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, -1)}
+                          className="w-8 h-8 rounded-lg bg-surface-2 hover:bg-surface-1 flex items-center justify-center text-text-primary transition-colors"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="w-8 text-center font-medium text-text-primary">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.product.id, 1)}
+                          className="w-8 h-8 rounded-lg bg-surface-2 hover:bg-surface-1 flex items-center justify-center text-text-primary transition-colors"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                      <div className="w-20 text-right">
+                        <div className="font-bold text-text-primary">
+                          {formatCurrency(effectivePrice * item.quantity)}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.product.id)}
+                        className="p-2 text-text-secondary hover:text-error transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                    {/* Line item edit controls */}
+                    <div className="mt-2 pt-2 border-t border-border-subtle flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const newPrice = prompt(`Enter new price for ${item.product.name}:`, String(effectivePrice));
+                          if (newPrice !== null) {
+                            const parsed = parseFloat(newPrice);
+                            if (!isNaN(parsed) && parsed >= 0) {
+                              updateLineItem(item.product.id, { priceOverride: parsed });
+                            }
+                          }
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-surface-2 hover:bg-surface-1 text-text-secondary hover:text-text-primary transition-colors"
+                      >
+                        Price Override
+                      </button>
+                      <button
+                        onClick={() => {
+                          const discountAmt = prompt(`Enter discount amount for ${item.product.name}:`, String(item.itemDiscount || 0));
+                          if (discountAmt !== null) {
+                            const parsed = parseFloat(discountAmt);
+                            if (!isNaN(parsed) && parsed >= 0) {
+                              const reason = parsed > 0 ? prompt('Reason for discount (optional):') || undefined : undefined;
+                              updateLineItem(item.product.id, { 
+                                itemDiscount: parsed > 0 ? parsed : undefined,
+                                discountReason: reason 
+                              });
+                            }
+                          }
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-surface-2 hover:bg-surface-1 text-text-secondary hover:text-text-primary transition-colors"
+                      >
+                        Line Discount
+                      </button>
+                      {hasOverride && (
+                        <button
+                          onClick={() => updateLineItem(item.product.id, { 
+                            priceOverride: undefined, 
+                            itemDiscount: undefined, 
+                            discountReason: undefined 
+                          })}
+                          className="text-xs px-2 py-1 rounded bg-error/20 hover:bg-error/30 text-error transition-colors"
+                        >
+                          Reset
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeFromCart(item.product.id)}
-                    className="p-2 text-text-secondary hover:text-error transition-colors"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

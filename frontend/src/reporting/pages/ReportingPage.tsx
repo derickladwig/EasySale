@@ -30,8 +30,8 @@ export function ReportingPage() {
   const [customEndDate, setCustomEndDate] = useState('');
   useConfig(); // Config context for potential future use
 
-  // Calculate date range params
-  const dateParams = getDateRange(dateRange);
+  // Calculate date range params (pass custom dates when in custom mode)
+  const dateParams = getDateRange(dateRange, customStartDate, customEndDate);
 
   // Fetch sales data using React Query
   const { data: salesData, isLoading: salesLoading, error: salesError } = useSalesReportQuery(dateParams);
@@ -40,31 +40,32 @@ export function ReportingPage() {
   const isLoading = salesLoading || categoryLoading;
   const error = salesError ? salesError.message : null;
   const salesSummary = salesData?.summary;
+  const periodChanges = salesData?.changes;
 
-  // Calculate summary cards from API data
+  // Calculate summary cards from API data with period comparison
   const summaryCards = salesSummary ? [
     { 
       label: 'Total Revenue', 
       value: `$${salesSummary.total_sales.toFixed(2)}`, 
-      change: 0, // TODO: Calculate from previous period
+      change: periodChanges?.revenue_change ?? 0,
       icon: DollarSign 
     },
     { 
       label: 'Transactions', 
       value: salesSummary.total_transactions.toString(), 
-      change: 0, 
+      change: periodChanges?.transaction_change ?? 0, 
       icon: ShoppingCart 
     },
     { 
       label: 'Avg. Transaction', 
       value: `$${salesSummary.average_transaction.toFixed(2)}`, 
-      change: 0, 
+      change: periodChanges?.avg_transaction_change ?? 0, 
       icon: TrendingUp 
     },
     { 
       label: 'Items Sold', 
       value: salesSummary.total_items_sold.toString(), 
-      change: 0, 
+      change: periodChanges?.items_change ?? 0, 
       icon: Package 
     },
   ] : [];

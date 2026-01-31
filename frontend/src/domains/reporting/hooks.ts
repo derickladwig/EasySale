@@ -75,9 +75,21 @@ export function useDashboardMetricsQuery(): UseQueryResult<DashboardMetrics, Err
 }
 
 /**
- * Helper function to calculate date range based on preset
+ * Helper function to calculate date range based on preset or custom dates
  */
-export function getDateRange(range: 'today' | 'week' | 'month' | 'quarter' | 'year'): SalesReportParams {
+export function getDateRange(
+  range: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom',
+  customStart?: string,
+  customEnd?: string
+): SalesReportParams {
+  // Handle custom date range
+  if (range === 'custom' && customStart && customEnd) {
+    return {
+      start_date: customStart,
+      end_date: customEnd,
+    };
+  }
+  
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
@@ -102,6 +114,12 @@ export function getDateRange(range: 'today' | 'week' | 'month' | 'quarter' | 'ye
     case 'year':
       start_date = new Date(today);
       start_date.setFullYear(today.getFullYear() - 1);
+      break;
+    case 'custom':
+    default:
+      // Default to month if custom without dates
+      start_date = new Date(today);
+      start_date.setMonth(today.getMonth() - 1);
       break;
   }
   

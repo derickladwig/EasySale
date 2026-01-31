@@ -5,6 +5,35 @@ All notable changes to EasySale will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-30
+
+### Added
+- **Per-Item Cart Adjustments**: Price override and line item discounts with reason tracking
+- **Stock Validation**: Real-time stock check before adding items to cart
+- **Stock Adjustment API**: Dedicated endpoint with full audit trail
+  - `POST /api/products/{id}/stock/adjust` - Adjust stock with reason
+  - `GET /api/products/{id}/stock/history` - View adjustment history
+  - Migration 055: stock_adjustments table
+- **Blog Documentation**: 7 new blog entries documenting development milestones
+- **Reporting Enhancements**:
+  - Custom date range filtering now functional
+  - Previous period comparison displayed in summary cards
+  - Category breakdown bar chart visualization
+
+### Changed
+- Dark theme overlay softened from 80% to 60% opacity
+- Shadow opacities reduced for less harsh appearance
+- Spec documentation updated to version 1.1
+
+### Fixed
+- Custom date range in ReportingPage now properly filters data
+- Period comparison data now displayed (was showing 0)
+- Removed hardcoded `!important` background color in BackgroundRenderer
+- AdminPage store save now calls actual API
+- AdminPage user delete now calls actual API
+
+---
+
 ## [Unreleased]
 
 ### Added

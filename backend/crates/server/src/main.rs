@@ -338,6 +338,9 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::product::delete_variant)
             .service(handlers::product::has_variants)
             .service(handlers::product::get_variant_count)
+            // Stock adjustment with audit trail
+            .service(handlers::product::adjust_stock)
+            .service(handlers::product::get_stock_history)
             // Product advanced features
             .service(handlers::product_advanced::get_product_relationships)
             .service(handlers::product_advanced::create_product_relationship)

@@ -194,6 +194,17 @@ backend/crates/
 | Vendor Bill Workflow | — | — | ✅ |
 | Review Queue | — | — | ✅ |
 
+### Latest Features (v1.1.0)
+
+| Feature | Description |
+|---------|-------------|
+| **Per-Item Cart Adjustments** | Override prices and apply discounts per line item with reason tracking |
+| **Stock Validation** | Real-time stock check prevents overselling |
+| **Stock Adjustment API** | Full audit trail for inventory changes with reasons |
+| **Quotes System** | Save carts as quotes, convert to sales later |
+| **Custom Date Reporting** | Filter reports by any date range |
+| **Period Comparison** | See percentage changes vs previous period |
+
 ---
 
 ## Optional Integrations

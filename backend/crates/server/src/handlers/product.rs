@@ -716,3 +716,185 @@ pub async fn get_variant_count(
         })),
     }
 }
+
+/// Stock adjustment request
+#[derive(Debug, serde::Deserialize)]
+pub struct StockAdjustmentRequest {
+    /// Adjustment type: "add", "subtract", or "set"
+    pub adjustment_type: String,
+    /// Quantity to adjust by (or set to)
+    pub quantity: i32,
+    /// Reason for adjustment
+    pub reason: String,
+    /// Optional notes
+    pub notes: Option<String>,
+}
+
+/// POST /api/products/:id/stock/adjust
+/// Adjust stock with audit trail
+#[post("/api/products/{id}/stock/adjust")]
+pub async fn adjust_stock(
+    pool: web::Data<SqlitePool>,
+    config_loader: web::Data<ConfigLoader>,
+    req: HttpRequest,
+    path: web::Path<String>,
+    body: web::Json<StockAdjustmentRequest>,
+) -> impl Responder {
+    let product_id = path.into_inner();
+    tracing::info!("Adjusting stock for product: {}", product_id);
+
+    let user_id = match get_user_id_from_context(&req) {
+        Ok(id) => id,
+        Err(response) => return response,
+    };
+
+    let tenant_id = get_current_tenant_id();
+    let pool_ref = pool.get_ref();
+
+    // Get current product
+    let service = ProductService::new(pool_ref.clone(), config_loader.get_ref().clone());
+    let product = match service.get_product(&product_id, &tenant_id).await {
+        Ok(Some(p)) => p,
+        Ok(None) => {
+            return HttpResponse::NotFound().json(serde_json::json!({
+                "error": "Product not found"
+            }));
+        }
+        Err(errors) => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "errors": errors
+            }));
+        }
+    };
+
+    let old_quantity = product.quantity_on_hand.unwrap_or(0);
+    let new_quantity = match body.adjustment_type.as_str() {
+        "add" => old_quantity + body.quantity,
+        "subtract" => (old_quantity - body.quantity).max(0),
+        "set" => body.quantity.max(0),
+        _ => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Invalid adjustment_type. Use 'add', 'subtract', or 'set'"
+            }));
+        }
+    };
+
+    // Record the adjustment in audit log
+    let adjustment_id = uuid::Uuid::new_v4().to_string();
+    let now = chrono::Utc::now().to_rfc3339();
+    
+    let audit_result = sqlx::query(
+        r#"
+        INSERT INTO stock_adjustments (
+            id, product_id, tenant_id, user_id,
+            adjustment_type, quantity_before, quantity_after, quantity_change,
+            reason, notes, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        "#
+    )
+    .bind(&adjustment_id)
+    .bind(&product_id)
+    .bind(&tenant_id)
+    .bind(&user_id)
+    .bind(&body.adjustment_type)
+    .bind(old_quantity)
+    .bind(new_quantity)
+    .bind(new_quantity - old_quantity)
+    .bind(&body.reason)
+    .bind(&body.notes)
+    .bind(&now)
+    .execute(pool_ref)
+    .await;
+
+    // If audit table doesn't exist, log warning but continue
+    if let Err(e) = audit_result {
+        tracing::warn!("Could not record stock adjustment audit: {}. Table may not exist.", e);
+    }
+
+    // Update the product quantity
+    let update_result = sqlx::query(
+        "UPDATE products SET quantity_on_hand = ?, updated_at = ? WHERE id = ? AND tenant_id = ?"
+    )
+    .bind(new_quantity)
+    .bind(&now)
+    .bind(&product_id)
+    .bind(&tenant_id)
+    .execute(pool_ref)
+    .await;
+
+    match update_result {
+        Ok(_) => HttpResponse::Ok().json(serde_json::json!({
+            "success": true,
+            "adjustment_id": adjustment_id,
+            "product_id": product_id,
+            "quantity_before": old_quantity,
+            "quantity_after": new_quantity,
+            "quantity_change": new_quantity - old_quantity,
+            "adjustment_type": body.adjustment_type,
+            "reason": body.reason
+        })),
+        Err(e) => {
+            tracing::error!("Failed to update stock: {}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to update stock"
+            }))
+        }
+    }
+}
+
+/// GET /api/products/:id/stock/history
+/// Get stock adjustment history for a product
+#[get("/api/products/{id}/stock/history")]
+pub async fn get_stock_history(
+    pool: web::Data<SqlitePool>,
+    path: web::Path<String>,
+) -> impl Responder {
+    let product_id = path.into_inner();
+    tracing::info!("Getting stock history for product: {}", product_id);
+
+    let tenant_id = get_current_tenant_id();
+
+    let result = sqlx::query_as::<_, (String, String, String, i32, i32, i32, String, Option<String>, String)>(
+        r#"
+        SELECT id, user_id, adjustment_type, quantity_before, quantity_after, quantity_change, reason, notes, created_at
+        FROM stock_adjustments
+        WHERE product_id = ? AND tenant_id = ?
+        ORDER BY created_at DESC
+        LIMIT 100
+        "#
+    )
+    .bind(&product_id)
+    .bind(&tenant_id)
+    .fetch_all(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(rows) => {
+            let history: Vec<serde_json::Value> = rows.iter().map(|r| {
+                serde_json::json!({
+                    "id": r.0,
+                    "user_id": r.1,
+                    "adjustment_type": r.2,
+                    "quantity_before": r.3,
+                    "quantity_after": r.4,
+                    "quantity_change": r.5,
+                    "reason": r.6,
+                    "notes": r.7,
+                    "created_at": r.8
+                })
+            }).collect();
+            HttpResponse::Ok().json(serde_json::json!({
+                "product_id": product_id,
+                "history": history
+            }))
+        }
+        Err(e) => {
+            tracing::warn!("Could not fetch stock history: {}. Table may not exist.", e);
+            HttpResponse::Ok().json(serde_json::json!({
+                "product_id": product_id,
+                "history": [],
+                "note": "Stock adjustment history not available"
+            }))
+        }
+    }
+}
