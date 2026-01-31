@@ -25,4 +25,5 @@
 //   }),
 // ];
 
-export const handlers: any[] = [];
+// Empty handlers array - will be populated when MSW is configured
+export const handlers: unknown[] = [];

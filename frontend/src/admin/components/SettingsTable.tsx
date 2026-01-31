@@ -116,9 +116,9 @@ export function SettingsTable<T>({
   if (data.length === 0 && emptyState) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
-        <Inbox className="w-12 h-12 text-secondary-400 mb-4" />
-        <h3 className="text-lg font-medium text-secondary-900 mb-2">{emptyState.title}</h3>
-        <p className="text-sm text-secondary-600 mb-4 max-w-md">{emptyState.description}</p>
+        <Inbox className="w-12 h-12 text-text-tertiary mb-4" />
+        <h3 className="text-lg font-medium text-text-primary mb-2">{emptyState.title}</h3>
+        <p className="text-sm text-text-secondary mb-4 max-w-md">{emptyState.description}</p>
         {emptyState.action && (
           <Button onClick={emptyState.action.onClick} variant="primary">
             {emptyState.action.label}
@@ -156,9 +156,9 @@ export function SettingsTable<T>({
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto border border-secondary-200 rounded-lg">
-        <table className="min-w-full divide-y divide-secondary-200">
-          <thead className="bg-secondary-50">
+      <div className="overflow-x-auto border border-border rounded-lg">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-surface-elevated">
             <tr>
               {/* Bulk selection checkbox */}
               {bulkActions.length > 0 && (
@@ -179,8 +179,8 @@ export function SettingsTable<T>({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-4 py-3 text-left text-xs font-medium text-secondary-700 uppercase tracking-wider ${
-                    column.sortable ? 'cursor-pointer hover:bg-secondary-100' : ''
+                  className={`px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider ${
+                    column.sortable ? 'cursor-pointer hover:bg-surface-base' : ''
                   }`}
                   style={{ width: column.width }}
                   onClick={() => column.sortable && handleSort(column.key)}
@@ -206,7 +206,7 @@ export function SettingsTable<T>({
               return (
                 <tr
                   key={rowId}
-                  className={`hover:bg-secondary-50 transition-colors ${
+                  className={`hover:bg-surface-elevated transition-colors ${
                     onRowClick ? 'cursor-pointer' : ''
                   } ${isSelected ? 'bg-primary-50' : ''}`}
                   onClick={() => onRowClick && onRowClick(row)}
@@ -225,7 +225,7 @@ export function SettingsTable<T>({
 
                   {/* Data cells */}
                   {columns.map((column) => (
-                    <td key={column.key} className="px-4 py-3 text-sm text-secondary-900">
+                    <td key={column.key} className="px-4 py-3 text-sm text-text-primary">
                       {column.render ? column.render(row) : (row as any)[column.key]}
                     </td>
                   ))}

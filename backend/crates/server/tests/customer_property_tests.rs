@@ -7,7 +7,7 @@ use sqlx::SqlitePool;
 use uuid::Uuid;
 use chrono::Utc;
 
-use EasySale_server::models::{Customer, PricingTier};
+use easysale_server::models::{Customer, PricingTier};
 
 // ============================================================================
 // Test Database Setup

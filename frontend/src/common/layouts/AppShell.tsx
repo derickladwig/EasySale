@@ -70,19 +70,21 @@ export function AppShell({
           {/* Left Navigation - Drawer */}
           {leftNav && (
             <>
-              {/* Overlay */}
+              {/* Overlay - uses overlay-backdrop token */}
               {isLeftNavOpen && (
                 <div
-                  className="fixed inset-0 bg-secondary-900 bg-opacity-50 z-40"
+                  className="fixed inset-0 bg-black bg-opacity-50"
+                  style={{ zIndex: 'var(--z-overlay-backdrop)' }}
                   onClick={() => setIsLeftNavOpen(false)}
                 />
               )}
 
-              {/* Drawer */}
+              {/* Drawer - uses sidebar token */}
               <aside
-                className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-border z-50 transform transition-transform duration-300 ${
+                className={`fixed left-0 top-0 h-full w-64 bg-surface-base border-r border-border transform transition-transform duration-300 ${
                   isLeftNavOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
+                style={{ zIndex: 'var(--z-sidebar)' }}
               >
                 <div className="h-full overflow-y-auto">{leftNav}</div>
               </aside>
@@ -95,14 +97,18 @@ export function AppShell({
           {/* Right Panel - Modal/Drawer */}
           {rightPanel && isRightPanelOpen && (
             <>
-              {/* Overlay */}
+              {/* Overlay - uses overlay-backdrop token */}
               <div
-                className="fixed inset-0 bg-secondary-900 bg-opacity-50 z-40"
+                className="fixed inset-0 bg-black bg-opacity-50"
+                style={{ zIndex: 'var(--z-overlay-backdrop)' }}
                 onClick={() => setIsRightPanelOpen(false)}
               />
 
-              {/* Drawer from right */}
-              <aside className="fixed right-0 top-0 h-full w-96 bg-white border-l border-border z-50 overflow-y-auto">
+              {/* Drawer from right - uses modal token for right panels */}
+              <aside 
+                className="fixed right-0 top-0 h-full w-96 bg-surface-base border-l border-border overflow-y-auto"
+                style={{ zIndex: 'var(--z-modal)' }}
+              >
                 {rightPanel}
               </aside>
             </>
@@ -123,19 +129,21 @@ export function AppShell({
         {/* Left Navigation - Full-screen Drawer */}
         {leftNav && (
           <>
-            {/* Overlay */}
+            {/* Overlay - uses overlay-backdrop token */}
             {isLeftNavOpen && (
               <div
-                className="fixed inset-0 bg-secondary-900 bg-opacity-50 z-40"
+                className="fixed inset-0 bg-black bg-opacity-50"
+                style={{ zIndex: 'var(--z-overlay-backdrop)' }}
                 onClick={() => setIsLeftNavOpen(false)}
               />
             )}
 
-            {/* Full-screen Drawer */}
+            {/* Full-screen Drawer - uses sidebar token */}
             <aside
-              className={`fixed left-0 top-0 h-full w-full bg-white z-50 transform transition-transform duration-300 ${
+              className={`fixed left-0 top-0 h-full w-full bg-surface-base transform transition-transform duration-300 ${
                 isLeftNavOpen ? 'translate-x-0' : '-translate-x-full'
               }`}
+              style={{ zIndex: 'var(--z-sidebar)' }}
             >
               <div className="h-full overflow-y-auto">{leftNav}</div>
             </aside>
@@ -148,14 +156,18 @@ export function AppShell({
         {/* Right Panel - Bottom Sheet */}
         {rightPanel && isRightPanelOpen && (
           <>
-            {/* Overlay */}
+            {/* Overlay - uses overlay-backdrop token */}
             <div
-              className="fixed inset-0 bg-secondary-900 bg-opacity-50 z-40"
+              className="fixed inset-0 bg-black bg-opacity-50"
+              style={{ zIndex: 'var(--z-overlay-backdrop)' }}
               onClick={() => setIsRightPanelOpen(false)}
             />
 
-            {/* Bottom Sheet */}
-            <aside className="fixed bottom-0 left-0 right-0 max-h-[80vh] bg-white rounded-t-2xl z-50 overflow-y-auto">
+            {/* Bottom Sheet - uses modal token */}
+            <aside 
+              className="fixed bottom-0 left-0 right-0 max-h-[80vh] bg-surface-base rounded-t-2xl overflow-y-auto shadow-lg"
+              style={{ zIndex: 'var(--z-modal)' }}
+            >
               <div className="p-4">{rightPanel}</div>
             </aside>
           </>
@@ -164,7 +176,7 @@ export function AppShell({
 
       {/* Bottom Navigation - Mobile Only */}
       {bottomNav && (
-        <div className="flex-shrink-0 border-t border-border bg-white">{bottomNav}</div>
+        <div className="flex-shrink-0 border-t border-border bg-surface-base">{bottomNav}</div>
       )}
     </div>
   );

@@ -115,12 +115,13 @@ export function EntityEditorModal<T extends Record<string, any>>({
       await onSave(formData);
       setIsDirty(false);
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle API errors
-      if (error.errors) {
-        setErrors(error.errors);
+      const err = error as { errors?: Array<{ field: string; message: string }>; message?: string };
+      if (err.errors) {
+        setErrors(err.errors);
       } else {
-        setErrors([{ field: '_general', message: error.message || 'Failed to save' }]);
+        setErrors([{ field: '_general', message: err.message || 'Failed to save' }]);
       }
     } finally {
       setIsSaving(false);

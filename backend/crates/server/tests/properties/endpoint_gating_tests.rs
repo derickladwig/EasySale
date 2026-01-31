@@ -2,7 +2,7 @@
 // Validates: Requirements 4.4
 
 use actix_web::{test, web, App};
-use EasySale_server::config::RuntimeProfile;
+use easysale_server::config::RuntimeProfile;
 use sqlx::SqlitePool;
 
 /// Property 10: Dev Endpoint Gating
@@ -142,7 +142,7 @@ async fn test_dev_endpoints_available_in_demo() {
 
 #[actix_web::test]
 async fn test_setup_endpoints_blocked_in_prod() {
-    use EasySale_server::middleware::ProfileGate;
+    use easysale_server::middleware::ProfileGate;
     
     // Set up test database
     let pool = SqlitePool::connect(":memory:").await.unwrap();
@@ -172,7 +172,7 @@ async fn test_setup_endpoints_blocked_in_prod() {
 
 #[actix_web::test]
 async fn test_setup_endpoints_available_in_dev() {
-    use EasySale_server::middleware::ProfileGate;
+    use easysale_server::middleware::ProfileGate;
     
     // Set up test database
     let pool = SqlitePool::connect(":memory:").await.unwrap();

@@ -55,13 +55,13 @@ const AccessDenied: React.FC<{ featureName: string; redirectTo?: string }> = ({
   return (
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="text-center max-w-md">
-        <div className="mx-auto w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+        <div className="mx-auto w-16 h-16 rounded-full bg-[var(--color-error-100)] dark:bg-[var(--color-error-900)]/30 flex items-center justify-center mb-4">
           <span className="text-3xl">🔒</span>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        <h3 className="text-xl font-semibold text-text-primary mb-2">
           Access Denied
         </h3>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-text-secondary">
           You don't have permission to access {featureName}.
           Please contact your administrator if you believe this is an error.
         </p>
@@ -79,7 +79,7 @@ const BetaWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="relative">
       {/* Beta indicator */}
       <div className="absolute top-2 right-2 z-10">
-        <span className="px-2 py-1 text-xs font-medium rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+        <span className="px-2 py-1 text-xs font-medium rounded bg-[var(--color-info-100)] dark:bg-[var(--color-info-900)]/30 text-[var(--color-info-700)] dark:text-[var(--color-info-300)]">
           Beta
         </span>
       </div>

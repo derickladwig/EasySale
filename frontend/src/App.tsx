@@ -63,7 +63,9 @@ import {
   LazyExportsPage,
   LazyCapabilitiesDashboardPage,
   LazySalesManagementPage,
+  LazyTransactionHistoryPage,
   LazyPartsMappingPage,
+  LazyOAuthCallbackPage,
 } from './routes/lazyRoutes';
 
 // Create a client
@@ -95,6 +97,7 @@ function App() {
                       <Route path="/fresh-install" element={<FreshInstallWizard />} />
                       <Route path="/login" element={<LoginPage />} />
                       <Route path="/access-denied" element={<AccessDeniedPage />} />
+                      <Route path="/oauth/callback" element={<LazyOAuthCallbackPage />} />
                       
                       {/* First-run setup wizard - shown when tenant is not configured (lazy loaded) */}
                       <Route
@@ -255,10 +258,28 @@ function App() {
                           }
                         />
 
+                        {/* Transaction History - view past sales (lazy loaded) */}
+                        <Route
+                          path="transactions"
+                          element={
+                            <RequireSetup>
+                              <RequirePermission permission="access_sell">
+                                <LazyTransactionHistoryPage />
+                              </RequirePermission>
+                            </RequireSetup>
+                          }
+                        />
+
                         {/* User Preferences - accessible from profile menu */}
                         <Route
                           path="preferences"
                           element={<PreferencesPage />}
+                        />
+
+                        {/* Profile redirects to Preferences (same page) */}
+                        <Route
+                          path="profile"
+                          element={<Navigate to="/preferences" replace />}
                         />
 
                         {/* Admin routes with AdminLayout sub-navigation - only in export and full builds (lazy loaded) */}
@@ -296,7 +317,6 @@ function App() {
                             <Route path="hardware" element={<LazyHardwarePage />} />
                             <Route path="network" element={<LazyNetworkPage />} />
                             <Route path="network/lan" element={<LazyNetworkSettingsPage />} />
-                            <Route path="branding" element={<LazyBrandingSettingsPage />} />
                             <Route path="performance" element={<LazyPerformancePage />} />
                           </Route>
                         )}

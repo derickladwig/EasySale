@@ -32,4 +32,4 @@ echo ""
 echo "Press Ctrl+C to stop"
 echo ""
 
-docker-compose -p EasySale up --build
+docker-compose -p easysale up --build

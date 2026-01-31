@@ -33,7 +33,7 @@ export interface Product {
 export interface ProductSearchRequest {
   query?: string;
   category?: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, string | number | boolean>;
   page?: number;
   pageSize?: number;
   sortBy?: string;
@@ -58,14 +58,14 @@ export interface CreateProductRequest {
   cost: number;
   quantityOnHand?: number;
   reorderPoint?: number;
-  attributes?: Record<string, any>;
+  attributes?: Record<string, string | number | boolean | string[]>;
   parentId?: string;
   parent_id?: string; // Alias for backend compatibility
   barcode?: string;
   barcodeType?: string;
   images?: string[];
   storeId?: string; // Optional - backend derives from session if not provided
-  variantAttributes?: Record<string, any>; // For variant creation
+  variantAttributes?: Record<string, string | number | boolean>; // For variant creation
   price?: number; // Alias for unitPrice
   quantity?: number; // Alias for quantityOnHand
 }
@@ -80,7 +80,7 @@ export interface UpdateProductRequest {
   cost?: number;
   quantityOnHand?: number;
   reorderPoint?: number;
-  attributes?: Record<string, any>;
+  attributes?: Record<string, string | number | boolean | string[]>;
   barcode?: string;
   barcodeType?: string;
   images?: string[];
@@ -90,8 +90,8 @@ export interface UpdateProductRequest {
 export interface BulkOperationRequest {
   operation: 'update' | 'delete' | 'import' | 'export';
   productIds?: string[];
-  updates?: Record<string, any>;
-  importData?: any[];
+  updates?: Record<string, string | number | boolean>;
+  importData?: Record<string, unknown>[];
   file?: File; // For import operations
   format?: 'csv' | 'excel' | 'json'; // For export operations
 }
@@ -100,7 +100,7 @@ export interface ProductVariant {
   id: string;
   parentId: string;
   variantId: string;
-  variantAttributes: Record<string, any>;
+  variantAttributes: Record<string, string | number | boolean>;
   displayOrder: number;
   variantProduct: Product;
   createdAt: string;
@@ -110,7 +110,7 @@ export interface ProductVariant {
 export interface CreateProductVariantRequest {
   parentId: string;
   variantProduct: CreateProductRequest;
-  variantAttributes?: Record<string, any>;
+  variantAttributes?: Record<string, string | number | boolean>;
   displayOrder?: number;
 }
 
@@ -140,7 +140,7 @@ export interface AttributeConfig {
   min?: number;
   max?: number;
   pattern?: string;
-  default?: any;
+  default?: string | number | boolean;
   placeholder?: string;
   helpText?: string;
 }
@@ -149,7 +149,7 @@ export interface FilterConfig {
   field: string;
   label?: string;
   type: 'dropdown' | 'range' | 'hierarchy';
-  options?: any[];
+  options?: Array<{ value: string | number; label: string }>;
 }
 
 export interface WizardConfig {

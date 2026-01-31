@@ -28,8 +28,8 @@ export function DeleteCustomerDialog({ isOpen, onClose, customer, onCustomerDele
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-surface-base rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg p-6 w-full max-w-md" style={{ boxShadow: 'var(--shadow-modal)' }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-error-500/20 rounded-full flex items-center justify-center">

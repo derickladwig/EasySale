@@ -93,8 +93,8 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-surface-base rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="text-lg font-semibold text-text-primary">Targeted Re-OCR</h3>
@@ -194,20 +194,20 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
 
           {/* Error/Stub Message */}
           {error && (
-            <div className={`mb-4 p-3 rounded ${isStubbed ? 'bg-yellow-50 border border-yellow-200' : 'bg-red-50 border border-red-200'}`}>
+            <div className={`mb-4 p-3 rounded ${isStubbed ? 'bg-warning-50 border border-warning-200' : 'bg-error-50 border border-error-200'}`}>
               <div className="flex items-start gap-2">
-                <span className={`text-lg ${isStubbed ? 'text-yellow-600' : 'text-red-600'}`}>
+                <span className={`text-lg ${isStubbed ? 'text-warning-600' : 'text-error-600'}`}>
                   {isStubbed ? '⚠️' : '❌'}
                 </span>
                 <div className="flex-1">
-                  <p className={`text-sm font-semibold ${isStubbed ? 'text-yellow-800' : 'text-red-800'} mb-1`}>
+                  <p className={`text-sm font-semibold ${isStubbed ? 'text-warning-800' : 'text-error-800'} mb-1`}>
                     {isStubbed ? 'Feature Not Available' : 'Error'}
                   </p>
-                  <p className={`text-sm ${isStubbed ? 'text-yellow-700' : 'text-red-700'}`}>
+                  <p className={`text-sm ${isStubbed ? 'text-warning-700' : 'text-error-700'}`}>
                     {error}
                   </p>
                   {isStubbed && (
-                    <p className="text-xs text-yellow-600 mt-2">
+                    <p className="text-xs text-warning-600 mt-2">
                       This feature requires backend implementation. You can continue your workflow.
                     </p>
                   )}

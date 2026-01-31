@@ -59,7 +59,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const selectedCategoryConfig = categories.find((c) => c.id === selectedCategory);
 
   const handleChange = (field: string, value: string | number | boolean) => {
-    setFormData((prev: Record<string, any>) => ({
+    setFormData((prev: Record<string, unknown>) => ({
       ...prev,
       [field]: value,
     }));
@@ -74,7 +74,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleAttributeChange = (attrName: string, value: string | number | boolean | string[]) => {
-    setFormData((prev: any) => ({
+    setFormData((prev: { attributes: Record<string, unknown> }) => ({
       ...prev,
       attributes: {
         ...prev.attributes,
@@ -204,7 +204,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             value={value || ''}
             onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
             placeholder={attr.placeholder}
-            className={`w-full px-3 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-3 py-2 border rounded-lg bg-surface-elevated text-text-primary ${error ? 'border-error' : 'border-border'}`}
           />
         );
 
@@ -217,7 +217,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             placeholder={attr.placeholder}
             min={attr.min}
             max={attr.max}
-            className={`w-full px-3 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-3 py-2 border rounded-lg bg-surface-elevated text-text-primary ${error ? 'border-error' : 'border-border'}`}
           />
         );
 
@@ -226,7 +226,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           <select
             value={value || ''}
             onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-3 py-2 border rounded-lg bg-surface-elevated text-text-primary ${error ? 'border-error' : 'border-border'}`}
           >
             <option value="">Select {attr.label || attr.name}</option>
             {attr.values?.map((val) => (
@@ -253,7 +253,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             type="date"
             value={value || ''}
             onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-3 py-2 border rounded-lg bg-surface-elevated text-text-primary ${error ? 'border-error' : 'border-border'}`}
           />
         );
 
@@ -263,7 +263,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             type="text"
             value={value || ''}
             onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full px-3 py-2 border rounded-lg bg-surface-elevated text-text-primary ${error ? 'border-error' : 'border-border'}`}
           />
         );
     }
@@ -274,7 +274,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <h2 className="text-2xl font-bold">{product ? 'Edit Product' : 'Create Product'}</h2>
 
       {errors.submit && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700">
+        <div className="p-3 bg-[var(--color-error-50)] border border-[var(--color-error-200)] rounded text-[var(--color-error-700)]">
           {errors.submit}
         </div>
       )}

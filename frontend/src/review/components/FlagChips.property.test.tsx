@@ -56,8 +56,8 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
             <FlagChips hardFlags={hardFlags} softFlags={softFlags} />
           );
 
-          // Find all hard flag chips (red background)
-          const hardFlagChips = container.querySelectorAll('.bg-red-100');
+          // Find all hard flag chips by title attribute
+          const hardFlagChips = container.querySelectorAll('[title="Hard flag - must be resolved"]');
 
           // Should have exactly one chip per hard flag
           expect(hardFlagChips.length).toBe(hardFlags.length);
@@ -85,8 +85,8 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
             <FlagChips hardFlags={hardFlags} softFlags={softFlags} />
           );
 
-          // Find all soft flag chips (yellow background)
-          const softFlagChips = container.querySelectorAll('.bg-yellow-100');
+          // Find all soft flag chips by title attribute
+          const softFlagChips = container.querySelectorAll('[title="Soft flag - review recommended"]');
 
           // Should have exactly one chip per soft flag
           expect(softFlagChips.length).toBe(softFlags.length);
@@ -114,11 +114,12 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
             <FlagChips hardFlags={hardFlags} softFlags={softFlags} />
           );
 
-          // Find all flag chips (both red and yellow)
-          const allChips = container.querySelectorAll('.bg-red-100, .bg-yellow-100');
+          // Find all flag chips by title attributes
+          const hardChips = container.querySelectorAll('[title="Hard flag - must be resolved"]');
+          const softChips = container.querySelectorAll('[title="Soft flag - review recommended"]');
 
           // Total chips should equal sum of hard and soft flags
-          expect(allChips.length).toBe(hardFlags.length + softFlags.length);
+          expect(hardChips.length + softChips.length).toBe(hardFlags.length + softFlags.length);
         }
       ),
       { numRuns: 100 }
@@ -143,7 +144,7 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
     );
   });
 
-  it('should use red styling for hard flags', () => {
+  it('should use error styling for hard flags', () => {
     fc.assert(
       fc.property(
         fc.array(flagString, { minLength: 1, maxLength: 5 }),
@@ -153,13 +154,11 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
           );
 
           // Find all hard flag chips
-          const hardFlagChips = container.querySelectorAll('.bg-red-100');
+          const hardFlagChips = container.querySelectorAll('[title="Hard flag - must be resolved"]');
 
-          // All hard flag chips should have red styling
+          // All hard flag chips should have error styling (CSS variable classes)
           hardFlagChips.forEach((chip) => {
-            expect(chip.className).toContain('bg-red-100');
-            expect(chip.className).toContain('text-red-800');
-            expect(chip.className).toContain('border-red-200');
+            expect(chip.className).toContain('--color-error');
           });
         }
       ),
@@ -167,7 +166,7 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
     );
   });
 
-  it('should use yellow styling for soft flags', () => {
+  it('should use warning styling for soft flags', () => {
     fc.assert(
       fc.property(
         fc.array(flagString, { minLength: 1, maxLength: 5 }),
@@ -177,13 +176,11 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
           );
 
           // Find all soft flag chips
-          const softFlagChips = container.querySelectorAll('.bg-yellow-100');
+          const softFlagChips = container.querySelectorAll('[title="Soft flag - review recommended"]');
 
-          // All soft flag chips should have yellow styling
+          // All soft flag chips should have warning styling (CSS variable classes)
           softFlagChips.forEach((chip) => {
-            expect(chip.className).toContain('bg-yellow-100');
-            expect(chip.className).toContain('text-yellow-800');
-            expect(chip.className).toContain('border-yellow-200');
+            expect(chip.className).toContain('--color-warning');
           });
         }
       ),
@@ -201,18 +198,18 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
             <FlagChips hardFlags={hardFlags} softFlags={softFlags} />
           );
 
-          // Get all chips in order
-          const allChips = container.querySelectorAll('.bg-red-100, .bg-yellow-100');
-          const chipClasses = Array.from(allChips).map((chip) => chip.className);
+          // Get all chips in order using span elements with title
+          const allChips = container.querySelectorAll('span[title]');
+          const chipTitles = Array.from(allChips).map((chip) => chip.getAttribute('title'));
 
-          // First N chips should be red (hard flags)
+          // First N chips should be hard flags
           for (let i = 0; i < hardFlags.length; i++) {
-            expect(chipClasses[i]).toContain('bg-red-100');
+            expect(chipTitles[i]).toBe('Hard flag - must be resolved');
           }
 
-          // Remaining chips should be yellow (soft flags)
+          // Remaining chips should be soft flags
           for (let i = hardFlags.length; i < hardFlags.length + softFlags.length; i++) {
-            expect(chipClasses[i]).toContain('bg-yellow-100');
+            expect(chipTitles[i]).toBe('Soft flag - review recommended');
           }
         }
       ),
@@ -229,8 +226,8 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
             <FlagChips hardFlags={hard_flags} softFlags={soft_flags} />
           );
 
-          // Find all chips
-          const allChips = container.querySelectorAll('.bg-red-100, .bg-yellow-100');
+          // Find all chips by title
+          const allChips = container.querySelectorAll('span[title]');
 
           // Each chip should contain an SVG icon
           allChips.forEach((chip) => {
@@ -254,16 +251,12 @@ describe('Property 11: Flag Chip Display from Validation Result', () => {
           );
 
           // Find all hard flag chips
-          const hardFlagChips = container.querySelectorAll('.bg-red-100');
-          hardFlagChips.forEach((chip) => {
-            expect(chip.getAttribute('title')).toBe('Hard flag - must be resolved');
-          });
+          const hardFlagChips = container.querySelectorAll('[title="Hard flag - must be resolved"]');
+          expect(hardFlagChips.length).toBe(hardFlags.length);
 
           // Find all soft flag chips
-          const softFlagChips = container.querySelectorAll('.bg-yellow-100');
-          softFlagChips.forEach((chip) => {
-            expect(chip.getAttribute('title')).toBe('Soft flag - review recommended');
-          });
+          const softFlagChips = container.querySelectorAll('[title="Soft flag - review recommended"]');
+          expect(softFlagChips.length).toBe(softFlags.length);
         }
       ),
       { numRuns: 100 }

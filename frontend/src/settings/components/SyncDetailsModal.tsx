@@ -93,8 +93,8 @@ export const SyncDetailsModal: React.FC<SyncDetailsModalProps> = ({ syncId, onCl
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background-primary rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-background-primary rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">

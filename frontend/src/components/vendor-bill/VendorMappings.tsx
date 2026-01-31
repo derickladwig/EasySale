@@ -55,8 +55,9 @@ export const VendorMappings: React.FC = () => {
     try {
       const response = await listAliases(params);
       setAliases(response.aliases);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to load aliases');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to load aliases');
     } finally {
       setLoading(false);
     }
@@ -78,8 +79,9 @@ export const VendorMappings: React.FC = () => {
         priority: 0,
       });
       await loadAliases();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create alias');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to create alias');
     }
   };
 
@@ -148,7 +150,7 @@ export const VendorMappings: React.FC = () => {
         <div className="mt-4 flex justify-end">
           <button
             onClick={loadAliases}
-            className="px-4 py-2 bg-secondary-600 text-text-primary rounded-md hover:bg-secondary-700"
+            className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
           >
             Apply Filters
           </button>
@@ -157,8 +159,8 @@ export const VendorMappings: React.FC = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-          <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
+        <div className="mb-6 p-4 bg-[var(--color-error-50)] dark:bg-[var(--color-error-900)]/20 border border-[var(--color-error-200)] dark:border-[var(--color-error-800)] rounded-md">
+          <p className="text-sm text-[var(--color-error-800)] dark:text-[var(--color-error-400)]">{error}</p>
         </div>
       )}
 
@@ -254,7 +256,7 @@ export const VendorMappings: React.FC = () => {
                             toast.error('Delete operation requires backend support. Please contact your administrator.');
                           }
                         }}
-                        className="text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300"
+                        className="text-[var(--color-error-600)] dark:text-[var(--color-error-400)] hover:text-[var(--color-error-500)] dark:hover:text-[var(--color-error-300)]"
                       >
                         Delete
                       </button>
@@ -293,8 +295,8 @@ export const VendorMappings: React.FC = () => {
 
       {/* Create/Edit Dialog */}
       {showDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-surface-base rounded-lg p-6 max-w-md w-full border border-border">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+          <div className="bg-surface-base rounded-lg p-6 max-w-md w-full border border-border" style={{ boxShadow: 'var(--shadow-modal)' }}>
             <h3 className="text-lg font-bold text-text-primary mb-4">
               {editingAlias ? 'Edit Alias' : 'Create Alias'}
             </h3>

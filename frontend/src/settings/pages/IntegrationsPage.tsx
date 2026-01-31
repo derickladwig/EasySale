@@ -3,14 +3,20 @@ import { Card } from '@common/components/molecules/Card';
 import { Button } from '@common/components/atoms/Button';
 import { Input } from '@common/components/atoms/Input';
 import { toast } from '@common/components/molecules/Toast';
+import { ScopeSelector } from '@common/components/molecules/ScopeSelector';
+import { ConfirmDialog, useConfirmDialog } from '@common/components/molecules/ConfirmDialog';
 import { Plug, ExternalLink, RefreshCw, Settings, ShoppingBag, DollarSign, CreditCard, FileText, Cloud } from 'lucide-react';
 import { syncApi } from '../../services/syncApi';
 import { MappingEditor } from '../components/MappingEditor';
+import { SyncNowDropdown } from '../components/SyncNowDropdown';
 import { useIntegrationsQuery, Integration } from '../hooks';
 import { LoadingSpinner } from '@common/components/organisms/LoadingSpinner';
 import { IntegrationCard } from '../../admin/components/IntegrationCard';
-import { useCapabilities, useHasStripe, useHasSquare, useHasClover } from '@common/contexts';
+import { useCapabilities, useHasStripe, useHasSquare, useHasClover, useAuth } from '@common/contexts';
 import { IntegrationLogsDrawer } from '../components/IntegrationLogsDrawer';
+import { useStores } from '../../admin/hooks/useStores';
+import { generateOAuthState, openOAuthPopup, buildOAuthUrl } from '@common/utils/oauthPopup';
+import { CREDENTIAL_PLACEHOLDER } from '@common/utils/credentialMasking';
 
 /**
  * Integration capability mapping.
@@ -86,11 +92,20 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
 ];
 
 export const IntegrationsPage: React.FC = () => {
-  // Fetch integrations data using React Query
-  const { data: integrationsData = [], isLoading } = useIntegrationsQuery();
+  // Store scope selection for multi-store support
+  const { stores, isLoading: storesLoading } = useStores();
+  const [selectedScope, setSelectedScope] = useState<'all' | string>('all');
+
+  // Fetch integrations data using React Query with scope filter
+  const { data: integrationsData = [], isLoading } = useIntegrationsQuery(selectedScope);
   
   // Get capabilities to determine which integrations are enabled
   const { capabilities, loading: capabilitiesLoading } = useCapabilities();
+  
+  // Get user for role-based access control
+  // Validates: Requirements 16.4
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   
   // Feature-specific capability hooks
   const hasStripe = useHasStripe();
@@ -120,6 +135,9 @@ export const IntegrationsPage: React.FC = () => {
   const [wcUrl, setWcUrl] = useState('');
   const [wcConsumerKey, setWcConsumerKey] = useState('');
   const [wcConsumerSecret, setWcConsumerSecret] = useState('');
+  // Track if WooCommerce credentials are saved (for masking)
+  // Validates: Requirements 11.1
+  const [wcCredentialsSaved, setWcCredentialsSaved] = useState(false);
 
   // Stripe settings (OAuth-based, no API key input)
   const [stripeSummary, setStripeSummary] = useState<{
@@ -132,6 +150,9 @@ export const IntegrationsPage: React.FC = () => {
   // Square settings (API key-based)
   const [squareAccessToken, setSquareAccessToken] = useState('');
   const [squareLocationId, setSquareLocationId] = useState('');
+  // Track if Square credentials are saved (for masking)
+  // Validates: Requirements 11.1
+  const [squareCredentialsSaved, setSquareCredentialsSaved] = useState(false);
   const [squareSummary, setSquareSummary] = useState<{
     location_name?: string;
     address?: string;
@@ -154,6 +175,11 @@ export const IntegrationsPage: React.FC = () => {
   // Logs drawer state
   const [logsDrawerOpen, setLogsDrawerOpen] = useState(false);
   const [logsDrawerPlatform, setLogsDrawerPlatform] = useState<'stripe' | 'square' | 'clover' | 'woocommerce' | 'quickbooks' | 'supabase'>('stripe');
+
+  // Confirmation dialog state for destructive actions
+  // Validates: Requirements 9.2, 9.3, 16.5
+  const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
+  const [fullResyncTarget, setFullResyncTarget] = useState<string | null>(null);
 
   /**
    * Check if a capability is enabled for an integration.
@@ -280,6 +306,15 @@ export const IntegrationsPage: React.FC = () => {
           lastSync: connection.lastSync,
           enabled: connection.connected,
         };
+        
+        // Update credential saved flags based on connection status
+        // Validates: Requirements 11.1
+        if (connection.platform === 'woocommerce' && connection.connected) {
+          setWcCredentialsSaved(true);
+        }
+        if (connection.platform === 'square' && connection.connected) {
+          setSquareCredentialsSaved(true);
+        }
       });
 
       setConnectionStatuses(statusMap);
@@ -386,22 +421,25 @@ export const IntegrationsPage: React.FC = () => {
     }
   };
 
-  const handleSyncNow = async (integrationId: string, dryRun: boolean = false) => {
+  const handleSyncNow = async (integrationId: string, mode: 'incremental' | 'full' | 'dry_run' = 'incremental') => {
     const integration = integrations.find((i) => i.id === integrationId);
     setSyncing(integrationId);
 
     try {
-      if (dryRun) {
+      if (mode === 'dry_run') {
         // Dry run mode (Epic 4 - Task 12)
         const result = await syncApi.dryRunSync(integrationId, { mode: 'incremental' });
         toast.success(
           `Dry run complete: ${result.recordsToProcess} records would be processed (est. ${Math.round(result.estimatedDuration / 1000)}s)`
         );
       } else {
-        // Check if bulk operation confirmation needed (Epic 4 - Task 13)
-        const result = await syncApi.triggerSync(integrationId, { mode: 'incremental' });
+        // Incremental or Full sync
+        // Validates: Requirements 16.1, 16.2, 16.3
+        const result = await syncApi.triggerSync(integrationId, { mode });
 
-        if (result.recordsProcessed > 10) {
+        if (mode === 'full') {
+          toast.info(`Full resync started for ${integration?.name}. This may take a while...`);
+        } else if (result.recordsProcessed > 10) {
           toast.info(`Processing ${result.recordsProcessed} records...`);
         } else {
           toast.success(`${integration?.name} sync triggered`);
@@ -438,15 +476,47 @@ export const IntegrationsPage: React.FC = () => {
             consumer_key: wcConsumerKey,
             consumer_secret: wcConsumerSecret,
           });
+          // Mark credentials as saved and clear the input values
+          // Validates: Requirements 11.1
+          setWcCredentialsSaved(true);
+          setWcConsumerKey('');
+          setWcConsumerSecret('');
           break;
           
         case 'quickbooks':
-          // QuickBooks uses OAuth flow, so we redirect to auth URL
+          // QuickBooks uses OAuth flow with state validation
+          // Validates: Requirements 11.3, 11.4, 11.5
           try {
+            const state = generateOAuthState();
             const authResponse = await syncApi.getQuickBooksAuthUrl();
-            toast.info('Redirecting to QuickBooks for authorization...');
-            // Open OAuth URL in new window
-            window.open(authResponse.auth_url, '_blank', 'width=600,height=700');
+            const authUrlWithState = buildOAuthUrl(authResponse.auth_url, state);
+            
+            toast.info('Opening QuickBooks authorization...');
+            
+            openOAuthPopup('quickbooks', authUrlWithState, state, {
+              onSuccess: async () => {
+                toast.success('QuickBooks connected successfully');
+                await loadConnectionStatus();
+                setConnectionStatuses((prev) => ({
+                  ...prev,
+                  quickbooks: {
+                    status: 'connected',
+                    lastSync: new Date().toISOString(),
+                    enabled: true,
+                  },
+                }));
+              },
+              onError: (error) => {
+                toast.error(error || 'QuickBooks authorization failed');
+              },
+              onBlocked: () => {
+                // Popup was blocked - provide fallback
+                toast.warning('Popup blocked. Click the link below to authorize.');
+                // Store the auth URL for manual navigation
+                window.open(authUrlWithState, '_blank');
+              },
+            });
+            
             setSavingIntegration(null);
             return;
           } catch {
@@ -496,10 +566,12 @@ export const IntegrationsPage: React.FC = () => {
       switch (integrationId) {
         case 'woocommerce':
           await syncApi.disconnectWooCommerce();
-          // Clear local form state
+          // Clear local form state and credential saved flag
+          // Validates: Requirements 11.1
           setWcUrl('');
           setWcConsumerKey('');
           setWcConsumerSecret('');
+          setWcCredentialsSaved(false);
           break;
           
         case 'quickbooks':
@@ -514,9 +586,12 @@ export const IntegrationsPage: React.FC = () => {
           
         case 'square':
           await syncApi.disconnectSquare();
+          // Clear local form state and credential saved flag
+          // Validates: Requirements 11.1
           setSquareAccessToken('');
           setSquareLocationId('');
           setSquareSummary(null);
+          setSquareCredentialsSaved(false);
           break;
           
         case 'clover':
@@ -549,13 +624,39 @@ export const IntegrationsPage: React.FC = () => {
 
   /**
    * Handle Stripe OAuth flow - initiates Connect with Stripe
-   * Validates: Requirements 1.1, 1.2
+   * Uses popup with state validation for security
+   * Validates: Requirements 1.1, 1.2, 11.3, 11.4, 11.5
    */
   const handleStripeConnect = async () => {
-    toast.info('Redirecting to Stripe for authorization...');
+    toast.info('Opening Stripe authorization...');
     try {
+      const state = generateOAuthState();
       const response = await syncApi.getStripeAuthUrl();
-      window.open(response.auth_url, '_blank', 'width=600,height=700');
+      const authUrlWithState = buildOAuthUrl(response.auth_url, state);
+      
+      openOAuthPopup('stripe', authUrlWithState, state, {
+        onSuccess: async () => {
+          toast.success('Stripe connected successfully');
+          await loadConnectionStatus();
+          const summary = await syncApi.getStripeSummary();
+          setStripeSummary(summary);
+          setConnectionStatuses((prev) => ({
+            ...prev,
+            stripe: {
+              status: 'connected',
+              lastSync: new Date().toISOString(),
+              enabled: true,
+            },
+          }));
+        },
+        onError: (error) => {
+          toast.error(error || 'Stripe authorization failed');
+        },
+        onBlocked: () => {
+          toast.warning('Popup blocked. Opening in new tab...');
+          window.open(authUrlWithState, '_blank');
+        },
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to get Stripe auth URL:', error);
@@ -584,6 +685,11 @@ export const IntegrationsPage: React.FC = () => {
       const summary = await syncApi.getSquareSummary();
       setSquareSummary(summary);
       
+      // Mark credentials as saved and clear the input value
+      // Validates: Requirements 11.1
+      setSquareCredentialsSaved(true);
+      setSquareAccessToken('');
+      
       setConnectionStatuses((prev) => ({
         ...prev,
         square: {
@@ -605,13 +711,39 @@ export const IntegrationsPage: React.FC = () => {
 
   /**
    * Handle Clover OAuth flow - initiates Connect with Clover
-   * Validates: Requirements 3.1, 3.2
+   * Uses popup with state validation for security
+   * Validates: Requirements 3.1, 3.2, 11.3, 11.4, 11.5
    */
   const handleCloverConnect = async () => {
-    toast.info('Redirecting to Clover for authorization...');
+    toast.info('Opening Clover authorization...');
     try {
+      const state = generateOAuthState();
       const response = await syncApi.getCloverAuthUrl();
-      window.open(response.auth_url, '_blank', 'width=600,height=700');
+      const authUrlWithState = buildOAuthUrl(response.auth_url, state);
+      
+      openOAuthPopup('clover', authUrlWithState, state, {
+        onSuccess: async () => {
+          toast.success('Clover connected successfully');
+          await loadConnectionStatus();
+          const summary = await syncApi.getCloverSummary();
+          setCloverSummary(summary);
+          setConnectionStatuses((prev) => ({
+            ...prev,
+            clover: {
+              status: 'connected',
+              lastSync: new Date().toISOString(),
+              enabled: true,
+            },
+          }));
+        },
+        onError: (error) => {
+          toast.error(error || 'Clover authorization failed');
+        },
+        onBlocked: () => {
+          toast.warning('Popup blocked. Opening in new tab...');
+          window.open(authUrlWithState, '_blank');
+        },
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to get Clover auth URL:', error);
@@ -781,9 +913,19 @@ export const IntegrationsPage: React.FC = () => {
     <div className="h-full overflow-auto bg-background-primary p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary">Integrations</h1>
-          <p className="text-text-secondary mt-2">Connect to external services and payment processors</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Integrations</h1>
+            <p className="text-text-secondary mt-2">Connect to external services and payment processors</p>
+          </div>
+          {/* Scope Selector for multi-store filtering */}
+          {!storesLoading && stores.length > 1 && (
+            <ScopeSelector
+              value={selectedScope}
+              onChange={setSelectedScope}
+              stores={stores}
+            />
+          )}
         </div>
 
         {/* Integrations List */}
@@ -850,21 +992,28 @@ export const IntegrationsPage: React.FC = () => {
                         placeholder="https://yourstore.com"
                         size="sm"
                       />
+                      {/* Credential masking: show placeholder when saved, allow editing when clicked */}
+                      {/* Validates: Requirements 11.1 */}
                       <Input
                         label="Consumer Key"
-                        value={wcConsumerKey}
+                        value={wcCredentialsSaved && !wcConsumerKey ? '' : wcConsumerKey}
                         onChange={(e) => setWcConsumerKey(e.target.value)}
-                        placeholder="ck_..."
+                        placeholder={wcCredentialsSaved ? CREDENTIAL_PLACEHOLDER : 'ck_...'}
                         size="sm"
                       />
                       <Input
                         label="Consumer Secret"
                         type="password"
-                        value={wcConsumerSecret}
+                        value={wcCredentialsSaved && !wcConsumerSecret ? '' : wcConsumerSecret}
                         onChange={(e) => setWcConsumerSecret(e.target.value)}
-                        placeholder="cs_..."
+                        placeholder={wcCredentialsSaved ? CREDENTIAL_PLACEHOLDER : 'cs_...'}
                         size="sm"
                       />
+                      {wcCredentialsSaved && (
+                        <p className="text-xs text-text-tertiary">
+                          Credentials are saved. Enter new values to update them.
+                        </p>
+                      )}
                       <div className="pt-3 border-t border-border space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-text-secondary">
@@ -881,32 +1030,17 @@ export const IntegrationsPage: React.FC = () => {
                           </Button>
                         </div>
 
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleSyncNow(integration.id, true)}
-                            variant="outline"
-                            size="sm"
-                            disabled={syncing === integration.id}
-                            className="flex-1 flex items-center justify-center gap-2"
-                          >
-                            <RefreshCw
-                              className={`w-4 h-4 ${syncing === integration.id ? 'animate-spin' : ''}`}
-                            />
-                            Dry Run
-                          </Button>
-                          <Button
-                            onClick={() => handleSyncNow(integration.id, false)}
-                            variant="primary"
-                            size="sm"
-                            disabled={syncing === integration.id}
-                            className="flex-1 flex items-center justify-center gap-2"
-                          >
-                            <RefreshCw
-                              className={`w-4 h-4 ${syncing === integration.id ? 'animate-spin' : ''}`}
-                            />
-                            {syncing === integration.id ? 'Syncing...' : 'Sync Now'}
-                          </Button>
-                        </div>
+                        {/* Sync Now dropdown with Full Resync option for admins */}
+                        {/* Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5 */}
+                        <SyncNowDropdown
+                          integrationId={integration.id}
+                          integrationName={integration.name}
+                          isSyncing={syncing === integration.id}
+                          canFullResync={isAdmin}
+                          onIncrementalSync={async () => handleSyncNow(integration.id, 'incremental')}
+                          onFullResync={() => setFullResyncTarget(integration.id)}
+                          onDryRun={async () => handleSyncNow(integration.id, 'dry_run')}
+                        />
 
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div className="p-2 bg-surface-base rounded">
@@ -1010,12 +1144,14 @@ export const IntegrationsPage: React.FC = () => {
                     <>
                       {!isConnected ? (
                         <div className="space-y-3">
+                          {/* Credential masking: show placeholder when saved */}
+                          {/* Validates: Requirements 11.1 */}
                           <Input
                             label="Access Token"
                             type="password"
-                            value={squareAccessToken}
+                            value={squareCredentialsSaved && !squareAccessToken ? '' : squareAccessToken}
                             onChange={(e) => setSquareAccessToken(e.target.value)}
-                            placeholder="Enter Square access token"
+                            placeholder={squareCredentialsSaved ? CREDENTIAL_PLACEHOLDER : 'Enter Square access token'}
                             size="sm"
                           />
                           <Input
@@ -1025,6 +1161,11 @@ export const IntegrationsPage: React.FC = () => {
                             placeholder="Enter location ID"
                             size="sm"
                           />
+                          {squareCredentialsSaved && (
+                            <p className="text-xs text-text-tertiary">
+                              Credentials are saved. Enter new values to update them.
+                            </p>
+                          )}
                           <Button
                             onClick={handleSquareConnect}
                             variant="primary"
@@ -1244,7 +1385,9 @@ export const IntegrationsPage: React.FC = () => {
                   },
                   onTestConnection: () => handleTestConnection(integration.id),
                   onDisconnect: () => {
-                    handleDisconnect(integration.id);
+                    // Show confirmation dialog instead of directly disconnecting
+                    // Validates: Requirements 9.2, 9.3
+                    setDisconnectTarget(integration.id);
                   },
                   onToggle: (enabled) => {
                     if (enabled !== integration.enabled) {
@@ -1335,8 +1478,8 @@ export const IntegrationsPage: React.FC = () => {
 
         {/* Mapping Editor Modal */}
         {showMappingEditor && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-            <div className="max-w-4xl w-full max-h-[90vh] overflow-auto">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6" style={{ zIndex: 'var(--z-modal)' }}>
+            <div className="max-w-4xl w-full max-h-[90vh] overflow-auto" style={{ boxShadow: 'var(--shadow-modal)' }}>
               <MappingEditor
                 sourcePlatform="WooCommerce"
                 targetPlatform="QuickBooks"
@@ -1368,6 +1511,46 @@ export const IntegrationsPage: React.FC = () => {
           isOpen={logsDrawerOpen}
           onClose={() => setLogsDrawerOpen(false)}
           platform={logsDrawerPlatform}
+        />
+
+        {/* Disconnect Confirmation Dialog */}
+        {/* Validates: Requirements 9.2, 9.3 */}
+        <ConfirmDialog
+          isOpen={disconnectTarget !== null}
+          onClose={() => setDisconnectTarget(null)}
+          onConfirm={async () => {
+            if (disconnectTarget) {
+              await handleDisconnect(disconnectTarget);
+              setDisconnectTarget(null);
+            }
+          }}
+          title="Disconnect Integration"
+          message={`Are you sure you want to disconnect ${
+            integrations.find(i => i.id === disconnectTarget)?.name || 'this integration'
+          }? You will need to re-enter credentials to reconnect.`}
+          variant="danger"
+          confirmText="Disconnect"
+          cancelText="Cancel"
+        />
+
+        {/* Full Resync Confirmation Dialog */}
+        {/* Validates: Requirements 16.5 */}
+        <ConfirmDialog
+          isOpen={fullResyncTarget !== null}
+          onClose={() => setFullResyncTarget(null)}
+          onConfirm={async () => {
+            if (fullResyncTarget) {
+              await handleSyncNow(fullResyncTarget, 'full');
+              setFullResyncTarget(null);
+            }
+          }}
+          title="Full Resync"
+          message={`This will perform a full resync of all data for ${
+            integrations.find(i => i.id === fullResyncTarget)?.name || 'this integration'
+          }. This may take several minutes and could affect system performance. Are you sure you want to continue?`}
+          variant="warning"
+          confirmText="Start Full Resync"
+          cancelText="Cancel"
         />
       </div>
     </div>

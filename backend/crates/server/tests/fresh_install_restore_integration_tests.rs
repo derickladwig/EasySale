@@ -5,7 +5,7 @@
 /// 
 /// **Validates: Requirements 7.2, 7.3, 7.5**
 
-use EasySale_server::services::RestoreService;
+use easysale_server::services::RestoreService;
 use sqlx::SqlitePool;
 use std::fs;
 use std::io::Write;

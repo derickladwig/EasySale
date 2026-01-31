@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::middleware::get_current_tenant_id;
 use crate::models::{
-    CreateCustomerRequest, Customer, CustomerResponse, PricingTier, UpdateCustomerRequest,
+    CreateCustomerRequest, Customer, CustomerResponse, CustomerWithStats, PricingTier, UpdateCustomerRequest,
 };
 
 /// POST /api/customers
@@ -236,30 +236,41 @@ pub async fn delete_customer(
 }
 
 /// GET /api/customers
-/// List customers with optional filtering
+/// List customers with optional filtering and sales statistics
 #[get("/api/customers")]
 pub async fn list_customers(
     pool: web::Data<SqlitePool>,
     query: web::Query<std::collections::HashMap<String, String>>,
 ) -> impl Responder {
-    tracing::info!("Listing customers");
+    tracing::info!("Listing customers with sales statistics");
 
-    let mut sql = "SELECT id, tenant_id, name, email, phone, pricing_tier, loyalty_points, store_credit, 
-                   credit_limit, credit_balance, created_at, updated_at, sync_version, store_id 
-                   FROM customers WHERE tenant_id = ?".to_string();
     let tenant_id = get_current_tenant_id();
+    
+    // Query with LEFT JOIN to sales_transactions for aggregated statistics
+    let mut sql = r#"
+        SELECT 
+            c.id, c.tenant_id, c.name, c.email, c.phone, c.pricing_tier, 
+            c.loyalty_points, c.store_credit, c.credit_limit, c.credit_balance, 
+            c.created_at, c.updated_at, c.sync_version, c.store_id,
+            COALESCE(SUM(CASE WHEN st.status = 'completed' THEN st.total_amount ELSE 0 END), 0.0) as total_spent,
+            COUNT(CASE WHEN st.status = 'completed' THEN 1 END) as order_count,
+            MAX(CASE WHEN st.status = 'completed' THEN st.created_at END) as last_order
+        FROM customers c
+        LEFT JOIN sales_transactions st ON c.id = st.customer_id AND c.tenant_id = st.tenant_id
+        WHERE c.tenant_id = ?
+    "#.to_string();
     
     // Add filters
     if let Some(pricing_tier) = query.get("pricing_tier") {
-        sql.push_str(&format!(" AND pricing_tier = '{}'", pricing_tier));
+        sql.push_str(&format!(" AND c.pricing_tier = '{}'", pricing_tier));
     }
     if let Some(store_id) = query.get("store_id") {
-        sql.push_str(&format!(" AND store_id = '{}'", store_id));
+        sql.push_str(&format!(" AND c.store_id = '{}'", store_id));
     }
 
-    sql.push_str(" ORDER BY name ASC");
+    sql.push_str(" GROUP BY c.id ORDER BY c.name ASC");
 
-    let result = sqlx::query_as::<_, Customer>(&sql)
+    let result = sqlx::query_as::<_, CustomerWithStats>(&sql)
         .bind(&tenant_id)
         .fetch_all(pool.get_ref())
         .await;
@@ -293,4 +304,71 @@ async fn get_customer_by_id(pool: &SqlitePool, id: &str) -> Result<Customer, sql
     .bind(get_current_tenant_id())
     .fetch_one(pool)
     .await
+}
+
+/// Customer order response
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, sqlx::FromRow)]
+pub struct CustomerOrderResponse {
+    pub id: String,
+    pub transaction_number: String,
+    pub total_amount: f64,
+    pub subtotal: f64,
+    pub tax_amount: f64,
+    pub discount_amount: f64,
+    pub items_count: i32,
+    pub payment_method: Option<String>,
+    pub status: String,
+    pub created_at: String,
+    pub completed_at: Option<String>,
+}
+
+/// GET /api/customers/:id/orders
+/// Get recent orders for a customer
+#[get("/api/customers/{id}/orders")]
+pub async fn get_customer_orders(
+    pool: web::Data<SqlitePool>,
+    path: web::Path<String>,
+    query: web::Query<std::collections::HashMap<String, String>>,
+) -> impl Responder {
+    let customer_id = path.into_inner();
+    let tenant_id = get_current_tenant_id();
+    
+    // Get limit from query params, default to 10
+    let limit: i64 = query
+        .get("limit")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(10);
+    
+    tracing::info!("Fetching orders for customer: {} (limit: {})", customer_id, limit);
+
+    let result = sqlx::query_as::<_, CustomerOrderResponse>(
+        r#"
+        SELECT 
+            id, transaction_number, total_amount, subtotal, tax_amount, 
+            discount_amount, items_count, payment_method, status, 
+            created_at, completed_at
+        FROM sales_transactions 
+        WHERE customer_id = ? AND tenant_id = ? AND status = 'completed'
+        ORDER BY created_at DESC 
+        LIMIT ?
+        "#,
+    )
+    .bind(&customer_id)
+    .bind(&tenant_id)
+    .bind(limit)
+    .fetch_all(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(orders) => {
+            tracing::info!("Found {} orders for customer {}", orders.len(), customer_id);
+            HttpResponse::Ok().json(orders)
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch customer orders: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to fetch customer orders"
+            }))
+        }
+    }
 }

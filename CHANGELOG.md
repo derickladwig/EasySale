@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Backend Features Implementation**: Complete implementation of previously stubbed backend features
+  - Customer sales statistics (totalSpent, orderCount, lastOrder) via sales_transactions join
+  - Customer recent orders endpoint (`GET /api/customers/{id}/orders`)
+  - Export download endpoint (`GET /api/exports/download/{id}`)
+  - Cases entity support in bulk export
+  - Remote stores API (`GET /api/network/remote-stores`)
+  - User last_login_at tracking and never_logged_in filter
+  - Reporting change percentages with period comparison
+  - Re-OCR tool integration with OCR service
+  - Mask tool with OCR reprocessing and vendor template persistence
+  - Zone editor CRUD endpoints (`/api/cases/{id}/zones`)
+- Database migrations for new features (053, 054)
 - **Split Build Architecture**: Three build variants (lite, export, full) for optimized deployments
   - Lite: Core POS only (~20 MB binary)
   - Export: + CSV export for QuickBooks (~25 MB binary)
@@ -18,12 +30,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Frontend build variants with conditional routes
 - Developer guide for adding new features without bloating lite build
 - `docker-compose.build.yml` for building specific variants
+- Payment integration documentation (`docs/integrations/payments.md`)
 
 ### Changed
 - Heavy dependencies (image, imageproc, lopdf) are now optional
 - Default build is now "export" variant
 - `/api/capabilities` endpoint now reports new feature flags
 - Test files for OCR/document features are now feature-gated
+- API documentation updated with correct port numbers (8923)
+
+### Fixed
+- Removed console.log statements from review components
+- Fixed broken link to payments.md in README
+- Replaced `any` types with proper TypeScript types in multiple files
+- Fixed webhook handlers to require environment variables instead of using insecure defaults
+
+### Security
+- **BREAKING**: Webhook handlers now require `WOOCOMMERCE_WEBHOOK_SECRET` and `QUICKBOOKS_WEBHOOK_VERIFIER` environment variables
+- Removed insecure default fallback values for webhook secrets
 
 ### Technical
 - Initial EasySale implementation

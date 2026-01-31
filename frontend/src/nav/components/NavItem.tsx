@@ -96,7 +96,7 @@ export function NavItem({
         {!collapsed && (
           <>
             <span className="flex-1">{item.label}</span>
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 rounded">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-[var(--color-warning-100)] text-[var(--color-warning-800)] dark:bg-[var(--color-warning-900)]/30 dark:text-[var(--color-warning-400)] rounded">
               <Clock className="h-3 w-3" />
               Soon
             </span>
@@ -117,7 +117,7 @@ export function NavItem({
         {!collapsed && (
           <>
             <span className="flex-1">{item.label}</span>
-            <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+            <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-[var(--color-info-100)] text-[var(--color-info-800)] dark:bg-[var(--color-info-900)]/30 dark:text-[var(--color-info-400)] rounded">
               Beta
             </span>
           </>

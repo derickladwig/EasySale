@@ -618,13 +618,11 @@ mod tests {
     
     #[test]
     fn test_unsafe_query() {
-        let validator = ConfigValidator::new();
-        
-        assert!(!validator.is_safe_query("DROP TABLE users"));
-        assert!(!validator.is_safe_query("DELETE FROM users"));
-        assert!(!validator.is_safe_query("UPDATE users SET role = 'admin'"));
-        assert!(validator.is_safe_query("SELECT * FROM users WHERE id = 1"));
-        assert!(validator.is_safe_query("DELETE FROM users WHERE id = 1"));
+        assert!(!ConfigValidator::is_safe_query("DROP TABLE users"));
+        assert!(!ConfigValidator::is_safe_query("DELETE FROM users"));
+        assert!(!ConfigValidator::is_safe_query("UPDATE users SET role = 'admin'"));
+        assert!(ConfigValidator::is_safe_query("SELECT * FROM users WHERE id = 1"));
+        assert!(ConfigValidator::is_safe_query("DELETE FROM users WHERE id = 1"));
     }
     
     #[test]

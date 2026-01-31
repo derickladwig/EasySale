@@ -89,7 +89,7 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">No fields to review</p>
+          <p className="text-text-secondary mb-4">No fields to review</p>
           <button
             onClick={onComplete}
             className="px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover"
@@ -102,7 +102,7 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
   }
 
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex h-full bg-surface-base">
       {/* Main Review Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
@@ -115,14 +115,14 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
               <button
                 onClick={handlePrevious}
                 disabled={currentFieldIndex === 0}
-                className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+                className="px-3 py-1 bg-secondary-600 text-white rounded hover:bg-secondary-700 disabled:bg-secondary-300 disabled:cursor-not-allowed text-sm"
               >
                 ← Previous
               </button>
               <button
                 onClick={handleNext}
                 disabled={currentFieldIndex >= fields.length - 1}
-                className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+                className="px-3 py-1 bg-secondary-600 text-white rounded hover:bg-secondary-700 disabled:bg-secondary-300 disabled:cursor-not-allowed text-sm"
               >
                 Next →
               </button>
@@ -130,7 +130,7 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
           </div>
           
           {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-secondary-200 rounded-full h-2">
             <div
               className="bg-accent h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentFieldIndex + 1) / fields.length) * 100}%` }}
@@ -158,13 +158,13 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
               <button
                 onClick={handleUndo}
                 disabled={undoDecisionMutation.isPending}
-                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:bg-gray-300"
+                className="px-4 py-2 bg-warning-dark text-white rounded hover:bg-warning disabled:bg-secondary-300"
               >
                 ↶ Undo Last
               </button>
               <button
                 onClick={() => setShowEvidence(!showEvidence)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className="px-4 py-2 bg-secondary-600 text-white rounded hover:bg-secondary-700"
               >
                 {showEvidence ? 'Hide' : 'Show'} Evidence
               </button>
@@ -172,7 +172,7 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
             
             <div className="flex gap-2">
               {hasValidationIssues && (
-                <div className="text-sm text-red-600 mr-4">
+                <div className="text-sm text-error mr-4">
                   ⚠️ {caseDetail.validation_result.hard_flags.length} hard flags, {caseDetail.validation_result.soft_flags.length} soft flags
                 </div>
               )}
@@ -180,7 +180,7 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
               <button
                 onClick={handleApprove}
                 disabled={!caseDetail.validation_result.can_approve || approveCaseMutation.isPending}
-                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-success text-white rounded hover:bg-success-dark disabled:bg-secondary-300 disabled:cursor-not-allowed"
               >
                 {approveCaseMutation.isPending ? 'Approving...' : 'Approve Case'}
               </button>
@@ -198,9 +198,9 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
           <div className="p-4 space-y-4">
             {/* Validation Issues */}
             {caseDetail.validation_result.hard_flags.length > 0 && (
-              <div className="bg-red-50 p-3 rounded">
-                <h4 className="font-semibold text-red-800 mb-2">Hard Flags</h4>
-                <ul className="text-sm text-red-700 space-y-1">
+              <div className="bg-error-50 dark:bg-error-900/20 p-3 rounded">
+                <h4 className="font-semibold text-error-dark mb-2">Hard Flags</h4>
+                <ul className="text-sm text-error-dark space-y-1">
                   {caseDetail.validation_result.hard_flags.map((flag, index) => (
                     <li key={index}>• {flag}</li>
                   ))}
@@ -209,9 +209,9 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
             )}
             
             {caseDetail.validation_result.soft_flags.length > 0 && (
-              <div className="bg-yellow-50 p-3 rounded">
-                <h4 className="font-semibold text-yellow-800 mb-2">Soft Flags</h4>
-                <ul className="text-sm text-yellow-700 space-y-1">
+              <div className="bg-warning-50 dark:bg-warning-900/20 p-3 rounded">
+                <h4 className="font-semibold text-warning-dark mb-2">Soft Flags</h4>
+                <ul className="text-sm text-warning-dark space-y-1">
                   {caseDetail.validation_result.soft_flags.map((flag, index) => (
                     <li key={index}>• {flag}</li>
                   ))}
@@ -225,12 +225,12 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
                 <h4 className="font-semibold mb-2">Line Items</h4>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {caseDetail.extracted.line_items.map((item, index) => (
-                    <div key={index} className="bg-gray-50 p-2 rounded text-sm">
+                    <div key={index} className="bg-surface-elevated p-2 rounded text-sm">
                       <div className="font-medium">{item.description}</div>
-                      <div className="text-gray-600">
+                      <div className="text-text-secondary">
                         Qty: {item.quantity} × ${item.unit_price} = ${item.line_total}
                       </div>
-                      {item.sku && <div className="text-gray-500">SKU: {item.sku}</div>}
+                      {item.sku && <div className="text-text-tertiary">SKU: {item.sku}</div>}
                     </div>
                   ))}
                 </div>

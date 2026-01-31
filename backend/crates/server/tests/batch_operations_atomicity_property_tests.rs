@@ -220,24 +220,24 @@ proptest! {
         let mut batch = BatchState::new(id, tenant_id, entity_type);
         
         // Initial state
-        prop_assert_eq!(batch.status, "processing");
+        prop_assert_eq!(&batch.status, "processing");
         prop_assert_eq!(batch.records_count, 0);
         
         // Complete or fail
         if should_fail {
             batch.fail("Test error");
-            prop_assert_eq!(batch.status, "failed");
+            prop_assert_eq!(&batch.status, "failed");
             prop_assert_eq!(batch.records_count, 0);
         } else {
             batch.complete(records);
-            prop_assert_eq!(batch.status, "completed");
+            prop_assert_eq!(&batch.status, "completed");
             prop_assert_eq!(batch.records_count, records);
         }
         
         // Optionally purge
         if should_purge {
             batch.purge();
-            prop_assert_eq!(batch.status, "purged");
+            prop_assert_eq!(&batch.status, "purged");
             prop_assert_eq!(batch.records_count, 0);
         }
     }

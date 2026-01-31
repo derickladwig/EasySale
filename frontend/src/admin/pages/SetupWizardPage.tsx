@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import styles from './SetupWizard.module.css';
 import { useAuth } from '@common/contexts/AuthContext';
+import { useConfig } from '../../config/ConfigProvider';
 
 // Step content components
 import { AdminStepContent } from '../components/wizard/AdminStepContent';
@@ -122,6 +123,8 @@ export function SetupWizardPage({
   onCancel,
 }: SetupWizardPageProps) {
   const { user, isAuthenticated } = useAuth();
+  const { brandConfig } = useConfig();
+  const appName = brandConfig?.appName || brandConfig?.company?.name || 'Your Store';
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [stepData, setStepData] = useState<Record<string, unknown>>({});
@@ -345,7 +348,7 @@ export function SetupWizardPage({
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <h1 className={styles.headerTitle}>
-            {isFirstRun ? 'Welcome to EasySale' : 'Setup Wizard'}
+            {isFirstRun ? `Welcome to ${appName}` : 'Setup Wizard'}
           </h1>
           <p className={styles.headerSubtitle}>
             {isFirstRun

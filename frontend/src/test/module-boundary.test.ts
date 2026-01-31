@@ -44,8 +44,9 @@ describe('Module Boundary Enforcement', () => {
         encoding: 'utf-8',
       });
       return { passed: true, output };
-    } catch (error: any) {
-      return { passed: false, output: error.stdout || error.message };
+    } catch (error: unknown) {
+      const execError = error as { stdout?: string; message?: string };
+      return { passed: false, output: execError.stdout || execError.message || 'Unknown error' };
     }
   };
 

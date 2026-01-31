@@ -1,5 +1,6 @@
 use actix_web::{web, HttpResponse, Result};
 use serde::{Deserialize, Serialize};
+use sqlx::SqlitePool;
 use std::collections::HashMap;
 
 use crate::models::UserContext;
@@ -27,14 +28,90 @@ pub struct ExportQuery {
     pub format: Option<String>, // "json" or "csv"
 }
 
+/// Database row for settings
+#[derive(Debug, sqlx::FromRow)]
+struct SettingRow {
+    key: String,
+    value: String,
+    scope: String,
+    source_id: Option<String>,
+    description: Option<String>,
+}
+
+/// Fetch all settings from database for a given tenant
+async fn fetch_settings_from_db(
+    pool: &SqlitePool,
+    tenant_id: &str,
+    user_id: Option<&str>,
+    station_id: Option<&str>,
+    store_id: Option<&str>,
+) -> Vec<SettingValue> {
+    // Query settings from the settings table
+    let rows: Vec<SettingRow> = sqlx::query_as(
+        r"SELECT key, value, scope, source_id, description 
+          FROM settings 
+          WHERE tenant_id = ?
+            AND (
+                scope = 'global'
+                OR (scope = 'store' AND source_id = ?)
+                OR (scope = 'station' AND source_id = ?)
+                OR (scope = 'user' AND source_id = ?)
+            )
+          ORDER BY key, scope"
+    )
+    .bind(tenant_id)
+    .bind(store_id.unwrap_or(""))
+    .bind(station_id.unwrap_or(""))
+    .bind(user_id.unwrap_or(""))
+    .fetch_all(pool)
+    .await
+    .unwrap_or_default();
+
+    rows.into_iter()
+        .filter_map(|row| {
+            let scope = match row.scope.as_str() {
+                "global" => SettingScope::Global,
+                "store" => SettingScope::Store,
+                "station" => SettingScope::Station,
+                "user" => SettingScope::User,
+                _ => return None,
+            };
+            
+            let value: serde_json::Value = serde_json::from_str(&row.value)
+                .unwrap_or(serde_json::Value::String(row.value));
+            
+            Some(SettingValue {
+                key: row.key,
+                value,
+                scope,
+                source_id: row.source_id,
+                description: row.description,
+            })
+        })
+        .collect()
+}
+
 /// GET /api/settings/effective
 /// Get all effective settings for the current user context
 pub async fn get_effective_settings(
+    pool: web::Data<SqlitePool>,
     user_ctx: web::ReqData<UserContext>,
 ) -> Result<HttpResponse> {
-    // TODO: Fetch all settings from database
-    // For now, return mock data
-    let all_settings = get_mock_settings();
+    // Fetch settings from database
+    let db_settings = fetch_settings_from_db(
+        pool.get_ref(),
+        &user_ctx.tenant_id,
+        Some(&user_ctx.user_id),
+        user_ctx.station_id.as_deref(),
+        user_ctx.store_id.as_deref(),
+    ).await;
+
+    // If no settings in DB, use defaults
+    let all_settings = if db_settings.is_empty() {
+        get_default_settings()
+    } else {
+        db_settings
+    };
 
     let resolved = SettingsResolutionService::resolve_settings(
         Some(user_ctx.user_id.clone()),
@@ -58,11 +135,24 @@ pub async fn get_effective_settings(
 /// GET /api/settings/effective/export
 /// Export effective settings to JSON or CSV
 pub async fn export_effective_settings(
+    pool: web::Data<SqlitePool>,
     user_ctx: web::ReqData<UserContext>,
     query: web::Query<ExportQuery>,
 ) -> Result<HttpResponse> {
-    // TODO: Fetch all settings from database
-    let all_settings = get_mock_settings();
+    // Fetch settings from database
+    let db_settings = fetch_settings_from_db(
+        pool.get_ref(),
+        &user_ctx.tenant_id,
+        Some(&user_ctx.user_id),
+        user_ctx.station_id.as_deref(),
+        user_ctx.store_id.as_deref(),
+    ).await;
+
+    let all_settings = if db_settings.is_empty() {
+        get_default_settings()
+    } else {
+        db_settings
+    };
 
     let resolved = SettingsResolutionService::resolve_settings(
         Some(user_ctx.user_id.clone()),
@@ -140,8 +230,8 @@ fn generate_csv(settings: &HashMap<String, ResolvedSetting>) -> String {
     csv
 }
 
-/// Mock settings data (TODO: Replace with database queries)
-fn get_mock_settings() -> Vec<SettingValue> {
+/// Default settings when database is empty or unavailable
+fn get_default_settings() -> Vec<SettingValue> {
     use serde_json::json;
 
     vec![
@@ -246,8 +336,8 @@ mod tests {
     }
 
     #[test]
-    fn test_mock_settings() {
-        let settings = get_mock_settings();
+    fn test_default_settings() {
+        let settings = get_default_settings();
         assert!(!settings.is_empty());
         assert!(settings.iter().any(|s| s.key == "theme"));
         assert!(settings.iter().any(|s| s.key == "currency"));

@@ -336,16 +336,16 @@ For technical troubleshooting:
 
 ```bash
 # Check sync queue status
-curl http://localhost:3000/api/sync/status
+curl http://localhost:8923/api/sync/status
 
 # Force immediate sync
-curl -X POST http://localhost:3000/api/sync/force
+curl -X POST http://localhost:8923/api/sync/force
 
 # View pending events
-curl http://localhost:3000/api/sync/queue
+curl http://localhost:8923/api/sync/queue
 
 # Clear failed events (use with caution)
-curl -X DELETE http://localhost:3000/api/sync/failed
+curl -X DELETE http://localhost:8923/api/sync/failed
 ```
 
 ## Best Practices

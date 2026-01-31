@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@common/components/molecules/Card';
 import { Button } from '@common/components/atoms/Button';
 import { toast } from '@common/components/molecules/Toast';
+import { ConfirmDialog } from '@common/components/molecules/ConfirmDialog';
 import { 
   Calendar, 
   Plus, 
@@ -12,7 +13,9 @@ import {
   XCircle,
   RefreshCw,
   Play,
-  Pause
+  Pause,
+  Globe,
+  AlertTriangle
 } from 'lucide-react';
 import { syncApi, SyncSchedule } from '../../services/syncApi';
 
@@ -21,6 +24,15 @@ interface ScheduleFormData {
   cronExpression: string;
   mode: 'full' | 'incremental';
   enabled: boolean;
+  timezone?: string;
+  concurrencyPolicy?: 'queue' | 'skip';
+}
+
+// Extended schedule type with additional fields
+interface ExtendedSyncSchedule extends SyncSchedule {
+  timezone?: string;
+  concurrencyPolicy?: 'queue' | 'skip';
+  isRunning?: boolean;
 }
 
 const ENTITY_OPTIONS = [
@@ -39,18 +51,47 @@ const CRON_PRESETS = [
   { value: '0 0 * * 0', label: 'Weekly (Sunday midnight)' },
 ];
 
+// Common timezone options
+// Validates: Requirements 7.2, 13.1
+const TIMEZONE_OPTIONS = [
+  { value: 'UTC', label: 'UTC' },
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'Europe/London', label: 'London (GMT/BST)' },
+  { value: 'Europe/Paris', label: 'Paris (CET/CEST)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+  { value: 'Australia/Sydney', label: 'Sydney (AEST/AEDT)' },
+];
+
+// Concurrency policy options
+// Validates: Requirements 13.2
+const CONCURRENCY_OPTIONS = [
+  { value: 'queue', label: 'Queue - Wait for previous to complete' },
+  { value: 'skip', label: 'Skip - Skip if previous still running' },
+];
+
 export const SyncScheduleManager: React.FC = () => {
-  const [schedules, setSchedules] = useState<SyncSchedule[]>([]);
+  const [schedules, setSchedules] = useState<ExtendedSyncSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<SyncSchedule | null>(null);
+  const [editingSchedule, setEditingSchedule] = useState<ExtendedSyncSchedule | null>(null);
   const [formData, setFormData] = useState<ScheduleFormData>({
     entity: 'products',
     cronExpression: '0 * * * *',
     mode: 'incremental',
     enabled: true,
+    timezone: 'UTC',
+    concurrencyPolicy: 'queue',
   });
   const [saving, setSaving] = useState(false);
+  
+  // Delete confirmation dialog state
+  // Validates: Requirements 7.5
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadSchedules = useCallback(async () => {
     try {
@@ -92,31 +133,46 @@ export const SyncScheduleManager: React.FC = () => {
     }
   };
 
-  const handleEdit = (schedule: SyncSchedule) => {
+  const handleEdit = (schedule: ExtendedSyncSchedule) => {
     setEditingSchedule(schedule);
     setFormData({
       entity: schedule.entity,
       cronExpression: schedule.cronExpression,
       mode: schedule.mode,
       enabled: schedule.enabled,
+      timezone: schedule.timezone || 'UTC',
+      concurrencyPolicy: schedule.concurrencyPolicy || 'queue',
     });
     setShowForm(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this schedule?')) return;
+  // Open delete confirmation dialog
+  // Validates: Requirements 7.5
+  const handleDeleteClick = (id: number) => {
+    setScheduleToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
 
+  // Confirm delete
+  const handleDeleteConfirm = async () => {
+    if (scheduleToDelete === null) return;
+    
+    setDeleting(true);
     try {
-      await syncApi.deleteSchedule(id);
+      await syncApi.deleteSchedule(scheduleToDelete);
       toast.success('Schedule deleted');
       loadSchedules();
     } catch (error) {
       console.error('Failed to delete schedule:', error);
       toast.error('Failed to delete schedule');
+    } finally {
+      setDeleting(false);
+      setDeleteConfirmOpen(false);
+      setScheduleToDelete(null);
     }
   };
 
-  const handleToggleEnabled = async (schedule: SyncSchedule) => {
+  const handleToggleEnabled = async (schedule: ExtendedSyncSchedule) => {
     try {
       await syncApi.updateSchedule(schedule.id, { enabled: !schedule.enabled });
       toast.success(`Schedule ${schedule.enabled ? 'disabled' : 'enabled'}`);
@@ -133,13 +189,48 @@ export const SyncScheduleManager: React.FC = () => {
       cronExpression: '0 * * * *',
       mode: 'incremental',
       enabled: true,
+      timezone: 'UTC',
+      concurrencyPolicy: 'queue',
     });
   };
 
-  const formatNextRun = (nextRun?: string) => {
+  // Format next run time in selected timezone
+  // Validates: Requirements 13.4
+  const formatNextRun = (nextRun?: string, timezone?: string) => {
     if (!nextRun) return 'Not scheduled';
     const date = new Date(nextRun);
-    return date.toLocaleString();
+    try {
+      return date.toLocaleString('en-US', {
+        timeZone: timezone || 'UTC',
+        dateStyle: 'short',
+        timeStyle: 'short',
+      });
+    } catch {
+      return date.toLocaleString();
+    }
+  };
+
+  // Calculate countdown to next execution
+  // Validates: Requirements 13.5
+  const getCountdown = (nextRun?: string): string | null => {
+    if (!nextRun) return null;
+    const now = new Date();
+    const next = new Date(nextRun);
+    const diff = next.getTime() - now.getTime();
+    
+    if (diff <= 0) return 'Running soon...';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      return `in ${days}d ${hours % 24}h`;
+    }
+    if (hours > 0) {
+      return `in ${hours}h ${minutes}m`;
+    }
+    return `in ${minutes}m`;
   };
 
   const getCronDescription = (cron: string) => {
@@ -236,6 +327,44 @@ export const SyncScheduleManager: React.FC = () => {
                 </select>
               </div>
 
+              {/* Timezone Selector */}
+              {/* Validates: Requirements 7.2, 13.1 */}
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">
+                  Timezone
+                </label>
+                <select
+                  value={formData.timezone}
+                  onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                  className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  {TIMEZONE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Concurrency Policy Selector */}
+              {/* Validates: Requirements 13.2 */}
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">
+                  Concurrency Policy
+                </label>
+                <select
+                  value={formData.concurrencyPolicy}
+                  onChange={(e) => setFormData({ ...formData, concurrencyPolicy: e.target.value as 'queue' | 'skip' })}
+                  className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  {CONCURRENCY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex items-center">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -282,84 +411,135 @@ export const SyncScheduleManager: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {schedules.map((schedule) => (
-              <div
-                key={schedule.id}
-                className={`flex items-center justify-between p-4 rounded-lg border ${
-                  schedule.enabled
-                    ? 'bg-surface-base border-border'
-                    : 'bg-surface-base/50 border-border/50'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-lg ${schedule.enabled ? 'bg-primary-500/20' : 'bg-surface-elevated'}`}>
-                    <Clock className={`w-5 h-5 ${schedule.enabled ? 'text-primary-400' : 'text-text-disabled'}`} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-text-primary capitalize">{schedule.entity}</span>
-                      <span className={`px-2 py-0.5 text-xs rounded ${
-                        schedule.mode === 'full' 
-                          ? 'bg-warning-500/20 text-warning-400' 
-                          : 'bg-primary-500/20 text-primary-400'
-                      }`}>
-                        {schedule.mode}
-                      </span>
-                      {schedule.enabled ? (
-                        <CheckCircle className="w-4 h-4 text-success-400" />
+            {schedules.map((schedule) => {
+              const countdown = getCountdown(schedule.nextRun);
+              return (
+                <div
+                  key={schedule.id}
+                  className={`flex items-center justify-between p-4 rounded-lg border ${
+                    schedule.isRunning
+                      ? 'bg-primary-500/10 border-primary-500/30'
+                      : schedule.enabled
+                      ? 'bg-surface-base border-border'
+                      : 'bg-surface-base/50 border-border/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-lg ${
+                      schedule.isRunning
+                        ? 'bg-primary-500/30'
+                        : schedule.enabled 
+                        ? 'bg-primary-500/20' 
+                        : 'bg-surface-elevated'
+                    }`}>
+                      {schedule.isRunning ? (
+                        <RefreshCw className="w-5 h-5 text-primary-400 animate-spin" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-text-disabled" />
+                        <Clock className={`w-5 h-5 ${schedule.enabled ? 'text-primary-400' : 'text-text-disabled'}`} />
                       )}
                     </div>
-                    <div className="text-sm text-text-tertiary mt-1">
-                      {getCronDescription(schedule.cronExpression)}
-                    </div>
-                    <div className="text-xs text-text-disabled mt-1">
-                      Next run: {formatNextRun(schedule.nextRun)}
-                      {schedule.lastRun && (
-                        <span className="ml-3">
-                          Last run: {new Date(schedule.lastRun).toLocaleString()}
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-text-primary capitalize">{schedule.entity}</span>
+                        <span className={`px-2 py-0.5 text-xs rounded ${
+                          schedule.mode === 'full' 
+                            ? 'bg-warning-500/20 text-warning-400' 
+                            : 'bg-primary-500/20 text-primary-400'
+                        }`}>
+                          {schedule.mode}
                         </span>
-                      )}
+                        {schedule.isRunning ? (
+                          <span className="px-2 py-0.5 text-xs rounded bg-primary-500/20 text-primary-400 flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            In Progress
+                          </span>
+                        ) : schedule.enabled ? (
+                          <CheckCircle className="w-4 h-4 text-success-400" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-text-disabled" />
+                        )}
+                      </div>
+                      <div className="text-sm text-text-tertiary mt-1 flex items-center gap-2">
+                        {getCronDescription(schedule.cronExpression)}
+                        {schedule.timezone && schedule.timezone !== 'UTC' && (
+                          <span className="flex items-center gap-1 text-xs text-text-disabled">
+                            <Globe className="w-3 h-3" />
+                            {schedule.timezone}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-text-disabled mt-1 flex items-center gap-3 flex-wrap">
+                        <span>
+                          Next: {formatNextRun(schedule.nextRun, schedule.timezone)}
+                          {countdown && !schedule.isRunning && (
+                            <span className="ml-1 text-primary-400">({countdown})</span>
+                          )}
+                        </span>
+                        {schedule.lastRun && (
+                          <span>
+                            Last: {new Date(schedule.lastRun).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleEnabled(schedule)}
-                    title={schedule.enabled ? 'Disable' : 'Enable'}
-                  >
-                    {schedule.enabled ? (
-                      <Pause className="w-4 h-4 text-warning-400" />
-                    ) : (
-                      <Play className="w-4 h-4 text-success-400" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(schedule)}
-                    title="Edit"
-                  >
-                    <Edit2 className="w-4 h-4 text-text-tertiary" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(schedule.id)}
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4 text-error-400" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleEnabled(schedule)}
+                      title={schedule.enabled ? 'Disable' : 'Enable'}
+                      disabled={schedule.isRunning}
+                    >
+                      {schedule.enabled ? (
+                        <Pause className="w-4 h-4 text-warning-400" />
+                      ) : (
+                        <Play className="w-4 h-4 text-success-400" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(schedule)}
+                      title="Edit"
+                      disabled={schedule.isRunning}
+                    >
+                      <Edit2 className="w-4 h-4 text-text-tertiary" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteClick(schedule.id)}
+                      title="Delete"
+                      disabled={schedule.isRunning}
+                    >
+                      <Trash2 className="w-4 h-4 text-error-400" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {/* Validates: Requirements 7.5 */}
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setScheduleToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Schedule"
+        message="Are you sure you want to delete this schedule? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={deleting}
+      />
     </Card>
   );
 };

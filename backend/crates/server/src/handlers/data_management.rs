@@ -286,43 +286,295 @@ pub async fn get_backup_history(
 
 /// Export data to CSV
 pub async fn export_data(
-    _pool: web::Data<SqlitePool>,
+    pool: web::Data<SqlitePool>,
     req: web::Json<ExportRequest>,
 ) -> Result<HttpResponse> {
     let format = req.format.as_deref().unwrap_or("csv");
+    let tenant_id = get_current_tenant_id();
     
     // Validate entity type
-    let valid_entities = vec!["products", "customers", "sales", "inventory", "users", "transactions"];
+    let valid_entities = vec!["products", "customers", "sales", "inventory", "users", "transactions", "cases"];
     if !valid_entities.contains(&req.entity_type.as_str()) {
         return Ok(HttpResponse::BadRequest().json(serde_json::json!({
             "error": "Invalid entity type"
         })));
     }
 
-    // In production, this would:
-    // 1. Query the appropriate table
-    // 2. Convert to CSV/JSON format
-    // 3. Write to file
-    // 4. Return file path or stream
-    
-    let export_path = format!("./data/exports/{}_{}.{}", req.entity_type, Utc::now().timestamp(), format);
-    
-    // Mock record count - would be actual query result
-    let record_count = match req.entity_type.as_str() {
-        "products" => 1250,
-        "customers" => 850,
-        "sales" => 5420,
-        "inventory" => 1100,
-        "users" => 15,
-        "transactions" => 8900,
+    // Query actual record count from database
+    let record_count: i64 = match req.entity_type.as_str() {
+        "products" => {
+            sqlx::query_scalar::<_, i64>(
+                "SELECT COUNT(*) FROM products WHERE tenant_id = ? AND is_active = 1"
+            )
+            .bind(&tenant_id)
+            .fetch_one(pool.get_ref())
+            .await
+            .unwrap_or(0)
+        }
+        "customers" => {
+            sqlx::query_scalar::<_, i64>(
+                "SELECT COUNT(*) FROM customers WHERE tenant_id = ? AND deleted_at IS NULL"
+            )
+            .bind(&tenant_id)
+            .fetch_one(pool.get_ref())
+            .await
+            .unwrap_or(0)
+        }
+        "sales" | "transactions" => {
+            sqlx::query_scalar::<_, i64>(
+                "SELECT COUNT(*) FROM orders WHERE tenant_id = ?"
+            )
+            .bind(&tenant_id)
+            .fetch_one(pool.get_ref())
+            .await
+            .unwrap_or(0)
+        }
+        "inventory" => {
+            sqlx::query_scalar::<_, i64>(
+                "SELECT COUNT(*) FROM products WHERE tenant_id = ? AND is_active = 1 AND quantity_on_hand > 0"
+            )
+            .bind(&tenant_id)
+            .fetch_one(pool.get_ref())
+            .await
+            .unwrap_or(0)
+        }
+        "users" => {
+            sqlx::query_scalar::<_, i64>(
+                "SELECT COUNT(*) FROM users WHERE tenant_id = ? AND is_active = 1"
+            )
+            .bind(&tenant_id)
+            .fetch_one(pool.get_ref())
+            .await
+            .unwrap_or(0)
+        }
+        "cases" => {
+            sqlx::query_scalar::<_, i64>(
+                "SELECT COUNT(*) FROM review_cases WHERE tenant_id = ?"
+            )
+            .bind(&tenant_id)
+            .fetch_one(pool.get_ref())
+            .await
+            .unwrap_or(0)
+        }
         _ => 0,
+    };
+
+    // Generate export file
+    let export_dir = std::env::var("EXPORT_DIR").unwrap_or_else(|_| "./runtime/exports".to_string());
+    
+    // Ensure export directory exists
+    if let Err(e) = std::fs::create_dir_all(&export_dir) {
+        return Ok(HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": format!("Failed to create export directory: {}", e)
+        })));
+    }
+    
+    let export_path = format!("{}/{}_{}.{}", export_dir, req.entity_type, Utc::now().timestamp(), format);
+    
+    // Generate actual export file
+    let file_size = match generate_entity_export(pool.get_ref(), &req.entity_type, &tenant_id, &export_path, format).await {
+        Ok(size) => size,
+        Err(e) => {
+            return Ok(HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to generate export: {}", e)
+            })));
+        }
     };
 
     Ok(HttpResponse::Ok().json(ExportResponse {
         file_path: export_path,
         record_count,
-        file_size: record_count * 512, // Mock file size
+        file_size,
     }))
+}
+
+/// Generate export file for an entity type
+async fn generate_entity_export(
+    pool: &SqlitePool,
+    entity_type: &str,
+    tenant_id: &str,
+    file_path: &str,
+    format: &str,
+) -> std::result::Result<i64, Box<dyn std::error::Error + Send + Sync>> {
+    use std::io::Write;
+    
+    let mut file = std::fs::File::create(file_path)?;
+    
+    match entity_type {
+        "products" => {
+            let rows: Vec<(String, String, String, Option<String>, f64, f64, f64, String)> = sqlx::query_as(
+                r"SELECT id, sku, name, description, unit_price, cost, quantity_on_hand, category 
+                  FROM products WHERE tenant_id = ? AND is_active = 1 ORDER BY name"
+            )
+            .bind(tenant_id)
+            .fetch_all(pool)
+            .await?;
+            
+            if format == "csv" {
+                writeln!(file, "ID,SKU,Name,Description,Price,Cost,Quantity,Category")?;
+                for (id, sku, name, desc, price, cost, qty, cat) in &rows {
+                    writeln!(file, "{},{},{},{},{:.2},{:.2},{:.2},{}", 
+                        id, sku, name.replace(',', ";"), desc.as_deref().unwrap_or("").replace(',', ";"), 
+                        price, cost, qty, cat)?;
+                }
+            } else {
+                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, sku, name, desc, price, cost, qty, cat)| {
+                    serde_json::json!({
+                        "id": id, "sku": sku, "name": name, "description": desc,
+                        "price": price, "cost": cost, "quantity": qty, "category": cat
+                    })
+                }).collect();
+                serde_json::to_writer_pretty(&file, &json_rows)?;
+            }
+        }
+        "customers" => {
+            let rows: Vec<(String, String, Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
+                r"SELECT id, name, email, phone, pricing_tier 
+                  FROM customers WHERE tenant_id = ? AND deleted_at IS NULL ORDER BY name"
+            )
+            .bind(tenant_id)
+            .fetch_all(pool)
+            .await?;
+            
+            if format == "csv" {
+                writeln!(file, "ID,Name,Email,Phone,Pricing Tier")?;
+                for (id, name, email, phone, tier) in &rows {
+                    writeln!(file, "{},{},{},{},{}", 
+                        id, name.replace(',', ";"), email.as_deref().unwrap_or(""), 
+                        phone.as_deref().unwrap_or(""), tier.as_deref().unwrap_or(""))?;
+                }
+            } else {
+                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, name, email, phone, tier)| {
+                    serde_json::json!({
+                        "id": id, "name": name, "email": email, "phone": phone, "pricing_tier": tier
+                    })
+                }).collect();
+                serde_json::to_writer_pretty(&file, &json_rows)?;
+            }
+        }
+        "inventory" => {
+            let rows: Vec<(String, String, String, f64, Option<String>)> = sqlx::query_as(
+                r"SELECT id, sku, name, quantity_on_hand, store_id 
+                  FROM products WHERE tenant_id = ? AND is_active = 1 AND quantity_on_hand > 0 ORDER BY sku"
+            )
+            .bind(tenant_id)
+            .fetch_all(pool)
+            .await?;
+            
+            if format == "csv" {
+                writeln!(file, "ID,SKU,Name,Quantity,Store")?;
+                for (id, sku, name, qty, store) in &rows {
+                    writeln!(file, "{},{},{},{:.2},{}", 
+                        id, sku, name.replace(',', ";"), qty, store.as_deref().unwrap_or(""))?;
+                }
+            } else {
+                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, sku, name, qty, store)| {
+                    serde_json::json!({
+                        "id": id, "sku": sku, "name": name, "quantity": qty, "store_id": store
+                    })
+                }).collect();
+                serde_json::to_writer_pretty(&file, &json_rows)?;
+            }
+        }
+        "users" => {
+            let rows: Vec<(String, String, Option<String>, String, Option<String>)> = sqlx::query_as(
+                r"SELECT id, username, display_name, role, store_id 
+                  FROM users WHERE tenant_id = ? AND is_active = 1 ORDER BY username"
+            )
+            .bind(tenant_id)
+            .fetch_all(pool)
+            .await?;
+            
+            if format == "csv" {
+                writeln!(file, "ID,Username,Display Name,Role,Store")?;
+                for (id, username, display, role, store) in &rows {
+                    writeln!(file, "{},{},{},{},{}", 
+                        id, username, display.as_deref().unwrap_or(""), role, store.as_deref().unwrap_or(""))?;
+                }
+            } else {
+                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, username, display, role, store)| {
+                    serde_json::json!({
+                        "id": id, "username": username, "display_name": display, "role": role, "store_id": store
+                    })
+                }).collect();
+                serde_json::to_writer_pretty(&file, &json_rows)?;
+            }
+        }
+        "sales" | "transactions" => {
+            let rows: Vec<(String, Option<String>, String, f64, f64, f64, String)> = sqlx::query_as(
+                r"SELECT id, customer_id, status, subtotal, tax, total, created_at 
+                  FROM orders WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 10000"
+            )
+            .bind(tenant_id)
+            .fetch_all(pool)
+            .await?;
+            
+            if format == "csv" {
+                writeln!(file, "ID,Customer ID,Status,Subtotal,Tax,Total,Created At")?;
+                for (id, cust, status, sub, tax, total, created) in &rows {
+                    writeln!(file, "{},{},{},{:.2},{:.2},{:.2},{}", 
+                        id, cust.as_deref().unwrap_or(""), status, sub, tax, total, created)?;
+                }
+            } else {
+                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, cust, status, sub, tax, total, created)| {
+                    serde_json::json!({
+                        "id": id, "customer_id": cust, "status": status, 
+                        "subtotal": sub, "tax": tax, "total": total, "created_at": created
+                    })
+                }).collect();
+                serde_json::to_writer_pretty(&file, &json_rows)?;
+            }
+        }
+        "cases" => {
+            let rows: Vec<(String, Option<String>, Option<String>, Option<String>, Option<String>, Option<f64>, Option<f64>, Option<f64>, Option<String>, Option<String>)> = sqlx::query_as(
+                r"SELECT id, case_number, vendor_id, invoice_no, invoice_date, subtotal, tax, total, status, created_at 
+                  FROM review_cases WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 10000"
+            )
+            .bind(tenant_id)
+            .fetch_all(pool)
+            .await?;
+            
+            if format == "csv" {
+                writeln!(file, "ID,Case Number,Vendor ID,Invoice No,Invoice Date,Subtotal,Tax,Total,Status,Created At")?;
+                for (id, case_num, vendor, inv_no, inv_date, sub, tax, total, status, created) in &rows {
+                    writeln!(file, "{},{},{},{},{},{:.2},{:.2},{:.2},{},{}", 
+                        id, 
+                        case_num.as_deref().unwrap_or(""),
+                        vendor.as_deref().unwrap_or(""),
+                        inv_no.as_deref().unwrap_or(""),
+                        inv_date.as_deref().unwrap_or(""),
+                        sub.unwrap_or(0.0),
+                        tax.unwrap_or(0.0),
+                        total.unwrap_or(0.0),
+                        status.as_deref().unwrap_or(""),
+                        created.as_deref().unwrap_or(""))?;
+                }
+            } else {
+                let json_rows: Vec<serde_json::Value> = rows.iter().map(|(id, case_num, vendor, inv_no, inv_date, sub, tax, total, status, created)| {
+                    serde_json::json!({
+                        "id": id, 
+                        "case_number": case_num, 
+                        "vendor_id": vendor,
+                        "invoice_no": inv_no,
+                        "invoice_date": inv_date,
+                        "subtotal": sub, 
+                        "tax": tax, 
+                        "total": total, 
+                        "status": status,
+                        "created_at": created
+                    })
+                }).collect();
+                serde_json::to_writer_pretty(&file, &json_rows)?;
+            }
+        }
+        _ => {
+            writeln!(file, "No data available for entity type: {}", entity_type)?;
+        }
+    }
+    
+    // Get file size
+    let metadata = std::fs::metadata(file_path)?;
+    Ok(metadata.len() as i64)
 }
 
 /// Import data from CSV
@@ -335,30 +587,8 @@ pub async fn import_data(
     
     match req.entity_type.as_str() {
         "products" => import_products(pool, config_loader, &req.csv_data, &tenant_id).await,
-        "customers" => {
-            // TODO: Implement customer import
-            Ok(HttpResponse::Ok().json(ImportResponse {
-                imported: 0,
-                skipped: 0,
-                errors: vec![ImportError {
-                    row: 0,
-                    field: None,
-                    message: "Customer import not yet implemented".to_string(),
-                }],
-            }))
-        }
-        "vendors" => {
-            // TODO: Implement vendor import
-            Ok(HttpResponse::Ok().json(ImportResponse {
-                imported: 0,
-                skipped: 0,
-                errors: vec![ImportError {
-                    row: 0,
-                    field: None,
-                    message: "Vendor import not yet implemented".to_string(),
-                }],
-            }))
-        }
+        "customers" => import_customers(pool, &req.csv_data, &tenant_id).await,
+        "vendors" => import_vendors(pool, &req.csv_data, &tenant_id).await,
         _ => Ok(HttpResponse::BadRequest().json(serde_json::json!({
             "error": format!("Unknown entity type: {}", req.entity_type)
         }))),
@@ -375,6 +605,16 @@ async fn import_products(
     let mut imported = 0i64;
     let mut skipped = 0i64;
     let mut errors = Vec::new();
+    
+    // Load config to get valid categories
+    let config = config_loader.get_config(tenant_id).await.ok();
+    let valid_categories: Vec<String> = config
+        .as_ref()
+        .map(|c| c.categories.iter().map(|cat| cat.id.clone()).collect())
+        .unwrap_or_else(|| vec!["products".to_string()]);
+    
+    // Default category to use if specified category doesn't exist
+    let default_category = valid_categories.first().cloned().unwrap_or_else(|| "products".to_string());
     
     // Parse CSV with flexible headers
     let mut reader = csv::ReaderBuilder::new()
@@ -491,6 +731,15 @@ async fn import_products(
         
         // Build create request with dynamic attributes
         let mut create_req = import_row.to_create_request(parent_id);
+        
+        // Normalize category to a valid one (fallback to default if not found)
+        if !valid_categories.contains(&create_req.category) {
+            tracing::info!(
+                "Row {}: Category '{}' not found, using default '{}'",
+                row_num, create_req.category, default_category
+            );
+            create_req.category = default_category.clone();
+        }
         
         // Merge dynamic attributes
         if !dynamic_attrs.is_empty() {
@@ -769,6 +1018,260 @@ async fn find_product_by_sku(
     .await?;
     
     Ok(result.map(|(id,)| id))
+}
+
+/// Import customers from CSV data
+async fn import_customers(
+    pool: web::Data<SqlitePool>,
+    csv_data: &str,
+    tenant_id: &str,
+) -> Result<HttpResponse> {
+    let mut imported = 0i64;
+    let mut skipped = 0i64;
+    let mut errors = Vec::new();
+    
+    let mut reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .flexible(true)
+        .trim(csv::Trim::All)
+        .from_reader(csv_data.as_bytes());
+    
+    let headers = match reader.headers() {
+        Ok(h) => h.clone(),
+        Err(e) => {
+            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+                "error": format!("Failed to parse CSV headers: {}", e)
+            })));
+        }
+    };
+    
+    let header_map: std::collections::HashMap<String, usize> = headers
+        .iter()
+        .enumerate()
+        .map(|(i, h)| (h.trim_end_matches('*').to_lowercase(), i))
+        .collect();
+    
+    for (row_idx, result) in reader.records().enumerate() {
+        let row_num = row_idx + 2;
+        
+        let record = match result {
+            Ok(r) => r,
+            Err(e) => {
+                errors.push(ImportError {
+                    row: row_num,
+                    field: None,
+                    message: format!("Failed to parse row: {}", e),
+                });
+                skipped += 1;
+                continue;
+            }
+        };
+        
+        let get_field = |name: &str| -> Option<String> {
+            header_map.get(name).and_then(|&idx| {
+                record.get(idx).map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+            })
+        };
+        
+        // Required: name
+        let name = match get_field("name") {
+            Some(n) => n,
+            None => {
+                errors.push(ImportError {
+                    row: row_num,
+                    field: Some("name".to_string()),
+                    message: "Required field 'name' is missing".to_string(),
+                });
+                skipped += 1;
+                continue;
+            }
+        };
+        
+        let id = get_field("id").unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+        let email = get_field("email");
+        let phone = get_field("phone");
+        let address = get_field("address");
+        let city = get_field("city");
+        let state = get_field("state");
+        let zip = get_field("zip");
+        let pricing_tier = get_field("pricing_tier").unwrap_or_else(|| "Retail".to_string());
+        let store_id = get_field("store_id").unwrap_or_else(|| "default-store".to_string());
+        let now = chrono::Utc::now().to_rfc3339();
+        
+        let result = sqlx::query(
+            r"INSERT INTO customers (id, name, email, phone, address, city, state, zip, pricing_tier, store_id, tenant_id, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET 
+                name = excluded.name, email = excluded.email, phone = excluded.phone,
+                address = excluded.address, city = excluded.city, state = excluded.state, zip = excluded.zip,
+                pricing_tier = excluded.pricing_tier, updated_at = excluded.updated_at"
+        )
+        .bind(&id)
+        .bind(&name)
+        .bind(&email)
+        .bind(&phone)
+        .bind(&address)
+        .bind(&city)
+        .bind(&state)
+        .bind(&zip)
+        .bind(&pricing_tier)
+        .bind(&store_id)
+        .bind(tenant_id)
+        .bind(&now)
+        .bind(&now)
+        .execute(pool.get_ref())
+        .await;
+        
+        match result {
+            Ok(_) => imported += 1,
+            Err(e) => {
+                errors.push(ImportError {
+                    row: row_num,
+                    field: None,
+                    message: format!("Database error: {}", e),
+                });
+                skipped += 1;
+            }
+        }
+    }
+    
+    Ok(HttpResponse::Ok().json(ImportResponse {
+        imported,
+        skipped,
+        errors,
+    }))
+}
+
+/// Import vendors from CSV data
+async fn import_vendors(
+    pool: web::Data<SqlitePool>,
+    csv_data: &str,
+    tenant_id: &str,
+) -> Result<HttpResponse> {
+    let mut imported = 0i64;
+    let mut skipped = 0i64;
+    let mut errors = Vec::new();
+    
+    let mut reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .flexible(true)
+        .trim(csv::Trim::All)
+        .from_reader(csv_data.as_bytes());
+    
+    let headers = match reader.headers() {
+        Ok(h) => h.clone(),
+        Err(e) => {
+            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+                "error": format!("Failed to parse CSV headers: {}", e)
+            })));
+        }
+    };
+    
+    let header_map: std::collections::HashMap<String, usize> = headers
+        .iter()
+        .enumerate()
+        .map(|(i, h)| (h.trim_end_matches('*').to_lowercase(), i))
+        .collect();
+    
+    for (row_idx, result) in reader.records().enumerate() {
+        let row_num = row_idx + 2;
+        
+        let record = match result {
+            Ok(r) => r,
+            Err(e) => {
+                errors.push(ImportError {
+                    row: row_num,
+                    field: None,
+                    message: format!("Failed to parse row: {}", e),
+                });
+                skipped += 1;
+                continue;
+            }
+        };
+        
+        let get_field = |name: &str| -> Option<String> {
+            header_map.get(name).and_then(|&idx| {
+                record.get(idx).map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+            })
+        };
+        
+        // Required: name
+        let name = match get_field("name") {
+            Some(n) => n,
+            None => {
+                errors.push(ImportError {
+                    row: row_num,
+                    field: Some("name".to_string()),
+                    message: "Required field 'name' is missing".to_string(),
+                });
+                skipped += 1;
+                continue;
+            }
+        };
+        
+        let id = get_field("id").unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+        let tax_id = get_field("tax_id");
+        let email = get_field("email");
+        let phone = get_field("phone");
+        let address = get_field("address");
+        let website = get_field("website");
+        let contact_name = get_field("contact_name");
+        let payment_terms = get_field("payment_terms");
+        let now = chrono::Utc::now().to_rfc3339();
+        
+        // Build identifiers JSON for vendor detection
+        let mut identifiers = serde_json::Map::new();
+        if let Some(ref e) = email {
+            identifiers.insert("email".to_string(), serde_json::Value::String(e.clone()));
+        }
+        if let Some(ref p) = phone {
+            identifiers.insert("phone".to_string(), serde_json::Value::String(p.clone()));
+        }
+        let identifiers_json = serde_json::to_string(&identifiers).unwrap_or_else(|_| "{}".to_string());
+        
+        let result = sqlx::query(
+            r"INSERT INTO vendors (id, name, tax_id, email, phone, address, website, contact_name, payment_terms, identifiers, tenant_id, is_active, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET 
+                name = excluded.name, tax_id = excluded.tax_id, email = excluded.email, 
+                phone = excluded.phone, address = excluded.address, website = excluded.website,
+                contact_name = excluded.contact_name, payment_terms = excluded.payment_terms,
+                identifiers = excluded.identifiers, updated_at = excluded.updated_at"
+        )
+        .bind(&id)
+        .bind(&name)
+        .bind(&tax_id)
+        .bind(&email)
+        .bind(&phone)
+        .bind(&address)
+        .bind(&website)
+        .bind(&contact_name)
+        .bind(&payment_terms)
+        .bind(&identifiers_json)
+        .bind(tenant_id)
+        .bind(&now)
+        .bind(&now)
+        .execute(pool.get_ref())
+        .await;
+        
+        match result {
+            Ok(_) => imported += 1,
+            Err(e) => {
+                errors.push(ImportError {
+                    row: row_num,
+                    field: None,
+                    message: format!("Database error: {}", e),
+                });
+                skipped += 1;
+            }
+        }
+    }
+    
+    Ok(HttpResponse::Ok().json(ImportResponse {
+        imported,
+        skipped,
+        errors,
+    }))
 }
 
 /// Cleanup old data

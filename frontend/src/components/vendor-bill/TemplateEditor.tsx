@@ -165,8 +165,8 @@ export const TemplateEditor: React.FC = () => {
         </div>
 
         {/* Development Notice */}
-        <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-          <p className="text-sm text-yellow-800 dark:text-yellow-400">
+        <div className="mt-6 p-4 bg-[var(--color-warning-50)] dark:bg-[var(--color-warning-900)]/20 border border-[var(--color-warning-200)] dark:border-[var(--color-warning-800)] rounded-md">
+          <p className="text-sm text-[var(--color-warning-800)] dark:text-[var(--color-warning-400)]">
             <strong>Note:</strong> Template management is currently in development. The visual
             template editor and test functionality require backend implementation.
           </p>

@@ -62,9 +62,9 @@ REM Stop containers
 echo [1/2] Stopping development containers...
 if defined REMOVE_VOLUMES (
     echo [INFO] Also removing volumes...
-    docker-compose -p EasySale down -v
+    docker-compose -p easysale down -v
 ) else (
-    docker-compose -p EasySale down
+    docker-compose -p easysale down
 )
 
 if errorlevel 1 (

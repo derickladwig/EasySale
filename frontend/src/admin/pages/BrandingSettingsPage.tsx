@@ -20,6 +20,7 @@ import { Button } from '@common/components/atoms/Button';
 import { cn } from '@common/utils/classNames';
 import { toast } from '@common/components/molecules/Toast';
 import { brandingApi, validateImageFile, getImageDimensions } from '../../services/brandingApi';
+import { useConfig } from '../../config/ConfigProvider';
 import type { AssetType, CropRegion, UploadResponse } from '../../services/brandingApi';
 
 // ============================================================================
@@ -45,11 +46,16 @@ interface UploadState {
 // Constants
 // ============================================================================
 
+// Default accent color - teal to match tokens.css source of truth
+const DEFAULT_ACCENT_COLOR = '#14b8a6';
+const DEFAULT_ACCENT_PRESET = 'teal';
+
 const THEME_PRESETS = [
-  { id: 'blue', name: 'Blue', color: '#0756d9' },
   { id: 'teal', name: 'Teal', color: '#14b8a6' },
   { id: 'emerald', name: 'Emerald', color: '#10b981' },
   { id: 'green', name: 'Green', color: '#22c55e' },
+  { id: 'cyan', name: 'Cyan', color: '#06b6d4' },
+  { id: 'blue', name: 'Blue', color: '#3b82f6' },
   { id: 'indigo', name: 'Indigo', color: '#6366f1' },
   { id: 'violet', name: 'Violet', color: '#8b5cf6' },
   { id: 'purple', name: 'Purple', color: '#a855f7' },
@@ -58,7 +64,6 @@ const THEME_PRESETS = [
   { id: 'red', name: 'Red', color: '#ef4444' },
   { id: 'orange', name: 'Orange', color: '#f97316' },
   { id: 'amber', name: 'Amber', color: '#f59e0b' },
-  { id: 'cyan', name: 'Cyan', color: '#06b6d4' },
 ];
 
 // ============================================================================
@@ -306,14 +311,18 @@ function PreviewPanel({ branding, companyName }: PreviewPanelProps) {
 
 export function BrandingSettingsPage() {
   const navigate = useNavigate();
+  const { branding, brandConfig } = useConfig();
   
-  const [branding, setBranding] = useState<BrandingState>({
+  // Get company name from config
+  const companyName = branding?.company?.name || brandConfig?.company?.name || 'Your Company';
+  
+  const [brandingState, setBranding] = useState<BrandingState>({
     logoLight: null,
     logoDark: null,
     favicon: null,
     icon: null,
-    accentColor: '#0756d9',
-    themePreset: 'blue',
+    accentColor: DEFAULT_ACCENT_COLOR,
+    themePreset: DEFAULT_ACCENT_PRESET,
   });
   
   const [uploadState, setUploadState] = useState<UploadState>({
@@ -322,7 +331,7 @@ export function BrandingSettingsPage() {
     error: null,
   });
   
-  const [customHex, setCustomHex] = useState('#0756d9');
+  const [customHex, setCustomHex] = useState(DEFAULT_ACCENT_COLOR);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -337,7 +346,7 @@ export function BrandingSettingsPage() {
           logoDark: config.logoDark || null,
           favicon: config.favicon || null,
           icon: config.icon || null,
-          accentColor: config.accentColor || '#0756d9',
+          accentColor: config.accentColor || DEFAULT_ACCENT_COLOR,
         }));
         if (config.accentColor) {
           setCustomHex(config.accentColor);
@@ -415,18 +424,18 @@ export function BrandingSettingsPage() {
     setIsSaving(true);
     try {
       await brandingApi.saveBrandingConfig({
-        logoLight: branding.logoLight || undefined,
-        logoDark: branding.logoDark || undefined,
-        favicon: branding.favicon || undefined,
-        icon: branding.icon || undefined,
-        accentColor: branding.accentColor,
-        themePreset: branding.themePreset,
+        logoLight: brandingState.logoLight || undefined,
+        logoDark: brandingState.logoDark || undefined,
+        favicon: brandingState.favicon || undefined,
+        icon: brandingState.icon || undefined,
+        accentColor: brandingState.accentColor,
+        themePreset: brandingState.themePreset,
       });
       
       // Save to localStorage for persistence
-      localStorage.setItem('theme_accent_500', branding.accentColor);
-      localStorage.setItem('theme_accent_600', darkenColor(branding.accentColor));
-      localStorage.setItem('theme_preset', branding.themePreset);
+      localStorage.setItem('theme_accent_500', brandingState.accentColor);
+      localStorage.setItem('theme_accent_600', darkenColor(brandingState.accentColor));
+      localStorage.setItem('theme_preset', brandingState.themePreset);
       
       setHasChanges(false);
       toast.success('Branding saved successfully');
@@ -442,8 +451,6 @@ export function BrandingSettingsPage() {
     setBranding(prev => ({ ...prev, [type]: null }));
     setHasChanges(true);
   };
-
-  const companyName = 'EasySale'; // TODO: Get from config
 
   return (
     <div className="min-h-screen bg-background-primary p-6">
@@ -494,7 +501,7 @@ export function BrandingSettingsPage() {
                 <ImageUploadZone
                   label="Light Theme Logo"
                   description="Used on dark backgrounds"
-                  currentImage={branding.logoLight}
+                  currentImage={brandingState.logoLight}
                   onUpload={(file) => handleUpload(file, 'logo_light')}
                   onRemove={() => handleRemoveImage('logoLight')}
                   isUploading={uploadState.isUploading}
@@ -503,7 +510,7 @@ export function BrandingSettingsPage() {
                 <ImageUploadZone
                   label="Dark Theme Logo"
                   description="Used on light backgrounds"
-                  currentImage={branding.logoDark}
+                  currentImage={brandingState.logoDark}
                   onUpload={(file) => handleUpload(file, 'logo_dark')}
                   onRemove={() => handleRemoveImage('logoDark')}
                   isUploading={uploadState.isUploading}
@@ -525,7 +532,7 @@ export function BrandingSettingsPage() {
                 <ImageUploadZone
                   label="Icon"
                   description="Used for browser tab, PWA, and mobile"
-                  currentImage={branding.favicon || branding.icon}
+                  currentImage={brandingState.favicon || brandingState.icon}
                   onUpload={(file) => handleUpload(file, 'favicon')}
                   onRemove={() => { handleRemoveImage('favicon'); handleRemoveImage('icon'); }}
                   isUploading={uploadState.isUploading}
@@ -550,14 +557,14 @@ export function BrandingSettingsPage() {
                     onClick={() => handlePresetSelect(preset)}
                     className={cn(
                       'aspect-square rounded-lg border-2 transition-all cursor-pointer relative',
-                      branding.themePreset === preset.id
+                      brandingState.themePreset === preset.id
                         ? 'border-white ring-2 ring-white/30 scale-110 z-10'
                         : 'border-transparent hover:border-white/50 hover:scale-105'
                     )}
                     style={{ backgroundColor: preset.color }}
                     title={preset.name}
                   >
-                    {branding.themePreset === preset.id && (
+                    {brandingState.themePreset === preset.id && (
                       <CheckCircle2 className="w-4 h-4 text-white absolute inset-0 m-auto drop-shadow-lg" />
                     )}
                   </button>
@@ -567,8 +574,8 @@ export function BrandingSettingsPage() {
               {/* Custom Hex Input */}
               <div className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
                 <div 
-                  className="w-10 h-10 rounded-lg border-2 border-white/20 flex-shrink-0"
-                  style={{ backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(customHex) ? customHex : '#888888' }}
+                  className="w-10 h-10 rounded-lg border-2 border-border flex-shrink-0"
+                  style={{ backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(customHex) ? customHex : DEFAULT_ACCENT_COLOR }}
                 />
                 <div className="flex-1">
                   <label className="block text-xs text-text-tertiary mb-1">Custom Hex Color</label>
@@ -581,14 +588,14 @@ export function BrandingSettingsPage() {
                       className={cn(
                         "flex-1 bg-surface-base border rounded px-3 py-1.5 text-sm font-mono",
                         /^#[0-9A-Fa-f]{6}$/.test(customHex) 
-                          ? "border-border text-white" 
+                          ? "border-border text-text-primary" 
                           : "border-error-500/50 text-error-400"
                       )}
                       maxLength={7}
                     />
                     <input
                       type="color"
-                      value={/^#[0-9A-Fa-f]{6}$/.test(customHex) ? customHex : '#888888'}
+                      value={/^#[0-9A-Fa-f]{6}$/.test(customHex) ? customHex : DEFAULT_ACCENT_COLOR}
                       onChange={(e) => handleCustomHexChange(e.target.value)}
                       className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
                       title="Pick a color"
@@ -602,7 +609,7 @@ export function BrandingSettingsPage() {
           {/* Right Column - Preview */}
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <PreviewPanel branding={branding} companyName={companyName} />
+              <PreviewPanel branding={brandingState} companyName={companyName} />
             </div>
           </div>
         </div>

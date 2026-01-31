@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Shield, Users } from 'lucide-react';
 import { Button } from '@common/components/atoms';
 import { SettingsPageShell } from './SettingsPageShell';
@@ -30,17 +30,22 @@ export function RolesTab() {
   }
 
   // Table columns
-  const columns: any[] = [
+  const columns: Array<{
+    key: string;
+    label: string;
+    sortable: boolean;
+    render: (role: Role) => React.ReactNode;
+  }> = [
     {
       key: 'name',
       label: 'Role Name',
       sortable: true,
-      render: (role: any) => (
+      render: (role: Role) => (
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-secondary-400" />
+          <Shield className="w-4 h-4 text-text-tertiary" />
           <div>
-            <div className="font-medium text-secondary-900">{role.name}</div>
-            {role.is_system && <span className="text-xs text-secondary-500">System Role</span>}
+            <div className="font-medium text-text-primary">{role.name}</div>
+            {role.is_system && <span className="text-xs text-text-tertiary">System Role</span>}
           </div>
         </div>
       ),
@@ -49,14 +54,14 @@ export function RolesTab() {
       key: 'description',
       label: 'Description',
       sortable: false,
-      render: (role: any) => <span className="text-sm text-secondary-600">{role.description}</span>,
+      render: (role: Role) => <span className="text-sm text-text-secondary">{role.description}</span>,
     },
     {
       key: 'user_count',
       label: 'Users',
       sortable: true,
-      render: (role: any) => (
-        <div className="flex items-center gap-1 text-sm text-secondary-700">
+      render: (role: Role) => (
+        <div className="flex items-center gap-1 text-sm text-text-secondary">
           <Users className="w-4 h-4" />
           <span>{role.user_count}</span>
         </div>
@@ -66,8 +71,8 @@ export function RolesTab() {
       key: 'permissions',
       label: 'Permissions',
       sortable: false,
-      render: (role: any) => (
-        <span className="text-sm text-secondary-600">
+      render: (role: Role) => (
+        <span className="text-sm text-text-secondary">
           {role.permissions[0] === '*' ? 'All' : `${role.permissions.length} permissions`}
         </span>
       ),
@@ -118,8 +123,8 @@ function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
   const groupedPermissions = groupPermissionsByModule(role.permissions);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-surface-base rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="px-6 py-4 border-b border-border">
           <div className="flex items-center justify-between">
@@ -179,10 +184,10 @@ function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
                       {permissions.map((permission) => (
                         <div
                           key={permission}
-                          className="flex items-center gap-2 text-sm text-secondary-700"
+                          className="flex items-center gap-2 text-sm text-text-secondary"
                         >
                           <svg
-                            className="w-4 h-4 text-green-600"
+                            className="w-4 h-4 text-success-600"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -206,7 +211,7 @@ function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-secondary-200 flex justify-end">
+        <div className="px-6 py-4 border-t border-border flex justify-end">
           <Button onClick={onClose} variant="secondary">
             Close
           </Button>

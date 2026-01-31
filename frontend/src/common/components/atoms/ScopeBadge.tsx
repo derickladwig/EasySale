@@ -13,22 +13,22 @@ const scopeConfig = {
   global: {
     label: 'Global',
     icon: Globe,
-    color: 'bg-accent/20 text-info border-accent/30',
+    color: 'bg-info-500/20 text-info-400 border-info-500/30',
   },
   store: {
     label: 'Store',
     icon: Building2,
-    color: 'bg-green-500/20 text-green-400 border-green-500/30',
+    color: 'bg-success-500/20 text-success-400 border-success-500/30',
   },
   station: {
     label: 'Station',
     icon: Monitor,
-    color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    color: 'bg-primary-500/20 text-primary-400 border-primary-500/30',
   },
   user: {
     label: 'User',
     icon: User,
-    color: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+    color: 'bg-warning-500/20 text-warning-400 border-warning-500/30',
   },
 };
 

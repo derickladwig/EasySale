@@ -17,7 +17,16 @@ export type Permission =
   | 'upload_vendor_bills'
   | 'view_vendor_bills'
   | 'review_vendor_bills'
-  | 'post_vendor_bills';
+  | 'post_vendor_bills'
+  // Integration permissions (Validates: Requirements 9.1, 9.4, 9.5)
+  | 'manage_integrations'
+  | 'connect_integrations'
+  | 'disconnect_integrations'
+  | 'trigger_sync'
+  | 'view_sync_history'
+  | 'manage_sync_schedules'
+  | 'view_failed_records'
+  | 'retry_failed_records';
 
 export interface PermissionsContextType {
   permissions: Set<Permission>;

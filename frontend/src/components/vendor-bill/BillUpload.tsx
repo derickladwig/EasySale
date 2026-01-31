@@ -156,8 +156,9 @@ export const BillUpload: React.FC<BillUploadProps> = ({ onUploadComplete }) => {
           navigate('/review');
         }
       }, 1000);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Failed to upload document. Please try again.';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      const errorMessage = error.response?.data?.error || 'Failed to upload document. Please try again.';
       setError(errorMessage);
       setUploadProgress({
         stage: 'error',
@@ -297,8 +298,8 @@ export const BillUpload: React.FC<BillUploadProps> = ({ onUploadComplete }) => {
 
         {/* Error Message */}
         {error && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-            <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
+          <div className="mt-4 p-4 bg-[var(--color-error-50)] dark:bg-[var(--color-error-900)]/20 border border-[var(--color-error-200)] dark:border-[var(--color-error-800)] rounded-md">
+            <p className="text-sm text-[var(--color-error-800)] dark:text-[var(--color-error-400)]">{error}</p>
           </div>
         )}
 

@@ -38,7 +38,7 @@ integrations = []
 # Payment processing (Stripe Checkout)
 payments = ["integrations"]
 
-# Lite build - core POS only
+# Lite build - core POS only (empty marker - disables all optional features by not including them)
 lite = []
 
 # Email notifications

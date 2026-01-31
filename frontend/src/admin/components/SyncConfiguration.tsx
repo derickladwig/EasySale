@@ -64,8 +64,9 @@ export function SyncConfiguration() {
       } else {
         throw new Error('Failed to save settings');
       }
-    } catch (error: any) {
-      alert(`Failed to save: ${error.message}`);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Failed to save');
+      alert(`Failed to save: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -127,7 +128,7 @@ export function SyncConfiguration() {
   };
 
   if (loading) {
-    return <div className="p-6 text-secondary-500">Loading sync configuration...</div>;
+    return <div className="p-6 text-text-secondary">Loading sync configuration...</div>;
   }
 
   return (
@@ -138,8 +139,8 @@ export function SyncConfiguration() {
 
         <div className="flex items-center justify-between">
           <div>
-            <label className="text-sm font-medium text-secondary-700">Enable Sync</label>
-            <p className="text-xs text-secondary-500">
+            <label className="text-sm font-medium text-text-secondary">Enable Sync</label>
+            <p className="text-xs text-text-tertiary">
               Automatically synchronize data with remote stores
             </p>
           </div>
@@ -152,7 +153,7 @@ export function SyncConfiguration() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
+          <label className="block text-sm font-medium text-text-secondary mb-1">
             Sync Interval (seconds)
           </label>
           <Input
@@ -164,15 +165,15 @@ export function SyncConfiguration() {
             min={60}
             max={3600}
           />
-          <p className="text-xs text-secondary-500 mt-1">
+          <p className="text-xs text-text-tertiary mt-1">
             How often to sync data (60-3600 seconds)
           </p>
         </div>
 
         <div className="flex items-center justify-between">
           <div>
-            <label className="text-sm font-medium text-secondary-700">Auto-Resolve Conflicts</label>
-            <p className="text-xs text-secondary-500">
+            <label className="text-sm font-medium text-text-secondary">Auto-Resolve Conflicts</label>
+            <p className="text-xs text-text-tertiary">
               Automatically resolve sync conflicts using last-write-wins
             </p>
           </div>
@@ -202,24 +203,24 @@ export function SyncConfiguration() {
         </div>
 
         {settings.remote_stores.length === 0 ? (
-          <div className="text-center py-8 text-secondary-500">
+          <div className="text-center py-8 text-text-tertiary">
             <p>No remote stores configured</p>
             <p className="text-sm mt-1">Add a remote store to enable multi-location sync</p>
           </div>
         ) : (
           <div className="space-y-4">
             {settings.remote_stores.map((store) => (
-              <div key={store.id} className="p-4 border border-secondary-200 rounded-lg space-y-3">
+              <div key={store.id} className="p-4 border border-border rounded-lg space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     {store.status === 'connected' && (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-success-600" />
                     )}
                     {store.status === 'disconnected' && (
-                      <AlertCircle className="w-5 h-5 text-secondary-400" />
+                      <AlertCircle className="w-5 h-5 text-text-tertiary" />
                     )}
                     {store.status === 'error' && <XCircle className="w-5 h-5 text-error-600" />}
-                    <span className="font-medium text-secondary-900">
+                    <span className="font-medium text-text-primary">
                       {store.name || 'Unnamed Store'}
                     </span>
                   </div>
@@ -233,7 +234,7 @@ export function SyncConfiguration() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-secondary-700 mb-1">
+                    <label className="block text-xs font-medium text-text-secondary mb-1">
                       Store Name
                     </label>
                     <Input
@@ -245,7 +246,7 @@ export function SyncConfiguration() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-secondary-700 mb-1">
+                    <label className="block text-xs font-medium text-text-secondary mb-1">
                       API URL
                     </label>
                     <Input
@@ -257,7 +258,7 @@ export function SyncConfiguration() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-secondary-700 mb-1">
+                    <label className="block text-xs font-medium text-text-secondary mb-1">
                       API Key
                     </label>
                     <Input
@@ -280,7 +281,7 @@ export function SyncConfiguration() {
                       }
                       className="w-4 h-4 text-primary-600 focus:ring-primary-500 rounded"
                     />
-                    <span className="text-sm text-secondary-700">Active</span>
+                    <span className="text-sm text-text-secondary">Active</span>
                   </div>
 
                   <Button
@@ -295,7 +296,7 @@ export function SyncConfiguration() {
                 </div>
 
                 {store.last_sync && (
-                  <p className="text-xs text-secondary-500">
+                  <p className="text-xs text-text-tertiary">
                     Last sync: {new Date(store.last_sync).toLocaleString()}
                   </p>
                 )}

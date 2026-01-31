@@ -103,8 +103,8 @@ docker images | grep EasySale
 # Stop existing and start new
 echo ""
 echo -e "${BLUE}[INFO]${NC} Starting production environment..."
-docker-compose -p EasySale -f docker-compose.prod.yml down 2>/dev/null || true
-docker-compose -p EasySale -f docker-compose.prod.yml up -d
+docker-compose -p easysale -f docker-compose.prod.yml down 2>/dev/null || true
+docker-compose -p easysale -f docker-compose.prod.yml up -d
 
 # Wait for health
 echo "Waiting for services..."

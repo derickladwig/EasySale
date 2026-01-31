@@ -3,7 +3,7 @@
 // Only compiled when ocr feature is enabled
 #![cfg(feature = "ocr")]
 
-use EasySale_server::services::{OcrEngine, OcrProfile, TesseractEngine};
+use easysale_server::services::{OcrEngine, OcrProfile, TesseractEngine};
 
 #[test]
 fn test_ocr_profile_creation() {

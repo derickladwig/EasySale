@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@common/components/molecules/Toast';
 import { settingsApi } from '../services/settingsApi';
+import { getErrorMessage } from '../common/utils/errorUtils';
 
 // User Preferences Hook
 export const useUserPreferences = () => {
@@ -17,8 +18,8 @@ export const useUserPreferences = () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'preferences'] });
       toast.success('Preferences updated successfully');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update preferences';
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error) || 'Failed to update preferences';
       toast.error(message);
     },
   });
@@ -47,8 +48,8 @@ export const useLocalizationSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'localization'] });
       toast.success('Localization settings updated successfully');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update localization settings';
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error) || 'Failed to update localization settings';
       toast.error(message);
     },
   });
@@ -77,8 +78,8 @@ export const useNetworkSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'network'] });
       toast.success('Network settings updated successfully');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update network settings';
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error) || 'Failed to update network settings';
       toast.error(message);
     },
   });
@@ -107,8 +108,8 @@ export const usePerformanceSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'performance'] });
       toast.success('Performance settings updated successfully');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update performance settings';
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error) || 'Failed to update performance settings';
       toast.error(message);
     },
   });

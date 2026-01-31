@@ -56,7 +56,7 @@ export interface GetSettingsParams {
 
 export interface SetSettingParams {
   key: string;
-  value: any;
+  value: string | number | boolean | Record<string, unknown> | unknown[];
   scope: 'store' | 'user'; // Only store and user scopes can be persisted
   scope_id: string; // store_id or user_id
 }
@@ -86,15 +86,18 @@ export class SettingsPersistence {
   /**
    * Get a single setting value
    */
-  async getSetting(key: string, scope: 'store' | 'user', scope_id: string): Promise<any | null> {
+  async getSetting(key: string, scope: 'store' | 'user', scope_id: string): Promise<unknown | null> {
     try {
       const response = await api.get(`/api/settings/${key}`, {
         params: { scope, scope_id },
       });
       return this.parseValue(response.data.value, response.data.data_type);
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        return null; // Setting not found
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 404) {
+          return null; // Setting not found
+        }
       }
       throw error;
     }
@@ -156,7 +159,7 @@ export class SettingsPersistence {
   /**
    * Parse value from string based on data type
    */
-  private parseValue(value: string, data_type: string): any {
+  private parseValue(value: string, data_type: string): unknown {
     switch (data_type) {
       case 'boolean':
         return value === 'true' || value === '1';
@@ -173,12 +176,12 @@ export class SettingsPersistence {
   /**
    * Serialize value to string based on data type
    */
-  private serializeValue(value: any, data_type: string): string {
+  private serializeValue(value: unknown, data_type: string): string {
     switch (data_type) {
       case 'boolean':
         return value ? 'true' : 'false';
       case 'number':
-        return value.toString();
+        return String(value);
       case 'json':
         return JSON.stringify(value);
       case 'string':
@@ -190,7 +193,7 @@ export class SettingsPersistence {
   /**
    * Infer data type from value
    */
-  private inferDataType(value: any): 'string' | 'number' | 'boolean' | 'json' {
+  private inferDataType(value: unknown): 'string' | 'number' | 'boolean' | 'json' {
     if (typeof value === 'boolean') {
       return 'boolean';
     }
@@ -206,8 +209,8 @@ export class SettingsPersistence {
   /**
    * Convert setting records to a map
    */
-  private recordsToMap(records: SettingRecord[]): Map<string, any> {
-    const map = new Map<string, any>();
+  private recordsToMap(records: SettingRecord[]): Map<string, unknown> {
+    const map = new Map<string, unknown>();
     records.forEach((record) => {
       const value = this.parseValue(record.value, record.data_type);
       map.set(record.key, value);

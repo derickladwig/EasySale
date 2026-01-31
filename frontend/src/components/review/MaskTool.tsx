@@ -116,18 +116,18 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
 
   const getMaskColor = (type: string) => {
     const colors: Record<string, string> = {
-      logo: 'border-red-500 bg-red-200',
-      watermark: 'border-orange-500 bg-orange-200',
+      logo: 'border-error bg-error-200',
+      watermark: 'border-warning bg-warning-200',
       header: 'border-accent bg-info-200',
-      footer: 'border-green-500 bg-green-200',
-      custom: 'border-purple-500 bg-purple-200',
+      footer: 'border-success bg-success-200',
+      custom: 'border-primary-500 bg-primary-200',
     };
-    return colors[type] || 'border-gray-500 bg-gray-200';
+    return colors[type] || 'border-secondary-500 bg-secondary-200';
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-surface-base rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="text-lg font-semibold text-text-primary">Mask Management</h3>
@@ -275,20 +275,20 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
 
           {/* Error/Stub Message */}
           {error && (
-            <div className={`mt-3 p-3 rounded ${isStubbed ? 'bg-yellow-50 border border-yellow-200' : 'bg-red-50 border border-red-200'}`}>
+            <div className={`mt-3 p-3 rounded ${isStubbed ? 'bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-dark' : 'bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-dark'}`}>
               <div className="flex items-start gap-2">
-                <span className={`text-lg ${isStubbed ? 'text-yellow-600' : 'text-red-600'}`}>
+                <span className={`text-lg ${isStubbed ? 'text-warning-dark' : 'text-error-dark'}`}>
                   {isStubbed ? '⚠️' : '❌'}
                 </span>
                 <div className="flex-1">
-                  <p className={`text-sm font-semibold ${isStubbed ? 'text-yellow-800' : 'text-red-800'} mb-1`}>
+                  <p className={`text-sm font-semibold ${isStubbed ? 'text-warning-dark' : 'text-error-dark'} mb-1`}>
                     {isStubbed ? 'Feature Not Available' : 'Error'}
                   </p>
-                  <p className={`text-sm ${isStubbed ? 'text-yellow-700' : 'text-red-700'}`}>
+                  <p className={`text-sm ${isStubbed ? 'text-warning-dark' : 'text-error-dark'}`}>
                     {error}
                   </p>
                   {isStubbed && (
-                    <p className="text-xs text-yellow-600 mt-2">
+                    <p className="text-xs text-warning-dark mt-2">
                       This feature requires backend implementation. You can continue your workflow.
                     </p>
                   )}

@@ -75,7 +75,7 @@ export function PageTabs({
             >
               <span className="flex items-center justify-center gap-1.5">
                 {tab.label}
-                <Clock className="h-3 w-3 text-amber-500" />
+                <Clock className="h-3 w-3 text-[var(--color-warning-500)]" />
               </span>
               {tab.badge && (
                 <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
@@ -96,7 +96,7 @@ export function PageTabs({
             >
               <span className="flex items-center justify-center gap-1.5">
                 {tab.label}
-                <span className="px-1 py-0.5 text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+                <span className="px-1 py-0.5 text-[10px] bg-[var(--color-info-100)] text-[var(--color-info-800)] dark:bg-[var(--color-info-900)]/30 dark:text-[var(--color-info-400)] rounded">
                   β
                 </span>
               </span>

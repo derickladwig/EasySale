@@ -148,11 +148,13 @@ pub struct FieldDecision {
 pub async fn list_cases(
     query: web::Query<ListCasesQuery>,
     pool: web::Data<SqlitePool>,
+    user_ctx: web::ReqData<crate::models::UserContext>,
 ) -> HttpResponse {
     let page = query.page.unwrap_or(1);
     let per_page = query.per_page.unwrap_or(20);
     let offset = (page - 1) * per_page;
-    let tenant_id = query.tenant_id.as_deref().unwrap_or("default-tenant");
+    // Use tenant_id from authenticated user context for security
+    let tenant_id = user_ctx.tenant_id.as_str();
     
     // Build WHERE clause with filters
     let mut where_clauses = vec!["tenant_id = ?"];

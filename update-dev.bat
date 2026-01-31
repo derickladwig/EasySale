@@ -155,14 +155,14 @@ if not defined NO_REBUILD (
     
     REM Stop existing containers
     echo Stopping existing containers...
-    docker-compose -p EasySale down >nul 2>&1
+    docker-compose -p easysale down >nul 2>&1
     
     REM Rebuild images
     echo Rebuilding images (this may take a few minutes)...
-    docker-compose -p EasySale build
+    docker-compose -p easysale build
     if errorlevel 1 (
         echo [WARNING] Docker build had issues
-        echo You may need to run: docker-compose -p EasySale build --no-cache
+        echo You may need to run: docker-compose -p easysale build --no-cache
     ) else (
         echo [OK] Development images rebuilt
     )

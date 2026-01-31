@@ -194,7 +194,7 @@ function OverviewTab() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Archive className="w-8 h-8 text-green-500" />
+            <Archive className="w-8 h-8 text-[var(--color-success-500)]" />
             <div>
               <p className="text-sm text-text-tertiary">Total Backups</p>
               <p className="text-lg font-semibold text-text-primary">{overview.total_backups}</p>
@@ -204,7 +204,7 @@ function OverviewTab() {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <HardDrive className="w-8 h-8 text-purple-500" />
+            <HardDrive className="w-8 h-8 text-[var(--color-purple-500)]" />
             <div>
               <p className="text-sm text-text-tertiary">Total Size</p>
               <p className="text-lg font-semibold text-text-primary">
@@ -594,15 +594,15 @@ function DestinationsTab() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="bg-info-900/20 border border-info-dark rounded-lg p-4">
+                <div className="bg-[var(--color-info-900)]/20 border border-[var(--color-info-700)] rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-[var(--color-info-500)] flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <p className="text-sm text-info-300 mb-2">
+                      <p className="text-sm text-[var(--color-info-300)] mb-2">
                         A new window has opened for Google authorization. After authorizing, copy
                         the authorization code and paste it below.
                       </p>
-                      <p className="text-xs text-info">
+                      <p className="text-xs text-[var(--color-info-500)]">
                         If the window didn't open, click the button above again.
                       </p>
                     </div>
@@ -661,10 +661,10 @@ function DestinationsTab() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-surface-base rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <CheckCircle className="w-4 h-4 text-[var(--color-success-500)]" />
                   <p className="text-sm text-text-tertiary">Status</p>
                 </div>
-                <p className="text-lg font-semibold text-green-400">Connected</p>
+                <p className="text-lg font-semibold text-[var(--color-success-400)]">Connected</p>
               </div>
 
               <div className="bg-surface-base rounded-lg p-4">
@@ -679,7 +679,7 @@ function DestinationsTab() {
 
               <div className="bg-surface-base rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Archive className="w-4 h-4 text-purple-500" />
+                  <Archive className="w-4 h-4 text-[var(--color-purple-500)]" />
                   <p className="text-sm text-text-tertiary">Total Uploads</p>
                 </div>
                 <p className="text-lg font-semibold text-text-primary">{status.total_uploads}</p>
@@ -687,7 +687,7 @@ function DestinationsTab() {
 
               <div className="bg-surface-base rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <HardDrive className="w-4 h-4 text-orange-500" />
+                  <HardDrive className="w-4 h-4 text-[var(--color-warning-500)]" />
                   <p className="text-sm text-text-tertiary">Total Size</p>
                 </div>
                 <p className="text-lg font-semibold text-text-primary">
@@ -709,12 +709,12 @@ function DestinationsTab() {
 
             {/* Error Display */}
             {status.last_error && (
-              <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
+              <div className="bg-[var(--color-error-900)]/20 border border-[var(--color-error-700)] rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <XCircle className="w-5 h-5 text-[var(--color-error-400)] flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-red-400 mb-1">Last Error:</p>
-                    <p className="text-sm text-red-300">{status.last_error}</p>
+                    <p className="text-sm font-semibold text-[var(--color-error-400)] mb-1">Last Error:</p>
+                    <p className="text-sm text-[var(--color-error-300)]">{status.last_error}</p>
                   </div>
                 </div>
               </div>
@@ -802,27 +802,27 @@ function DestinationsTab() {
         <h3 className="text-md font-semibold text-text-primary mb-4">About Google Drive Backups</h3>
         <div className="space-y-3 text-sm text-text-secondary">
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-[var(--color-success-500)] flex-shrink-0 mt-0.5" />
             <p>
               Backups are automatically uploaded to Google Drive after successful completion when
               auto-upload is enabled in Settings
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-[var(--color-success-500)] flex-shrink-0 mt-0.5" />
             <p>
               Database backups are uploaded daily, file backups weekly, and full backups monthly
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-[var(--color-success-500)] flex-shrink-0 mt-0.5" />
             <p>
               Old backups are automatically deleted from Google Drive based on the retention count
               to manage storage
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-[var(--color-success-500)] flex-shrink-0 mt-0.5" />
             <p>
               If uploads fail, local backups are preserved and uploads will be retried on the next
               scheduled backup
@@ -869,13 +869,13 @@ function LogsTab() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-[var(--color-success-500)]" />;
       case 'running':
         return <Clock className="w-5 h-5 text-accent animate-spin" />;
       case 'failed':
-        return <XCircle className="w-5 h-5 text-red-500" />;
+        return <XCircle className="w-5 h-5 text-[var(--color-error-500)]" />;
       case 'pending':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+        return <AlertCircle className="w-5 h-5 text-[var(--color-warning-500)]" />;
       default:
         return <FileText className="w-5 h-5 text-text-disabled" />;
     }
@@ -1036,12 +1036,12 @@ function LogsTab() {
                       <span
                         className={
                           backup.status === 'completed'
-                            ? 'text-green-400'
+                            ? 'text-[var(--color-success-400)]'
                             : backup.status === 'failed'
-                              ? 'text-red-400'
+                              ? 'text-[var(--color-error-400)]'
                               : backup.status === 'running'
                                 ? 'text-info'
-                                : 'text-yellow-400'
+                                : 'text-[var(--color-warning-400)]'
                         }
                       >
                         {backup.status}
@@ -1061,7 +1061,7 @@ function LogsTab() {
                           <span className="text-info"> (+{backup.files_changed})</span>
                         )}
                         {backup.files_deleted > 0 && (
-                          <span className="text-red-400"> (-{backup.files_deleted})</span>
+                          <span className="text-[var(--color-error-400)]"> (-{backup.files_deleted})</span>
                         )}
                       </span>
                     </div>
@@ -1078,12 +1078,12 @@ function LogsTab() {
                   )}
 
                   {backup.error_message && (
-                    <div className="bg-red-900/20 border border-red-700 rounded-lg p-3 mt-2">
+                    <div className="bg-[var(--color-error-900)]/20 border border-[var(--color-error-700)] rounded-lg p-3 mt-2">
                       <div className="flex items-start gap-2">
-                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                        <XCircle className="w-4 h-4 text-[var(--color-error-400)] flex-shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-red-400 mb-1">Error:</p>
-                          <p className="text-sm text-red-300 font-mono break-all">
+                          <p className="text-xs font-semibold text-[var(--color-error-400)] mb-1">Error:</p>
+                          <p className="text-sm text-[var(--color-error-300)] font-mono break-all">
                             {backup.error_message}
                           </p>
                         </div>
@@ -1568,8 +1568,8 @@ function BackupDetails({ backup }: { backup: any }) {
       </div>
 
       {backup.error_message && (
-        <div className="bg-red-900/20 border border-red-700 rounded-lg p-3">
-          <p className="text-red-400 text-sm">{backup.error_message}</p>
+        <div className="bg-[var(--color-error-900)]/20 border border-[var(--color-error-700)] rounded-lg p-3">
+          <p className="text-[var(--color-error-400)] text-sm">{backup.error_message}</p>
         </div>
       )}
 

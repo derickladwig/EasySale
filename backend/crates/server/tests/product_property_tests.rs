@@ -4,9 +4,9 @@
 
 use proptest::prelude::*;
 use serde_json::json;
-use EasySale_server::config::models::{AttributeConfig, CategoryConfig};
-use EasySale_server::AttributeValidator;
-use EasySale_server::Product;
+use easysale_server::config::models::{AttributeConfig, CategoryConfig};
+use easysale_server::AttributeValidator;
+use easysale_server::Product;
 
 // ============================================================================
 // Property Test Generators

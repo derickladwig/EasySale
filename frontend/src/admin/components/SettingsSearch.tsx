@@ -122,17 +122,17 @@ export function SettingsSearch() {
     inputRef.current?.focus();
   };
 
-  // Scope badge color
+  // Scope badge color - uses semantic theme tokens
   const getScopeBadgeColor = (scope: SettingIndexEntry['scope']) => {
     switch (scope) {
       case 'global':
         return 'bg-info-100 text-info-dark';
       case 'store':
-        return 'bg-green-100 text-green-700';
+        return 'bg-success-100 text-success-700';
       case 'station':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-purple-500/20 text-purple-400';
       case 'user':
-        return 'bg-orange-100 text-orange-700';
+        return 'bg-warning-100 text-warning-700';
     }
   };
 
@@ -157,11 +157,15 @@ export function SettingsSearch() {
         />
       </div>
 
-      {/* Dropdown */}
+      {/* Dropdown - uses dropdown z-index token */}
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-2 bg-surface-base border border-border rounded-lg shadow-lg max-h-96 overflow-y-auto"
+          className="absolute w-full mt-2 bg-surface-elevated border border-border rounded-xl max-h-96 overflow-y-auto"
+          style={{ 
+            zIndex: 'var(--z-dropdown)',
+            boxShadow: 'var(--shadow-dropdown)'
+          }}
         >
           {/* Results */}
           {results.length > 0 ? (

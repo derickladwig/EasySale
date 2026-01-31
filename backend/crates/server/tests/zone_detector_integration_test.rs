@@ -3,8 +3,8 @@
 // Only compiled when ocr feature is enabled
 #![cfg(feature = "ocr")]
 
-use EasySale_server::services::{ZoneDetectorService, ZoneDetectorConfig};
-use EasySale_server::models::artifact::{ZoneType, BoundingBox};
+use easysale_server::services::{ZoneDetectorService, ZoneDetectorConfig};
+use easysale_server::models::artifact::{ZoneType, BoundingBox};
 use image::{DynamicImage, RgbImage, Rgb};
 use tempfile::TempDir;
 use std::path::PathBuf;

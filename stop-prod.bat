@@ -82,9 +82,9 @@ if defined REMOVE_VOLUMES (
             exit /b 0
         )
     )
-    docker-compose -p EasySale %COMPOSE_FILES% down -v
+    docker-compose -p easysale %COMPOSE_FILES% down -v
 ) else (
-    docker-compose -p EasySale %COMPOSE_FILES% down
+    docker-compose -p easysale %COMPOSE_FILES% down
 )
 
 if errorlevel 1 (

@@ -24,12 +24,22 @@ function getApiBaseUrl(): string {
   return `http://${hostname}:8923`;
 }
 
+// Default accent color - teal to match tokens.css source of truth
+const DEFAULT_ACCENT_COLOR = '#14b8a6';
+const DEFAULT_ACCENT_600 = '#0d9488';
+const DEFAULT_ACCENT_PRESET = 'teal';
+
+// Neutral color for custom preset placeholder
+const NEUTRAL_COLOR = '#64748b';
+const NEUTRAL_COLOR_DARK = '#475569';
+
 const THEME_PRESETS = [
-  { id: 'blue', name: 'Blue', color: '#0756d9', accent500: '#0756d9', accent600: '#0548b8' },
   { id: 'teal', name: 'Teal', color: '#14b8a6', accent500: '#14b8a6', accent600: '#0d9488' },
   { id: 'emerald', name: 'Emerald', color: '#10b981', accent500: '#10b981', accent600: '#059669' },
   { id: 'green', name: 'Green', color: '#22c55e', accent500: '#22c55e', accent600: '#16a34a' },
   { id: 'lime', name: 'Lime', color: '#84cc16', accent500: '#84cc16', accent600: '#65a30d' },
+  { id: 'cyan', name: 'Cyan', color: '#06b6d4', accent500: '#06b6d4', accent600: '#0891b2' },
+  { id: 'blue', name: 'Blue', color: '#3b82f6', accent500: '#3b82f6', accent600: '#2563eb' },
   { id: 'indigo', name: 'Indigo', color: '#6366f1', accent500: '#6366f1', accent600: '#4f46e5' },
   { id: 'violet', name: 'Violet', color: '#8b5cf6', accent500: '#8b5cf6', accent600: '#7c3aed' },
   { id: 'purple', name: 'Purple', color: '#a855f7', accent500: '#a855f7', accent600: '#9333ea' },
@@ -40,8 +50,7 @@ const THEME_PRESETS = [
   { id: 'orange', name: 'Orange', color: '#f97316', accent500: '#f97316', accent600: '#ea580c' },
   { id: 'amber', name: 'Amber', color: '#f59e0b', accent500: '#f59e0b', accent600: '#d97706' },
   { id: 'yellow', name: 'Yellow', color: '#eab308', accent500: '#eab308', accent600: '#ca8a04' },
-  { id: 'cyan', name: 'Cyan', color: '#06b6d4', accent500: '#06b6d4', accent600: '#0891b2' },
-  { id: 'custom', name: 'Custom', color: '#888888', accent500: '#888888', accent600: '#666666' },
+  { id: 'custom', name: 'Custom', color: NEUTRAL_COLOR, accent500: NEUTRAL_COLOR, accent600: NEUTRAL_COLOR_DARK },
 ];
 
 // Helper to generate darker shade for accent600
@@ -61,10 +70,10 @@ export function BrandingStepContent({
   const [formData, setFormData] = useState<BrandingStepData>({
     logoLight: data?.logoLight || '',
     logoDark: data?.logoDark || '',
-    accentColor: data?.accentColor || '#0756d9',
-    themePreset: data?.themePreset || 'blue',
+    accentColor: data?.accentColor || DEFAULT_ACCENT_COLOR,
+    themePreset: data?.themePreset || DEFAULT_ACCENT_PRESET,
   });
-  const [customHex, setCustomHex] = useState(data?.accentColor || '#0756d9');
+  const [customHex, setCustomHex] = useState(data?.accentColor || DEFAULT_ACCENT_COLOR);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const lightLogoRef = useRef<HTMLInputElement>(null);
   const darkLogoRef = useRef<HTMLInputElement>(null);
@@ -105,7 +114,8 @@ export function BrandingStepContent({
     // Also set action colors for buttons
     root.style.setProperty('--color-action-primary-bg', accent500);
     root.style.setProperty('--color-action-primary-hover', accent600);
-    root.style.setProperty('--color-action-primary-fg', '#ffffff');
+    // Use CSS variable for inverse text color (white on dark backgrounds)
+    root.style.setProperty('--color-action-primary-fg', 'var(--color-text-inverse, #ffffff)');
     
     // Update theme accent variable used by wizard
     root.style.setProperty('--theme-accent', accent500);
@@ -186,7 +196,7 @@ export function BrandingStepContent({
     setIsSubmitting(true);
     try {
       // Determine accent colors
-      let accent500 = formData.accentColor || '#0756d9';
+      let accent500 = formData.accentColor || DEFAULT_ACCENT_COLOR;
       let accent600 = darkenColor(accent500);
       
       // If using a preset, use its predefined colors
@@ -388,7 +398,7 @@ export function BrandingStepContent({
         <div className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
           <div 
             className="w-10 h-10 rounded-lg border-2 border-white/20 flex-shrink-0"
-            style={{ backgroundColor: isValidHex(customHex) ? customHex : '#888888' }}
+            style={{ backgroundColor: isValidHex(customHex) ? customHex : NEUTRAL_COLOR }}
           />
           <div className="flex-1">
             <label className="block text-xs text-text-tertiary mb-1">Custom Hex Color</label>
@@ -406,7 +416,7 @@ export function BrandingStepContent({
               />
               <input
                 type="color"
-                value={isValidHex(customHex) ? customHex : '#888888'}
+                value={isValidHex(customHex) ? customHex : NEUTRAL_COLOR}
                 onChange={(e) => handleCustomHexChange(e.target.value)}
                 className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
                 title="Pick a color"

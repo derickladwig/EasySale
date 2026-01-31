@@ -2,7 +2,7 @@
 // Only compiled when ocr feature is enabled
 #![cfg(feature = "ocr")]
 
-use EasySale_server::services::{OrientationService, OrientationConfig};
+use easysale_server::services::{OrientationService, OrientationConfig};
 
 #[test]
 fn test_orientation_service_compiles() {

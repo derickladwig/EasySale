@@ -188,7 +188,7 @@ export function NetworkStepContent({
                   onChange={(e) => handleLanToggle(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
           </div>
@@ -197,11 +197,11 @@ export function NetworkStepContent({
 
       {/* Local-only info when disabled */}
       {!lanEnabled && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="bg-[var(--color-info-50)] dark:bg-[var(--color-info-900)]/20 border border-[var(--color-info-200)] dark:border-[var(--color-info-800)] rounded-lg p-4">
           <div className="flex gap-3">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <Info className="h-5 w-5 text-[var(--color-info-600)] dark:text-[var(--color-info-400)] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+              <p className="text-sm text-[var(--color-info-800)] dark:text-[var(--color-info-200)]">
                 <strong>Local only (recommended)</strong> — The application will only be accessible from this computer.
                 This is the most secure option for single-user setups.
               </p>
@@ -212,11 +212,11 @@ export function NetworkStepContent({
 
       {/* LAN access warning when accessing via LAN but toggle is off */}
       {!lanEnabled && isAccessingViaLan && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+        <div className="bg-[var(--color-warning-50)] dark:bg-[var(--color-warning-900)]/20 border border-[var(--color-warning-200)] dark:border-[var(--color-warning-800)] rounded-lg p-4">
           <div className="flex gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-[var(--color-warning-600)] dark:text-[var(--color-warning-400)] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm text-amber-800 dark:text-amber-200">
+              <p className="text-sm text-[var(--color-warning-800)] dark:text-[var(--color-warning-200)]">
                 <strong>You're accessing via LAN</strong> ({window.location.hostname}). 
                 Enable LAN access above to ensure other devices can continue connecting after restart.
               </p>
@@ -254,7 +254,7 @@ export function NetworkStepContent({
                   <div className="flex items-center gap-2">
                     <Globe size={16} className="text-primary" />
                     <span className="font-medium">All Interfaces (0.0.0.0)</span>
-                    <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
+                    <span className="text-xs bg-[var(--color-success-100)] dark:bg-[var(--color-success-900)]/30 text-[var(--color-success-700)] dark:text-[var(--color-success-400)] px-2 py-0.5 rounded">
                       Recommended
                     </span>
                   </div>
@@ -355,11 +355,11 @@ export function NetworkStepContent({
           )}
 
           {/* Security Warning */}
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <div className="bg-[var(--color-warning-50)] dark:bg-[var(--color-warning-900)]/20 border border-[var(--color-warning-200)] dark:border-[var(--color-warning-800)] rounded-lg p-4">
             <div className="flex gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-[var(--color-warning-600)] dark:text-[var(--color-warning-400)] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-amber-800 dark:text-amber-200">
+                <p className="text-sm text-[var(--color-warning-800)] dark:text-[var(--color-warning-200)]">
                   <strong>Security Note:</strong> Enabling LAN access allows any device on your local network to connect.
                   Only enable this on trusted networks.
                 </p>
@@ -375,7 +375,7 @@ export function NetworkStepContent({
         <div className="space-y-2">
           {getAccessUrls().map((url, index) => (
             <div key={index} className="flex items-center gap-2">
-              {url.primary && <CheckCircle2 size={16} className="text-green-500" />}
+              {url.primary && <CheckCircle2 size={16} className="text-[var(--color-success-500)]" />}
               {!url.primary && <div className="w-4" />}
               <span className="text-sm text-muted-foreground w-24">{url.label}:</span>
               <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
@@ -393,8 +393,8 @@ export function NetworkStepContent({
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+        <div className="bg-[var(--color-error-50)] dark:bg-[var(--color-error-900)]/20 border border-[var(--color-error-200)] dark:border-[var(--color-error-800)] rounded-lg p-4">
+          <p className="text-sm text-[var(--color-error-800)] dark:text-[var(--color-error-200)]">{error}</p>
         </div>
       )}
 

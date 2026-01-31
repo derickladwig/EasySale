@@ -67,9 +67,10 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <header
       className={cn(
-        'h-14 flex-shrink-0 bg-surface-base border-b border-border flex items-center px-4 gap-4 z-50',
+        'h-14 flex-shrink-0 bg-surface-base border-b border-border flex items-center px-4 gap-4',
         className
       )}
+      style={{ zIndex: 'var(--z-header)' }}
     >
       {/* Mobile menu button */}
       <button

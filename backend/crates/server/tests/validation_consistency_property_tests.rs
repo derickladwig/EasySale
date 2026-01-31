@@ -6,7 +6,7 @@
 // For any form submission, if validation passes/fails, both frontend and backend should agree.
 
 use proptest::prelude::*;
-use EasySale_server::models::{
+use easysale_server::models::{
     user::CreateUserRequest,
     store::CreateStoreRequest,
     errors::ValidationError,

@@ -37,6 +37,8 @@ import {
   Activity,
   Plug,
   HardDrive,
+  Clock,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '../../common/utils/classNames';
 import { DisplaySettings } from '../components/DisplaySettings';
@@ -52,6 +54,8 @@ import { FeatureFlagsPage } from '../../settings/pages/FeatureFlagsPage';
 import { PerformancePage } from '../../settings/pages/PerformancePage';
 import { IntegrationsPage } from '../../settings/pages/IntegrationsPage';
 import { SyncDashboardPage } from '../../settings/pages/SyncDashboardPage';
+import { SyncHistoryPage } from '../../settings/pages/SyncHistoryPage';
+import { FailedRecordsPage } from '../../settings/pages/FailedRecordsPage';
 import { HardwarePage } from '../../settings/pages/HardwarePage';
 import { DataManagerPage } from '../../settings/pages/DataManagerPage';
 import { useHasExportFeatures, useHasSyncFeatures, useHasIntegrations, useHasDataManager } from '../../common/contexts/CapabilitiesContext';
@@ -77,6 +81,8 @@ type SettingsSectionId =
   | 'performance'
   | 'integrations'
   | 'sync-dashboard'
+  | 'sync-history'
+  | 'failed-records'
   | 'data-manager';
 
 interface User {
@@ -163,6 +169,20 @@ const settingsSections: SettingsSection[] = [
     label: 'Sync Dashboard',
     icon: Activity,
     description: 'Monitor data synchronization',
+    requiresSync: true, // Gate this section
+  },
+  {
+    id: 'sync-history',
+    label: 'Sync History',
+    icon: Clock,
+    description: 'View sync operation history',
+    requiresSync: true, // Gate this section
+  },
+  {
+    id: 'failed-records',
+    label: 'Failed Records',
+    icon: AlertTriangle,
+    description: 'Manage failed sync records',
     requiresSync: true, // Gate this section
   },
   {
@@ -663,6 +683,8 @@ export function AdminPage() {
           {activeSection === 'tax-rules' && <TaxRulesPage />}
           {activeSection === 'integrations' && <IntegrationsPage />}
           {activeSection === 'sync-dashboard' && <SyncDashboardPage />}
+          {activeSection === 'sync-history' && <SyncHistoryPage />}
+          {activeSection === 'failed-records' && <FailedRecordsPage />}
           {activeSection === 'feature-flags' && <FeatureFlagsPage />}
           {activeSection === 'performance' && <PerformancePage />}
           {activeSection === 'hardware' && <HardwarePage />}
@@ -683,6 +705,8 @@ export function AdminPage() {
             'tax-rules',
             'integrations',
             'sync-dashboard',
+            'sync-history',
+            'failed-records',
             'feature-flags',
             'performance',
             'hardware',

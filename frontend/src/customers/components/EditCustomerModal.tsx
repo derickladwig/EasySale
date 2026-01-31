@@ -71,8 +71,8 @@ export function EditCustomerModal({ isOpen, onClose, customer, onCustomerUpdated
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-surface-2 rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-2 rounded-lg p-6 w-full max-w-md" style={{ boxShadow: 'var(--shadow-modal)' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-text-primary">Edit Customer</h2>
           <button

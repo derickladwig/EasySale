@@ -236,7 +236,7 @@ describe('PageHeader', () => {
     it('applies border and background styling', () => {
       const { container } = render(<PageHeader title="Test" />);
       const root = container.firstChild as HTMLElement;
-      expect(root).toHaveClass('bg-white', 'border-b', 'border-border');
+      expect(root).toHaveClass('bg-surface-base', 'border-b', 'border-border');
     });
 
     it('applies responsive text sizing', () => {

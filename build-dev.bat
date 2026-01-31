@@ -121,7 +121,7 @@ echo [OK] Frontend dependencies synced
 
 REM Stop any existing containers
 echo [4/6] Stopping existing containers...
-docker-compose -p EasySale down >nul 2>&1
+docker-compose -p easysale down >nul 2>&1
 echo [OK] Containers stopped
 
 REM Build images
@@ -135,7 +135,7 @@ if defined NO_CACHE (
     echo [INFO] Building without cache (--no-cache)
 )
 
-docker-compose -p EasySale build %BUILD_ARGS%
+docker-compose -p easysale build %BUILD_ARGS%
 if errorlevel 1 (
     echo.
     echo [ERROR] Build failed!

@@ -211,8 +211,76 @@ pub async fn get_recent_transactions(
 }
 
 /// Helper function to format time ago
-fn format_time_ago(_timestamp: &str) -> String {
-    // Simple implementation - just return "Recently" for now
-    // TODO: Implement proper time ago calculation
-    "Recently".to_string()
+fn format_time_ago(timestamp: &str) -> String {
+    use chrono::{DateTime, Utc};
+    
+    let now = Utc::now();
+    
+    // Try to parse the timestamp
+    let parsed = DateTime::parse_from_rfc3339(timestamp)
+        .map(|dt| dt.with_timezone(&Utc))
+        .or_else(|_| {
+            // Try parsing as naive datetime (SQLite format)
+            chrono::NaiveDateTime::parse_from_str(timestamp, "%Y-%m-%d %H:%M:%S")
+                .map(|dt| dt.and_utc())
+        });
+    
+    match parsed {
+        Ok(dt) => {
+            let duration = now.signed_duration_since(dt);
+            let seconds = duration.num_seconds();
+            
+            if seconds < 0 {
+                return "In the future".to_string();
+            }
+            
+            if seconds < 60 {
+                return "Just now".to_string();
+            }
+            
+            let minutes = seconds / 60;
+            if minutes < 60 {
+                return if minutes == 1 {
+                    "1 minute ago".to_string()
+                } else {
+                    format!("{} minutes ago", minutes)
+                };
+            }
+            
+            let hours = minutes / 60;
+            if hours < 24 {
+                return if hours == 1 {
+                    "1 hour ago".to_string()
+                } else {
+                    format!("{} hours ago", hours)
+                };
+            }
+            
+            let days = hours / 24;
+            if days < 30 {
+                return if days == 1 {
+                    "Yesterday".to_string()
+                } else {
+                    format!("{} days ago", days)
+                };
+            }
+            
+            let months = days / 30;
+            if months < 12 {
+                return if months == 1 {
+                    "1 month ago".to_string()
+                } else {
+                    format!("{} months ago", months)
+                };
+            }
+            
+            let years = months / 12;
+            if years == 1 {
+                "1 year ago".to_string()
+            } else {
+                format!("{} years ago", years)
+            }
+        }
+        Err(_) => "Unknown".to_string(),
+    }
 }

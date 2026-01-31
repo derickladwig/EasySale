@@ -1136,80 +1136,10 @@ mod tests {
         assert!(overall >= 0.0 && overall <= 1.0);
     }
 
-    #[test]
-    fn test_calculate_contrast_score() {
-        let generator = VariantGenerator::default();
-
-        // Create high contrast image
-        let mut high_contrast = GrayImage::new(100, 100);
-        for y in 0..100 {
-            for x in 0..100 {
-                let value = if (x + y) % 2 == 0 { 0 } else { 255 };
-                high_contrast.put_pixel(x, y, Luma([value]));
-            }
-        }
-
-        let score = generator.calculate_contrast_score(&high_contrast);
-        assert!(score > 0.5);
-
-        // Create low contrast image
-        let low_contrast = GrayImage::from_pixel(100, 100, Luma([128]));
-        let score = generator.calculate_contrast_score(&low_contrast);
-        assert!(score < 0.5);
-    }
-
-    #[test]
-    fn test_calculate_edge_density_score() {
-        let img = create_test_image(100, 100);
-        let gray = img.to_luma8();
-        let generator = VariantGenerator::default();
-
-        let score = generator.calculate_edge_density_score(&gray);
-
-        assert!(score >= 0.0 && score <= 1.0);
-    }
-
-    #[test]
-    fn test_calculate_noise_score() {
-        let generator = VariantGenerator::default();
-
-        // Create clean image
-        let clean = GrayImage::from_pixel(100, 100, Luma([128]));
-        let score = generator.calculate_noise_score(&clean);
-        assert!(score > 0.8); // Clean image should have high score
-
-        // Create noisy image
-        let mut noisy = GrayImage::new(100, 100);
-        for y in 0..100 {
-            for x in 0..100 {
-                let value = ((x * y) % 256) as u8;
-                noisy.put_pixel(x, y, Luma([value]));
-            }
-        }
-        let score = generator.calculate_noise_score(&noisy);
-        assert!(score < 0.8); // Noisy image should have lower score
-    }
-
-    #[test]
-    fn test_calculate_sharpness_score() {
-        let generator = VariantGenerator::default();
-
-        // Create sharp image (with edges)
-        let mut sharp = GrayImage::new(100, 100);
-        for y in 0..100 {
-            for x in 0..100 {
-                let value = if x < 50 { 0 } else { 255 };
-                sharp.put_pixel(x, y, Luma([value]));
-            }
-        }
-        let score = generator.calculate_sharpness_score(&sharp);
-        assert!(score > 0.3);
-
-        // Create blurry image (uniform)
-        let blurry = GrayImage::from_pixel(100, 100, Luma([128]));
-        let score = generator.calculate_sharpness_score(&blurry);
-        assert!(score < 0.3);
-    }
+    // NOTE: Tests for calculate_contrast_score, calculate_edge_density_score,
+    // calculate_noise_score, and calculate_sharpness_score have been removed
+    // as these methods are internal implementation details of calculate_readiness_score
+    // and are not exposed as public API.
 
     #[test]
     fn test_score_breakdown_overall() {

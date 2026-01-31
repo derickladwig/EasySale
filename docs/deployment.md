@@ -148,7 +148,7 @@ For containerized environments.
    docker-compose logs -f
    
    # Test health endpoint
-   curl http://localhost:3000/health
+   curl http://localhost:8923/health
    ```
 
 ### Method 3: Manual Installation
@@ -259,7 +259,7 @@ retention_days = 30
 
 ### 1. Initial Configuration
 
-Access the admin panel at `http://localhost:3000/admin`:
+Access the admin panel at `http://localhost:8923/admin`:
 
 1. **Create admin account** (if not done during install)
 2. **Configure store information**:
@@ -274,13 +274,13 @@ Access the admin panel at `http://localhost:3000/admin`:
 
 ```bash
 # Import products from CSV
-curl -X POST http://localhost:3000/api/setup/import \
+curl -X POST http://localhost:8923/api/setup/import \
   -H "Authorization: Bearer <token>" \
   -F "file=@products.csv" \
   -F "type=products"
 
 # Import customers from CSV
-curl -X POST http://localhost:3000/api/setup/import \
+curl -X POST http://localhost:8923/api/setup/import \
   -H "Authorization: Bearer <token>" \
   -F "file=@customers.csv" \
   -F "type=customers"
@@ -301,7 +301,7 @@ Verify backup configuration:
 
 ```bash
 # Test backup creation
-curl -X POST http://localhost:3000/api/backup/create \
+curl -X POST http://localhost:8923/api/backup/create \
   -H "Authorization: Bearer <token>"
 
 # Verify backup exists
@@ -368,7 +368,7 @@ Before going live, verify:
 
 6. **Verify upgrade**:
    ```powershell
-   curl http://localhost:3000/health
+   curl http://localhost:8923/health
    ```
 
 ### Docker Upgrade
@@ -391,7 +391,7 @@ Before going live, verify:
 4. **Verify upgrade**:
    ```bash
    docker-compose ps
-   curl http://localhost:3000/health
+   curl http://localhost:8923/health
    ```
 
 ### Database Migrations
@@ -455,10 +455,10 @@ If an upgrade fails:
 
 ```bash
 # Basic health check
-curl http://localhost:3000/health
+curl http://localhost:8923/health
 
 # Detailed health check
-curl http://localhost:3000/health/detailed
+curl http://localhost:8923/health/detailed
 ```
 
 ### Log Locations

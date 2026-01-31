@@ -102,15 +102,15 @@ export function DataManagerPage() {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
       case 'processing':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        return 'bg-info-100 text-info-800 dark:bg-info-900 dark:text-info-200';
       case 'failed':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
       case 'purged':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-surface-elevated text-text-secondary dark:bg-surface-elevated dark:text-text-secondary';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-surface-elevated text-text-secondary dark:bg-surface-elevated dark:text-text-secondary';
     }
   };
 
@@ -122,7 +122,7 @@ export function DataManagerPage() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-4 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-md bg-[var(--color-error-50)] p-4 text-[var(--color-error-700)] dark:bg-[var(--color-error-900)]/20 dark:text-[var(--color-error-400)]">
           {error}
         </div>
       )}
@@ -264,7 +264,7 @@ export function DataManagerPage() {
                           <button
                             onClick={() => handlePurge(batch.id)}
                             disabled={purging === batch.id}
-                            className="rounded-md px-2 py-1 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                            className="rounded-md px-2 py-1 text-sm text-[var(--color-error-600)] hover:bg-[var(--color-error-50)] disabled:opacity-50 dark:text-[var(--color-error-400)] dark:hover:bg-[var(--color-error-900)]/20"
                           >
                             {purging === batch.id ? 'Purging...' : 'Purge'}
                           </button>

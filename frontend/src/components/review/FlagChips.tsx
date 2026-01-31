@@ -15,7 +15,7 @@ export const FlagChips: React.FC<FlagChipsProps> = ({ hardFlags = [], softFlags 
       {hardFlags.map((flag, index) => (
         <span
           key={`hard-${index}`}
-          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 border border-red-200"
+          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-error-100)] text-[var(--color-error-800)] border border-[var(--color-error-200)]"
           title="Hard flag - must be resolved"
         >
           <svg
@@ -35,7 +35,7 @@ export const FlagChips: React.FC<FlagChipsProps> = ({ hardFlags = [], softFlags 
       {softFlags.map((flag, index) => (
         <span
           key={`soft-${index}`}
-          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200"
+          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-warning-100)] text-[var(--color-warning-800)] border border-[var(--color-warning-200)]"
           title="Soft flag - review recommended"
         >
           <svg

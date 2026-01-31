@@ -2,7 +2,7 @@
 
 API reference for sales transaction operations.
 
-**Base URL**: `http://localhost:3000/api`
+**Base URL**: `http://localhost:8923/api`
 
 **Authentication**: All endpoints require JWT Bearer token
 
@@ -58,7 +58,7 @@ POST /api/transactions
 ### Request Example
 
 ```bash
-curl -X POST "http://localhost:3000/api/transactions" \
+curl -X POST "http://localhost:8923/api/transactions" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -152,7 +152,7 @@ GET /api/transactions/{id}
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/transactions/456" \
+curl -X GET "http://localhost:8923/api/transactions/456" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -197,7 +197,7 @@ GET /api/transactions
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/transactions?start_date=2026-01-30&type=sale&limit=25" \
+curl -X GET "http://localhost:8923/api/transactions?start_date=2026-01-30&type=sale&limit=25" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -275,7 +275,7 @@ POST /api/transactions/return
 ### Request Example
 
 ```bash
-curl -X POST "http://localhost:3000/api/transactions/return" \
+curl -X POST "http://localhost:8923/api/transactions/return" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -416,7 +416,7 @@ POST /api/transactions/{id}/void
 ### Request Example
 
 ```bash
-curl -X POST "http://localhost:3000/api/transactions/456/void" \
+curl -X POST "http://localhost:8923/api/transactions/456/void" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"reason": "Customer changed mind"}'
@@ -510,7 +510,7 @@ GET /api/transactions/summary
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/transactions/summary?date=2026-01-30" \
+curl -X GET "http://localhost:8923/api/transactions/summary?date=2026-01-30" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -608,15 +608,15 @@ GET /api/transactions/{id}/receipt
 
 ```bash
 # Get receipt data as JSON
-curl -X GET "http://localhost:3000/api/transactions/456/receipt" \
+curl -X GET "http://localhost:8923/api/transactions/456/receipt" \
   -H "Authorization: Bearer <token>"
 
 # Get HTML receipt
-curl -X GET "http://localhost:3000/api/transactions/456/receipt?format=html" \
+curl -X GET "http://localhost:8923/api/transactions/456/receipt?format=html" \
   -H "Authorization: Bearer <token>"
 
 # Print receipt
-curl -X GET "http://localhost:3000/api/transactions/456/receipt?print=true" \
+curl -X GET "http://localhost:8923/api/transactions/456/receipt?print=true" \
   -H "Authorization: Bearer <token>"
 ```
 

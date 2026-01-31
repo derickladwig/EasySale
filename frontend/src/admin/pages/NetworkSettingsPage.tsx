@@ -83,14 +83,14 @@ export function NetworkSettingsPage() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Success Banner */}
         {saveSuccess && (
-          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+          <div className="mb-6 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg p-4">
             <div className="flex items-center gap-3">
-              <RefreshCw className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <RefreshCw className="h-5 w-5 text-success-600 dark:text-success-400" />
               <div>
-                <p className="font-medium text-green-800 dark:text-green-200">
+                <p className="font-medium text-success-800 dark:text-success-200">
                   Settings saved successfully
                 </p>
-                <p className="text-sm text-green-700 dark:text-green-300">
+                <p className="text-sm text-success-700 dark:text-success-300">
                   Restart the application for changes to take effect.
                 </p>
               </div>
@@ -131,7 +131,7 @@ export function NetworkSettingsPage() {
               <li>Running multiple registers from different devices</li>
               <li>Testing on different devices during development</li>
             </ul>
-            <p className="text-amber-600 dark:text-amber-400">
+            <p className="text-warning-600 dark:text-warning-400">
               <strong>Security note:</strong> Only enable LAN access on trusted networks. 
               Anyone on the same network will be able to access the login page.
             </p>

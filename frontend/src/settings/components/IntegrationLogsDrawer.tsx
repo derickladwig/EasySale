@@ -87,22 +87,23 @@ export function IntegrationLogsDrawer({
   const getLevelBadgeClass = (level: string) => {
     switch (level) {
       case 'error':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-[var(--color-error-100)] text-[var(--color-error-800)] dark:bg-[var(--color-error-900)] dark:text-[var(--color-error-200)]';
       case 'warning':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-[var(--color-warning-100)] text-[var(--color-warning-800)] dark:bg-[var(--color-warning-900)] dark:text-[var(--color-warning-200)]';
       case 'info':
       default:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        return 'bg-[var(--color-info-100)] text-[var(--color-info-800)] dark:bg-[var(--color-info-900)] dark:text-[var(--color-info-200)]';
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden" style={{ zIndex: 'var(--z-modal)' }}>
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 transition-opacity"
+        style={{ zIndex: 'var(--z-modal-backdrop)' }}
         onClick={onClose}
       />
       
@@ -158,7 +159,7 @@ export function IntegrationLogsDrawer({
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
                 </div>
               ) : error ? (
-                <div className="rounded-md bg-red-50 p-4 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                <div className="rounded-md bg-[var(--color-error-50)] p-4 text-[var(--color-error-700)] dark:bg-[var(--color-error-900)]/20 dark:text-[var(--color-error-400)]">
                   {error}
                 </div>
               ) : paginatedLogs.length === 0 ? (

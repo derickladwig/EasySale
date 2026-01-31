@@ -7,7 +7,7 @@
 
 /* ============================================
  * LIGHT THEME
- * Clean white with blue accent (#0756d9) as default
+ * Clean white with teal accent (configurable via CSS variables)
  * ============================================ */
 
 [data-theme="light"] {
@@ -19,7 +19,7 @@
   --theme-border: #e0e0e0;
   --theme-border-subtle: #f0f0f0;
   --theme-divider: #e5e5e5;
-  --theme-focus-ring: #0756d9;
+  --theme-focus-ring: var(--color-primary-500);
   --theme-surface-1: #ffffff;
   --theme-surface-2: #f9f9f9;
   --theme-surface-3: #f5f5f5;
@@ -28,18 +28,8 @@
   --theme-error: #dc2626;
   --theme-info: #2563eb;
   
-  /* Primary color scale (Blue - default accent #0756d9) */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #0756d9;
-  --color-primary-600: #0548b8;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  /* Primary color scale - inherits from :root, can be overridden by tenant config */
+  /* No hardcoded values here - uses CSS variable cascade */
 }
 
 /* ============================================
@@ -56,7 +46,7 @@
   --theme-border: #404044;
   --theme-border-subtle: #333336;
   --theme-divider: #333336;
-  --theme-focus-ring: #0756d9;
+  --theme-focus-ring: var(--color-primary-500);
   --theme-surface-1: #222224;
   --theme-surface-2: #2a2a2c;
   --theme-surface-3: #333336;
@@ -65,18 +55,8 @@
   --theme-error: #f87171;
   --theme-info: #3b82f6;
   
-  /* Primary color scale (Blue - default accent) */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #0756d9;
-  --color-primary-600: #0548b8;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  /* Primary color scale - inherits from :root, can be overridden by tenant config */
+  /* No hardcoded values here - uses CSS variable cascade */
 }
 
 /* ============================================
@@ -181,23 +161,33 @@
   --color-primary-950: #450a0a;
 }
 
-/* Default accent is blue (#0756d9) for professional look */
+/* Default accent uses teal - matches tokens.css source of truth
+ * These values are overridden by tenant/store/user theme configuration
+ * via ThemeEngine and themeBridge when the app loads.
+ * 
+ * IMPORTANT: Do not hardcode brand-specific colors here.
+ * All colors should be configurable via the branding settings.
+ */
 :root {
-  --theme-accent: #0756d9;
-  --theme-accent-hover: #0548b8;
+  /* Theme accent inherits from primary color scale */
+  --theme-accent: var(--color-primary-500);
+  --theme-accent-hover: var(--color-primary-600);
   
-  /* Default primary color scale (Blue) - ensures colors work even without data-theme */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #0756d9;
-  --color-primary-600: #0548b8;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  /* Default primary color scale (Teal) - matches tokens.css
+   * This is the fallback when no tenant config is loaded.
+   * Tenant/store/user preferences override these via CSS variable injection.
+   */
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
 }
 
 /* ============================================

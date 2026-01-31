@@ -8,11 +8,11 @@
 //! **Validates: Requirements 2.7, 6.1, 6.2, 6.3, 6.4**
 
 use proptest::prelude::*;
-use EasySale_server::models::user::{
+use easysale_server::models::user::{
     CreateUserRequest, role_requires_store, role_requires_station, validate_user
 };
-use EasySale_server::models::context::UserContext;
-use EasySale_server::auth::jwt::Claims;
+use easysale_server::models::context::UserContext;
+use easysale_server::auth::jwt::Claims;
 
 const TEST_TENANT_ID: &str = "test-tenant";
 

@@ -58,6 +58,7 @@ pub mod quickbooks_vendor;
 pub mod quickbooks_bill;
 pub mod quickbooks_refund;
 pub mod reporting;
+pub mod sales;
 pub mod search_operations;
 pub mod session_management;
 pub mod settings;
@@ -98,6 +99,7 @@ pub mod theme;
 pub mod network;
 pub mod oauth_management;
 pub mod branding_assets;
+pub mod zones;
 
 // ============================================================================
 // NOTIFICATION HANDLERS (feature-gated: notifications)

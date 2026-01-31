@@ -238,7 +238,7 @@ pub struct CapabilityEntry {
 }
 
 /// Meta capabilities response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MetaCapabilitiesResponse {
     pub tenant_id: String,
     pub store_id: String,

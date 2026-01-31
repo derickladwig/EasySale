@@ -35,23 +35,23 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
   };
 
   const handleDeleteZone = (zoneId: string) => {
-    // Delete zone
-    console.log('Delete zone:', zoneId);
+    // TODO: Implement zone deletion via API
+    // DELETE /api/zones/:zoneId
   };
 
   const handleAdjustZone = (zoneId: string) => {
-    // Enable adjustment mode
-    console.log('Adjust zone:', zoneId);
+    // TODO: Implement zone adjustment mode
+    // This should enable drag handles on the zone
   };
 
   const getZoneColor = (type: string) => {
     const colors: Record<string, string> = {
       HeaderFields: 'border-accent bg-info-100',
-      TotalsBox: 'border-green-500 bg-green-100',
-      LineItemsTable: 'border-purple-500 bg-purple-100',
-      FooterNotes: 'border-orange-500 bg-orange-100',
+      TotalsBox: 'border-success-500 bg-success-100',
+      LineItemsTable: 'border-primary-500 bg-primary-100',
+      FooterNotes: 'border-warning-500 bg-warning-100',
     };
-    return colors[type] || 'border-gray-500 bg-gray-100';
+    return colors[type] || 'border-border bg-surface-base';
   };
 
   return (
@@ -64,15 +64,15 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
           <div
             key={zone.id}
             className={`p-3 rounded border-2 cursor-pointer ${
-              selectedZone === zone.id ? 'border-accent bg-info-50' : 'border-gray-200'
+              selectedZone === zone.id ? 'border-accent bg-info-50' : 'border-border-light'
             }`}
             onClick={() => onZoneSelect(zone.id)}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="font-medium">{zone.type}</span>
-              <span className="text-sm text-gray-600">{zone.confidence}%</span>
+              <span className="text-sm text-text-secondary">{zone.confidence}%</span>
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-text-tertiary">
               Position: ({zone.x}, {zone.y}) Size: {zone.width}×{zone.height}
             </div>
             <div className="flex gap-2 mt-2">
@@ -90,7 +90,7 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
                   e.stopPropagation();
                   handleDeleteZone(zone.id);
                 }}
-                className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                className="text-xs px-2 py-1 bg-error-100 text-error-700 rounded hover:bg-error-200"
               >
                 Delete
               </button>
@@ -102,19 +102,19 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
       {/* Add Zone */}
       <button
         onClick={handleAddZone}
-        className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        className="w-full px-4 py-2 bg-success-600 text-white rounded hover:bg-success-700"
       >
         + Add New Zone
       </button>
 
       {isAddingZone && (
-        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-          <p className="text-sm text-yellow-800">
+        <div className="mt-3 p-3 bg-warning-50 border border-warning-200 rounded">
+          <p className="text-sm text-warning-800">
             Click and drag on the document to create a new zone
           </p>
           <button
             onClick={() => setIsAddingZone(false)}
-            className="mt-2 text-sm text-yellow-700 hover:text-yellow-900"
+            className="mt-2 text-sm text-warning-700 hover:text-warning-900"
           >
             Cancel
           </button>

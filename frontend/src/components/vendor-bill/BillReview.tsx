@@ -70,8 +70,9 @@ export const BillReview: React.FC = () => {
     try {
       const data = await getBill(billId);
       setBillData(data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to load bill');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to load bill');
     } finally {
       setLoading(false);
     }
@@ -90,7 +91,7 @@ export const BillReview: React.FC = () => {
         10
       );
       setMatchSuggestions(response.suggestions);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load suggestions:', err);
       setMatchSuggestions([]);
     } finally {
@@ -149,8 +150,9 @@ export const BillReview: React.FC = () => {
       setSelectedLine(null);
       await loadBill();
       alert('Product created successfully!');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create product');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to create product');
     } finally {
       setSaving(false);
     }
@@ -166,8 +168,9 @@ export const BillReview: React.FC = () => {
       await reopenBill(billId, reason || undefined);
       await loadBill();
       alert('Bill reopened successfully!');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to reopen bill');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to reopen bill');
     }
   };
 
@@ -185,8 +188,9 @@ export const BillReview: React.FC = () => {
     try {
       await updateMatches(billId, updates);
       await loadBill(); // Reload to get updated data
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update match');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to update match');
     } finally {
       setSaving(false);
     }
@@ -208,8 +212,9 @@ export const BillReview: React.FC = () => {
       setSelectedLine(null);
       // Show success message
       alert('Alias created successfully!');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create alias');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to create alias');
     } finally {
       setSaving(false);
     }
@@ -236,8 +241,9 @@ export const BillReview: React.FC = () => {
     try {
       await updateMatches(billId, updates);
       await loadBill();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to accept matches');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to accept matches');
     } finally {
       setSaving(false);
     }
@@ -264,8 +270,9 @@ export const BillReview: React.FC = () => {
       setTimeout(() => {
         alert('Receiving posted successfully! Inventory has been updated.');
       }, 100);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to post receiving');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to post receiving');
     } finally {
       setPosting(false);
     }
@@ -282,8 +289,8 @@ export const BillReview: React.FC = () => {
   if (error || !billData) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
-          <p className="text-red-800 dark:text-red-400">{error || 'Bill not found'}</p>
+        <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-md p-4">
+          <p className="text-error-dark">{error || 'Bill not found'}</p>
         </div>
       </div>
     );
@@ -347,7 +354,7 @@ export const BillReview: React.FC = () => {
             {bill.status === BillStatus.POSTED && (
               <button
                 onClick={handleReopenBill}
-                className="px-4 py-2 border border-yellow-500 text-yellow-600 dark:text-yellow-400 rounded-md hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                className="px-4 py-2 border border-warning text-warning-dark rounded-md hover:bg-warning-50 dark:hover:bg-warning-900/20"
               >
                 Reopen Bill
               </button>
@@ -392,10 +399,10 @@ export const BillReview: React.FC = () => {
 
       {/* Success Message */}
       {postSuccess && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4 mb-6">
+        <div className="bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-md p-4 mb-6">
           <div className="flex items-center">
             <svg
-              className="h-5 w-5 text-green-600 dark:text-green-400 mr-3"
+              className="h-5 w-5 text-success-dark mr-3"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -406,10 +413,10 @@ export const BillReview: React.FC = () => {
               />
             </svg>
             <div>
-              <p className="text-sm font-medium text-green-800 dark:text-green-400">
+              <p className="text-sm font-medium text-success-dark">
                 Receiving posted successfully!
               </p>
-              <p className="text-xs text-green-700 dark:text-green-500 mt-1">
+              <p className="text-xs text-success-dark mt-1">
                 Inventory quantities and costs have been updated. Check the audit log for details.
               </p>
             </div>
@@ -538,8 +545,8 @@ export const BillReview: React.FC = () => {
 
       {/* Edit Match Dialog */}
       {selectedLine && !showAliasDialog && !showCreateProductDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-surface-base rounded-lg p-6 max-w-lg w-full border border-border">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+          <div className="bg-surface-base rounded-lg p-6 max-w-lg w-full border border-border" style={{ boxShadow: 'var(--shadow-modal)' }}>
             <h3 className="text-lg font-bold text-text-primary mb-4">
               Edit Match for Line {selectedLine.line_no}
             </h3>
@@ -653,8 +660,8 @@ export const BillReview: React.FC = () => {
 
       {/* Create Alias Dialog */}
       {selectedLine && showAliasDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-surface-base rounded-lg p-6 max-w-md w-full border border-border">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+          <div className="bg-surface-base rounded-lg p-6 max-w-md w-full border border-border" style={{ boxShadow: 'var(--shadow-modal)' }}>
             <h3 className="text-lg font-bold text-text-primary mb-4">
               Create SKU Alias
             </h3>
@@ -698,8 +705,8 @@ export const BillReview: React.FC = () => {
 
       {/* Create Product Dialog */}
       {selectedLine && showCreateProductDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-surface-base rounded-lg p-6 max-w-xl w-full border border-border max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+          <div className="bg-surface-base rounded-lg p-6 max-w-xl w-full border border-border max-h-[90vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-modal)' }}>
             <h3 className="text-lg font-bold text-text-primary mb-4">
               Create New Product from Line Item
             </h3>
@@ -719,7 +726,7 @@ export const BillReview: React.FC = () => {
               {/* SKU */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Internal SKU <span className="text-red-500">*</span>
+                  Internal SKU <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
@@ -733,7 +740,7 @@ export const BillReview: React.FC = () => {
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Product Name <span className="text-red-500">*</span>
+                  Product Name <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
@@ -747,7 +754,7 @@ export const BillReview: React.FC = () => {
               {/* Category */}
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Category <span className="text-red-500">*</span>
+                  Category <span className="text-error">*</span>
                 </label>
                 <select
                   value={createProductForm.category}
@@ -765,7 +772,7 @@ export const BillReview: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Cost <span className="text-red-500">*</span>
+                    Cost <span className="text-error">*</span>
                   </label>
                   <input
                     type="number"
@@ -777,7 +784,7 @@ export const BillReview: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Unit Price <span className="text-red-500">*</span>
+                    Unit Price <span className="text-error">*</span>
                   </label>
                   <input
                     type="number"

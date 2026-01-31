@@ -73,13 +73,13 @@ if defined WITH_STORYBOOK (
 
 REM Stop any existing development containers
 echo [1/4] Stopping existing development containers...
-docker-compose -p EasySale down >nul 2>&1
+docker-compose -p easysale down >nul 2>&1
 echo [OK] Containers stopped
 
 REM Build and start containers
 echo [2/4] Building and starting development containers...
 echo This may take a few minutes on first run...
-docker-compose -p EasySale %COMPOSE_PROFILES% up --build -d
+docker-compose -p easysale %COMPOSE_PROFILES% up --build -d
 set COMPOSE_EXIT=%errorlevel%
 
 REM Check if containers are actually running (more reliable than exit code)
@@ -89,14 +89,14 @@ docker ps --filter "name=easysale-backend" --format "{{.Status}}" | findstr /i "
 if errorlevel 1 (
     echo [ERROR] Backend container failed to start!
     echo docker-compose exit code was: %COMPOSE_EXIT%
-    echo Run: docker-compose -p EasySale logs backend
+    echo Run: docker-compose -p easysale logs backend
     goto ERROR_EXIT
 )
 docker ps --filter "name=easysale-frontend" --format "{{.Status}}" | findstr /i "Up" >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Frontend container failed to start!
     echo docker-compose exit code was: %COMPOSE_EXIT%
-    echo Run: docker-compose -p EasySale logs frontend
+    echo Run: docker-compose -p easysale logs frontend
     goto ERROR_EXIT
 )
 echo [OK] Containers started
@@ -131,7 +131,7 @@ goto HEALTH_LOOP
 :HEALTH_TIMEOUT
 echo [WARNING] Health check timed out, but services may still be starting.
 echo Development builds can take several minutes for initial Rust compilation.
-echo Check logs: docker-compose -p EasySale logs -f
+echo Check logs: docker-compose -p easysale logs -f
 goto SHOW_URLS
 
 :HEALTH_DONE
@@ -175,11 +175,11 @@ if not defined NO_BROWSER (
 
 echo.
 echo Useful commands:
-echo   View logs:      docker-compose -p EasySale logs -f
-echo   Backend logs:   docker-compose -p EasySale logs -f backend
-echo   Frontend logs:  docker-compose -p EasySale logs -f frontend
+echo   View logs:      docker-compose -p easysale logs -f
+echo   Backend logs:   docker-compose -p easysale logs -f backend
+echo   Frontend logs:  docker-compose -p easysale logs -f frontend
 echo   Stop:           stop-dev.bat
-echo   Rebuild:        docker-compose -p EasySale up --build -d
+echo   Rebuild:        docker-compose -p easysale up --build -d
 echo.
 
 call :PAUSE_IF_INTERACTIVE

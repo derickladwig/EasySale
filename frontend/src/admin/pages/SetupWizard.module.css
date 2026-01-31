@@ -258,7 +258,7 @@
 .stepDotIcon {
   width: 12px;
   height: 12px;
-  color: white;
+  color: var(--color-text-inverse, #ffffff);
 }
 
 /* Step text content */
@@ -365,7 +365,7 @@
 
 .mobileStepDotActive {
   background: var(--wizard-accent);
-  color: white;
+  color: var(--color-text-inverse, #ffffff);
   box-shadow: 0 0 0 2px var(--wizard-accent-glow);
 }
 
@@ -647,12 +647,12 @@
 .formSelect option:hover,
 .formSelect option:focus {
   background-color: var(--wizard-accent);
-  color: white;
+  color: var(--color-text-inverse, #ffffff);
 }
 
 .formSelect option:checked {
   background-color: var(--wizard-accent);
-  color: white;
+  color: var(--color-text-inverse, #ffffff);
 }
 
 .formTextarea {
@@ -825,7 +825,7 @@
 
 .btnPrimary {
   background: var(--wizard-accent);
-  color: white;
+  color: var(--color-text-inverse, #ffffff);
 }
 
 .btnPrimary:hover:not(:disabled) {

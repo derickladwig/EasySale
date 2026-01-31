@@ -97,14 +97,14 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
     if (isActive) {
       switch (mode) {
         case 'Applied':
-          return `${baseClass} bg-green-500 text-white`;
+          return `${baseClass} bg-success text-white`;
         case 'Suggested':
-          return `${baseClass} bg-yellow-500 text-white`;
+          return `${baseClass} bg-warning text-white`;
         case 'Disabled':
-          return `${baseClass} bg-gray-500 text-white`;
+          return `${baseClass} bg-secondary-500 text-white`;
       }
     }
-    return `${baseClass} bg-gray-100 dark:bg-gray-800 text-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700`;
+    return `${baseClass} bg-secondary-100 dark:bg-secondary-800 text-text-secondary hover:bg-secondary-200 dark:hover:bg-secondary-700`;
   };
 
   const getPageTargetLabel = (target: PageTarget): string => {
@@ -119,8 +119,8 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
   return (
     <div className={`border rounded-lg transition-all ${
       shield.risk_level === 'High' 
-        ? 'border-red-300 dark:border-red-700 bg-red-50/50 dark:bg-red-900/10'
-        : 'border-gray-200 dark:border-gray-700'
+        ? 'border-error-300 dark:border-error-700 bg-error-50/50 dark:bg-error-900/10'
+        : 'border-secondary-200 dark:border-secondary-700'
     }`}>
       {/* Header */}
       <div 
@@ -135,14 +135,14 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
             {SHIELD_TYPE_LABELS[shield.shield_type]}
           </span>
           <span className={`text-xs px-1.5 py-0.5 rounded ${
-            shield.apply_mode === 'Applied' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
-            shield.apply_mode === 'Suggested' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-            'bg-gray-100 dark:bg-gray-800 text-gray-500'
+            shield.apply_mode === 'Applied' ? 'bg-success-100 dark:bg-success-900/30 text-success-dark' :
+            shield.apply_mode === 'Suggested' ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-dark' :
+            'bg-secondary-100 dark:bg-secondary-800 text-text-tertiary'
           }`}>
             {shield.apply_mode}
           </span>
           {shield.risk_level === 'High' && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
+            <span className="text-xs px-1.5 py-0.5 rounded bg-error-100 dark:bg-error-900/30 text-error-dark">
               ⚠️ High Risk
             </span>
           )}
@@ -154,7 +154,7 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="px-3 pb-3 space-y-3 border-t border-gray-100 dark:border-gray-800 pt-3">
+        <div className="px-3 pb-3 space-y-3 border-t border-secondary-100 dark:border-secondary-800 pt-3">
           {/* Quick Actions */}
           <div>
             <label className="text-xs text-text-muted mb-1 block">Apply Mode:</label>
@@ -184,7 +184,7 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
                   onSetPageTarget({ type } as PageTarget);
                 }
               }}
-              className="w-full p-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-surface-base text-text-primary"
+              className="w-full p-1.5 text-sm border border-secondary-200 dark:border-secondary-700 rounded bg-surface-base text-text-primary"
             >
               {PAGE_TARGET_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -202,7 +202,7 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
                     onSetPageTarget({ type: 'Specific', pages });
                   }
                 }}
-                className="mt-1 w-full p-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded bg-surface-base text-text-primary"
+                className="mt-1 w-full p-1.5 text-sm border border-secondary-200 dark:border-secondary-700 rounded bg-surface-base text-text-primary"
               />
             )}
           </div>
@@ -212,7 +212,7 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
             <label className="text-xs text-text-muted mb-1 block">Zone Scope:</label>
             <button
               onClick={() => setShowZoneSelector(!showZoneSelector)}
-              className="w-full p-1.5 text-sm text-left border border-gray-200 dark:border-gray-700 rounded bg-surface-base text-text-primary hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="w-full p-1.5 text-sm text-left border border-secondary-200 dark:border-secondary-700 rounded bg-surface-base text-text-primary hover:bg-secondary-50 dark:hover:bg-secondary-800"
             >
               {shield.zone_target.exclude_zones.length > 0
                 ? `Excluding: ${shield.zone_target.exclude_zones.join(', ')}`
@@ -220,7 +220,7 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
               <span className="float-right">▼</span>
             </button>
             {showZoneSelector && (
-              <div className="mt-1 p-2 border border-gray-200 dark:border-gray-700 rounded bg-surface-base">
+              <div className="mt-1 p-2 border border-secondary-200 dark:border-secondary-700 rounded bg-surface-base">
                 {ZONE_OPTIONS.map((zone) => (
                   <label key={zone.id} className="flex items-center gap-2 py-1 cursor-pointer">
                     <input
@@ -239,7 +239,7 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
                     />
                     <span className="text-sm text-text-primary">{zone.label}</span>
                     {zone.critical && (
-                      <span className="text-xs text-red-500">Critical</span>
+                      <span className="text-xs text-error">Critical</span>
                     )}
                   </label>
                 ))}
@@ -256,7 +256,7 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
           {/* Remove Button */}
           <button
             onClick={onRemove}
-            className="w-full px-3 py-1.5 text-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-900/50"
+            className="w-full px-3 py-1.5 text-sm bg-error-100 dark:bg-error-900/30 text-error-dark rounded hover:bg-error-200 dark:hover:bg-error-900/50"
           >
             Remove Shield
           </button>
@@ -330,8 +330,8 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
             onClick={() => setViewMode('resolved')}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               viewMode === 'resolved'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-text-secondary hover:bg-gray-200'
+                ? 'bg-accent text-white'
+                : 'bg-secondary-100 dark:bg-secondary-800 text-text-secondary hover:bg-secondary-200'
             }`}
           >
             Resolved ({state.shields.filter((s) => s.apply_mode !== 'Disabled').length})
@@ -340,15 +340,15 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
             onClick={() => setViewMode('suggestions')}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               viewMode === 'suggestions'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-text-secondary hover:bg-gray-200'
+                ? 'bg-accent text-white'
+                : 'bg-secondary-100 dark:bg-secondary-800 text-text-secondary hover:bg-secondary-200'
             }`}
           >
             Suggestions ({state.shields.filter((s) => s.provenance.source === 'AutoDetected').length})
           </button>
         </div>
         {hasUnsavedChanges && (
-          <span className="text-xs px-2 py-1 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+          <span className="text-xs px-2 py-1 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-dark">
             Unsaved
           </span>
         )}
@@ -358,7 +358,7 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
       {isLoading && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-2" />
             <p className="text-sm text-text-muted">Loading shields...</p>
           </div>
         </div>
@@ -397,17 +397,17 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
 
       {/* Precedence Explanations */}
       {state.precedenceExplanations.length > 0 && (
-        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2 text-sm">
+        <div className="mb-4 p-3 bg-info-50 dark:bg-info-900/20 border border-info-200 dark:border-info-800 rounded-lg">
+          <h4 className="font-medium text-info-dark mb-2 text-sm">
             Precedence Applied
           </h4>
           {state.precedenceExplanations.slice(0, 3).map((exp, i) => (
-            <p key={i} className="text-xs text-blue-700 dark:text-blue-300">
+            <p key={i} className="text-xs text-info-dark">
               {exp.reason}
             </p>
           ))}
           {state.precedenceExplanations.length > 3 && (
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+            <p className="text-xs text-info mt-1">
               +{state.precedenceExplanations.length - 3} more...
             </p>
           )}
@@ -416,12 +416,12 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
 
       {/* Zone Conflicts Warning */}
       {state.zoneConflicts.length > 0 && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <h4 className="font-medium text-red-800 dark:text-red-200 mb-2 text-sm">
+        <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+          <h4 className="font-medium text-error-dark mb-2 text-sm">
             ⚠️ Critical Zone Conflicts
           </h4>
           {state.zoneConflicts.map((conflict, i) => (
-            <p key={i} className="text-xs text-red-700 dark:text-red-300">
+            <p key={i} className="text-xs text-error-dark">
               Shield overlaps {conflict.zone_id} ({Math.round(conflict.overlap_ratio * 100)}%)
             </p>
           ))}
@@ -430,25 +430,25 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
 
       {/* Error Display */}
       {hasError && state.error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
           <div className="flex items-start gap-2">
-            <span className="text-red-600">⚠️</span>
+            <span className="text-error">⚠️</span>
             <div className="flex-1">
-              <p className="text-sm font-medium text-red-800 dark:text-red-200">{state.error}</p>
-              <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+              <p className="text-sm font-medium text-error-dark">{state.error}</p>
+              <p className="text-xs text-error mt-1">
                 Your changes are preserved locally.
               </p>
             </div>
             <div className="flex gap-1">
               <button
                 onClick={retry}
-                className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-2 py-1 text-xs bg-error text-white rounded hover:bg-error-dark"
               >
                 Retry
               </button>
               <button
                 onClick={dismissError}
-                className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300"
+                className="px-2 py-1 text-xs bg-secondary-200 dark:bg-secondary-700 rounded hover:bg-secondary-300"
               >
                 ×
               </button>
@@ -458,20 +458,20 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
       )}
 
       {/* Action Buttons */}
-      <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="space-y-2 pt-4 border-t border-secondary-200 dark:border-secondary-700">
         <h4 className="font-medium text-text-primary text-sm">Save As:</h4>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={saveAsVendorRule}
             disabled={isOperating || !vendorId}
-            className="px-3 py-2 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? 'Saving...' : 'Vendor Rule'}
           </button>
           <button
             onClick={saveAsTemplateRule}
             disabled={isOperating || !templateId}
-            className="px-3 py-2 text-sm bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm bg-info text-white rounded hover:bg-info-dark disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Template Rule
           </button>
@@ -483,7 +483,7 @@ export const CleanupTab: React.FC<CleanupTabProps> = ({
         <button
           onClick={handleRerunExtraction}
           disabled={isOperating}
-          className="w-full px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 mt-2"
+          className="w-full px-3 py-2 text-sm bg-accent text-white rounded hover:bg-accent-hover disabled:opacity-50 mt-2"
         >
           {isRerunning ? 'Processing...' : '🔄 Re-run Extraction'}
         </button>

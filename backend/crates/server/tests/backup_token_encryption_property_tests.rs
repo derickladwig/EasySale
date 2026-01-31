@@ -14,8 +14,8 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 // Import the services we need to test
-use EasySale_server::services::CredentialService;
-use EasySale_server::models::backup::BackupDestination;
+use easysale_server::services::CredentialService;
+use easysale_server::models::backup::BackupDestination;
 
 // ============================================================================
 // Test Data Structures

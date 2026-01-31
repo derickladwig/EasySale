@@ -233,7 +233,7 @@ export const CleanupOverlayViewer: React.FC<CleanupOverlayViewerProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative bg-gray-100 dark:bg-gray-800 overflow-hidden ${
+      className={`relative bg-surface-elevated dark:bg-surface-base overflow-hidden ${
         isDrawing ? 'cursor-crosshair' : 'cursor-default'
       }`}
       style={{
@@ -267,7 +267,7 @@ export const CleanupOverlayViewer: React.FC<CleanupOverlayViewerProps> = ({
           {DEFAULT_SNAP_LINES.map((line, i) => (
             <div
               key={i}
-              className="absolute bg-blue-400/50 pointer-events-none"
+              className="absolute bg-info/50 pointer-events-none"
               style={line.type === 'horizontal' ? {
                 left: 0,
                 right: 0,
@@ -294,7 +294,7 @@ export const CleanupOverlayViewer: React.FC<CleanupOverlayViewerProps> = ({
           <div
             key={shield.id}
             className={`absolute border-2 transition-all cursor-pointer ${
-              isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : ''
+              isSelected ? 'ring-2 ring-accent ring-offset-1' : ''
             } ${shield.apply_mode === 'Disabled' ? 'opacity-30' : 'opacity-80'}`}
             style={{
               left: `${bbox.x * 100}%`,
@@ -328,7 +328,7 @@ export const CleanupOverlayViewer: React.FC<CleanupOverlayViewerProps> = ({
 
             {/* Risk Indicator */}
             {shield.risk_level === 'High' && (
-              <div className="absolute top-1 right-1 text-red-500 text-sm pointer-events-none">
+              <div className="absolute top-1 right-1 text-error text-sm pointer-events-none">
                 ⚠️
               </div>
             )}
@@ -363,7 +363,7 @@ export const CleanupOverlayViewer: React.FC<CleanupOverlayViewerProps> = ({
 
       {/* Drawing Mode Indicator */}
       {isDrawing && !drawStart && (
-        <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded">
+        <div className="absolute top-2 left-2 px-2 py-1 bg-accent text-white text-xs rounded">
           Drawing: {SHIELD_TYPE_LABELS[drawingShieldType]}
         </div>
       )}

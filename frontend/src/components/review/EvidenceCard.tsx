@@ -15,8 +15,8 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({
   const evidenceItems = evidence.split(',').map(e => e.trim());
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-surface-base rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-border">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-border" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="text-lg font-semibold text-text-primary">Evidence Breakdown</h3>

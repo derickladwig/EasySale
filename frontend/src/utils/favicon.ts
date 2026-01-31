@@ -54,9 +54,23 @@ function updateLinkTag(rel: string, href: string, type?: string): void {
 }
 
 /**
+ * Configuration type for branding settings
+ */
+interface BrandingConfig {
+  branding?: {
+    company?: {
+      favicon?: string;
+      icon?: string;
+      logo?: string;
+      name?: string;
+    };
+  };
+}
+
+/**
  * Get favicon URL from configuration with fallbacks
  */
-export function getFaviconUrl(config: any): string {
+export function getFaviconUrl(config: BrandingConfig | null | undefined): string {
   // Try configuration favicon first
   if (config?.branding?.company?.favicon) {
     return config.branding.company.favicon;
@@ -69,7 +83,7 @@ export function getFaviconUrl(config: any): string {
 /**
  * Get app icon URL from configuration with fallbacks
  */
-export function getAppIconUrl(config: any): string {
+export function getAppIconUrl(config: BrandingConfig | null | undefined): string {
   // Try configuration icon first
   if (config?.branding?.company?.icon && typeof config.branding.company.icon === 'string') {
     return config.branding.company.icon;
@@ -87,7 +101,7 @@ export function getAppIconUrl(config: any): string {
 /**
  * Get page title from configuration with fallbacks
  */
-export function getPageTitle(config: any): string {
+export function getPageTitle(config: BrandingConfig | null | undefined): string {
   // Try configuration company name first
   if (config?.branding?.company?.name) {
     return config.branding.company.name;
@@ -100,7 +114,7 @@ export function getPageTitle(config: any): string {
 /**
  * Initialize favicon system with configuration
  */
-export function initializeFavicon(config: any): void {
+export function initializeFavicon(config: BrandingConfig | null | undefined): void {
   const faviconConfig: FaviconConfig = {
     favicon: getFaviconUrl(config),
     icon: getAppIconUrl(config),

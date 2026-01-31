@@ -2,9 +2,9 @@ use actix_web::{delete, get, post, web, HttpResponse, Responder};
 use sqlx::SqlitePool;
 
 use crate::services::credential_service::{
-    CredentialService, PlatformCredentials, QuickBooksCredentials, QuickBooksTokens,
-    SupabaseCredentials, WooCommerceCredentials, SquareCredentials, CloverCredentials,
-    StripeConnectCredentials,
+    CloverCredentials, CredentialService, PlatformCredentials, QuickBooksCredentials,
+    QuickBooksTokens, SquareCredentials, StripeConnectCredentials, SupabaseCredentials,
+    WooCommerceCredentials,
 };
 
 /// Mask Stripe account ID for display (e.g., "acct_...xxxx")
@@ -217,6 +217,215 @@ pub async fn store_supabase_credentials(
     let credentials = PlatformCredentials::Supabase(SupabaseCredentials {
         project_url,
         service_role_key,
+    });
+
+    match service.store_credentials(tenant_id, credentials).await {
+        Ok(id) => HttpResponse::Created().json(serde_json::json!({
+            "message": "Credentials stored successfully",
+            "credential_id": id
+        })),
+        Err(e) => {
+            tracing::error!("Failed to store credentials: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to store credentials: {}", e)
+            }))
+        }
+    }
+}
+
+/// POST /api/credentials/square
+/// Store Square credentials
+#[post("/api/credentials/square")]
+pub async fn store_square_credentials(
+    pool: web::Data<SqlitePool>,
+    req: web::Json<serde_json::Value>,
+) -> impl Responder {
+    let tenant_id = match req.get("tenant_id").and_then(|v| v.as_str()) {
+        Some(id) => id,
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "tenant_id is required"
+            }));
+        }
+    };
+
+    let access_token = match req.get("access_token").and_then(|v| v.as_str()) {
+        Some(token) => token.to_string(),
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "access_token is required"
+            }));
+        }
+    };
+
+    let location_id = match req.get("location_id").and_then(|v| v.as_str()) {
+        Some(id) => id.to_string(),
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "location_id is required"
+            }));
+        }
+    };
+
+    tracing::info!("Storing Square credentials for tenant: {}", tenant_id);
+
+    let service = match CredentialService::new(pool.get_ref().clone()) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!("Failed to create credential service: {:?}", e);
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to initialize credential service"
+            }));
+        }
+    };
+
+    let credentials = PlatformCredentials::Square(SquareCredentials {
+        access_token,
+        location_id,
+    });
+
+    match service.store_credentials(tenant_id, credentials).await {
+        Ok(id) => HttpResponse::Created().json(serde_json::json!({
+            "message": "Credentials stored successfully",
+            "credential_id": id
+        })),
+        Err(e) => {
+            tracing::error!("Failed to store credentials: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to store credentials: {}", e)
+            }))
+        }
+    }
+}
+
+/// POST /api/credentials/clover
+/// Store Clover credentials
+#[post("/api/credentials/clover")]
+pub async fn store_clover_credentials(
+    pool: web::Data<SqlitePool>,
+    req: web::Json<serde_json::Value>,
+) -> impl Responder {
+    let tenant_id = match req.get("tenant_id").and_then(|v| v.as_str()) {
+        Some(id) => id,
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "tenant_id is required"
+            }));
+        }
+    };
+
+    let access_token = match req.get("access_token").and_then(|v| v.as_str()) {
+        Some(token) => token.to_string(),
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "access_token is required"
+            }));
+        }
+    };
+
+    let merchant_id = match req.get("merchant_id").and_then(|v| v.as_str()) {
+        Some(id) => id.to_string(),
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "merchant_id is required"
+            }));
+        }
+    };
+
+    tracing::info!("Storing Clover credentials for tenant: {}", tenant_id);
+
+    let service = match CredentialService::new(pool.get_ref().clone()) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!("Failed to create credential service: {:?}", e);
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to initialize credential service"
+            }));
+        }
+    };
+
+    let credentials = PlatformCredentials::Clover(CloverCredentials {
+        access_token,
+        merchant_id,
+    });
+
+    match service.store_credentials(tenant_id, credentials).await {
+        Ok(id) => HttpResponse::Created().json(serde_json::json!({
+            "message": "Credentials stored successfully",
+            "credential_id": id
+        })),
+        Err(e) => {
+            tracing::error!("Failed to store credentials: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": format!("Failed to store credentials: {}", e)
+            }))
+        }
+    }
+}
+
+/// POST /api/credentials/stripe
+/// Store Stripe Connect credentials (typically from OAuth callback)
+#[post("/api/credentials/stripe")]
+pub async fn store_stripe_credentials(
+    pool: web::Data<SqlitePool>,
+    req: web::Json<serde_json::Value>,
+) -> impl Responder {
+    let tenant_id = match req.get("tenant_id").and_then(|v| v.as_str()) {
+        Some(id) => id,
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "tenant_id is required"
+            }));
+        }
+    };
+
+    let stripe_user_id = match req.get("stripe_user_id").and_then(|v| v.as_str()) {
+        Some(id) => id.to_string(),
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "stripe_user_id is required"
+            }));
+        }
+    };
+
+    let access_token = match req.get("access_token").and_then(|v| v.as_str()) {
+        Some(token) => token.to_string(),
+        None => {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "access_token is required"
+            }));
+        }
+    };
+
+    // refresh_token is optional for Stripe Connect
+    let refresh_token = req
+        .get("refresh_token")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    let scope = req
+        .get("scope")
+        .and_then(|v| v.as_str())
+        .unwrap_or("read_write")
+        .to_string();
+
+    tracing::info!("Storing Stripe Connect credentials for tenant: {}", tenant_id);
+
+    let service = match CredentialService::new(pool.get_ref().clone()) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!("Failed to create credential service: {:?}", e);
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to initialize credential service"
+            }));
+        }
+    };
+
+    let credentials = PlatformCredentials::Stripe(StripeConnectCredentials {
+        stripe_user_id,
+        access_token,
+        refresh_token,
+        scope,
     });
 
     match service.store_credentials(tenant_id, credentials).await {
@@ -462,6 +671,9 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(store_woocommerce_credentials)
         .service(store_quickbooks_credentials)
         .service(store_supabase_credentials)
+        .service(store_square_credentials)
+        .service(store_clover_credentials)
+        .service(store_stripe_credentials)
         .service(get_credentials)
         .service(delete_credentials)
         .service(store_oauth_tokens)

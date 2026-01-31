@@ -2,7 +2,7 @@
 // Only compiled when document-processing feature is enabled
 #![cfg(feature = "document-processing")]
 
-use EasySale_server::services::{DocumentIngestService, IngestConfig};
+use easysale_server::services::{DocumentIngestService, IngestConfig};
 use lopdf::{Document as PdfDocument, Dictionary};
 use std::path::PathBuf;
 use tempfile::TempDir;

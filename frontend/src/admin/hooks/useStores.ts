@@ -57,8 +57,9 @@ export function useStores() {
     try {
       const response = await apiClient.get<Store[]>('/api/stores');
       setStores(response);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch stores');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch stores';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

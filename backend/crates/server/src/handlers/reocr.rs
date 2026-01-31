@@ -4,6 +4,7 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
+use crate::services::ocr_service::{OCRService, OCREngine, OCRConfig};
 
 #[derive(Debug, Deserialize)]
 pub struct ReOcrRequest {
@@ -91,20 +92,73 @@ pub async fn reocr_region(
         vec![]
     };
     
-    // Create new candidates from the re-OCR region
-    // In a full implementation, this would:
-    // 1. Crop the image to the specified region
-    // 2. Run OCR with the specified profile
-    // 3. Parse the results into field candidates
-    let new_candidates = vec![
-        CandidateSummary {
-            field: "reocr_result".to_string(),
-            value: format!("Region {}x{} at ({},{})", 
-                request.region.width, request.region.height,
-                request.region.x, request.region.y),
-            confidence: 85,
+    // Determine OCR profile settings
+    let ocr_config = match request.profile.as_str() {
+        "fast" => OCRConfig {
+            engine: "tesseract".to_string(),
+            tesseract_path: Some("tesseract".to_string()),
+            ..Default::default()
+        },
+        "balanced" | "high_accuracy" => OCRConfig {
+            engine: "tesseract".to_string(),
+            tesseract_path: Some("tesseract".to_string()),
+            ..Default::default()
+        },
+        _ => OCRConfig::default(),
+    };
+    
+    // Create OCR service
+    let ocr_service = match OCRService::from_config(&ocr_config) {
+        Ok(service) => service,
+        Err(e) => {
+            log::error!("Failed to create OCR service: {}", e);
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                error: format!("OCR service unavailable: {}", e),
+            });
         }
-    ];
+    };
+    
+    // Process the region
+    // First, try to crop the image to the specified region
+    let cropped_path = crop_image_region(
+        &case.source_file_path,
+        &request.region,
+        &case_id,
+    );
+    
+    let new_candidates = match cropped_path {
+        Ok(path) => {
+            // Run OCR on the cropped region
+            match ocr_service.process_image(&path).await {
+                Ok(ocr_result) => {
+                    // Parse OCR text into field candidates
+                    parse_ocr_to_candidates(&ocr_result.text, ocr_result.confidence, &request.profile)
+                }
+                Err(e) => {
+                    log::warn!("OCR processing failed, using fallback: {}", e);
+                    // Fallback: return region info as candidate
+                    vec![CandidateSummary {
+                        field: "reocr_result".to_string(),
+                        value: format!("Region {}x{} at ({},{}) - OCR pending", 
+                            request.region.width, request.region.height,
+                            request.region.x, request.region.y),
+                        confidence: 50,
+                    }]
+                }
+            }
+        }
+        Err(e) => {
+            log::warn!("Image cropping failed: {}", e);
+            // Fallback: return region info
+            vec![CandidateSummary {
+                field: "reocr_result".to_string(),
+                value: format!("Region {}x{} at ({},{})", 
+                    request.region.width, request.region.height,
+                    request.region.x, request.region.y),
+                confidence: 60,
+            }]
+        }
+    };
     
     // Track which fields were updated
     let mut updated_fields = Vec::new();
@@ -156,6 +210,130 @@ pub async fn reocr_region(
     })
 }
 
+/// Crop image to specified region and save to temp file
+fn crop_image_region(
+    source_path: &str,
+    region: &BoundingBox,
+    case_id: &str,
+) -> Result<String, String> {
+    use std::process::Command;
+    
+    // Create output path for cropped image
+    let temp_dir = std::env::var("TEMP_DIR").unwrap_or_else(|_| "./runtime/temp".to_string());
+    std::fs::create_dir_all(&temp_dir).map_err(|e| format!("Failed to create temp dir: {}", e))?;
+    
+    let output_path = format!("{}/crop_{}_{}.png", temp_dir, case_id, chrono::Utc::now().timestamp());
+    
+    // Use ImageMagick convert to crop the image
+    // Format: convert input.png -crop WxH+X+Y output.png
+    let crop_geometry = format!("{}x{}+{}+{}", 
+        region.width, region.height, region.x, region.y);
+    
+    let result = Command::new("convert")
+        .arg(source_path)
+        .arg("-crop")
+        .arg(&crop_geometry)
+        .arg("+repage")
+        .arg(&output_path)
+        .output();
+    
+    match result {
+        Ok(output) => {
+            if output.status.success() {
+                Ok(output_path)
+            } else {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                Err(format!("ImageMagick crop failed: {}", stderr))
+            }
+        }
+        Err(e) => {
+            // ImageMagick not available, try alternative approach
+            log::warn!("ImageMagick not available: {}. Using source file directly.", e);
+            // Return source path as fallback - OCR will process full image
+            Ok(source_path.to_string())
+        }
+    }
+}
+
+/// Parse OCR text into field candidates
+fn parse_ocr_to_candidates(text: &str, confidence: f64, profile: &str) -> Vec<CandidateSummary> {
+    let mut candidates = Vec::new();
+    let confidence_u8 = (confidence * 100.0).min(100.0) as u8;
+    
+    // Try to extract common invoice fields from the OCR text
+    let lines: Vec<&str> = text.lines().collect();
+    
+    // Look for invoice number patterns
+    for line in &lines {
+        let line_lower = line.to_lowercase();
+        
+        // Invoice number
+        if line_lower.contains("invoice") || line_lower.contains("inv#") || line_lower.contains("inv #") {
+            if let Some(value) = extract_value_after_label(line, &["invoice", "inv#", "inv #", ":"]) {
+                candidates.push(CandidateSummary {
+                    field: "invoice_no".to_string(),
+                    value: value.trim().to_string(),
+                    confidence: confidence_u8,
+                });
+            }
+        }
+        
+        // Date patterns
+        if line_lower.contains("date") {
+            if let Some(value) = extract_value_after_label(line, &["date", ":"]) {
+                candidates.push(CandidateSummary {
+                    field: "invoice_date".to_string(),
+                    value: value.trim().to_string(),
+                    confidence: confidence_u8,
+                });
+            }
+        }
+        
+        // Total/Amount patterns
+        if line_lower.contains("total") || line_lower.contains("amount") {
+            if let Some(value) = extract_value_after_label(line, &["total", "amount", ":"]) {
+                candidates.push(CandidateSummary {
+                    field: "total".to_string(),
+                    value: value.trim().to_string(),
+                    confidence: confidence_u8,
+                });
+            }
+        }
+    }
+    
+    // If no specific fields found, return raw text as result
+    if candidates.is_empty() {
+        candidates.push(CandidateSummary {
+            field: "reocr_result".to_string(),
+            value: text.trim().to_string(),
+            confidence: confidence_u8,
+        });
+    }
+    
+    // Add profile info
+    for candidate in &mut candidates {
+        candidate.field = format!("{}_{}", candidate.field, profile);
+    }
+    
+    candidates
+}
+
+/// Extract value after a label in a line
+fn extract_value_after_label(line: &str, labels: &[&str]) -> Option<String> {
+    let line_lower = line.to_lowercase();
+    
+    for label in labels {
+        if let Some(pos) = line_lower.find(label) {
+            let after = &line[pos + label.len()..];
+            let value = after.trim_start_matches(|c: char| c == ':' || c == ' ' || c == '#');
+            if !value.is_empty() {
+                return Some(value.to_string());
+            }
+        }
+    }
+    None
+}
+
 #[derive(Debug, sqlx::FromRow)]
 #[allow(dead_code)]
 struct ReviewCaseRow {
@@ -182,16 +360,16 @@ pub async fn manage_masks(
     let case_id = path.into_inner();
     let now = chrono::Utc::now().to_rfc3339();
     
-    // Get existing masks from the case
-    let case_result = sqlx::query_scalar::<_, Option<String>>(
-        "SELECT validation_result FROM review_cases WHERE id = ?"
+    // Get existing masks and case info
+    let case_result = sqlx::query_as::<_, (Option<String>, Option<String>, String)>(
+        "SELECT validation_result, vendor_id, source_file_path FROM review_cases WHERE id = ?"
     )
     .bind(&case_id)
     .fetch_optional(pool.get_ref())
     .await;
     
-    let validation_json = match case_result {
-        Ok(Some(v)) => v,
+    let (validation_json, vendor_id, source_file_path) = match case_result {
+        Ok(Some((v, vid, sfp))) => (v, vid, sfp),
         Ok(None) => {
             return HttpResponse::NotFound().json(ErrorResponse {
                 error: "Case not found".to_string(),
@@ -218,7 +396,7 @@ pub async fn manage_masks(
         .and_then(|j| serde_json::from_str(&j).ok())
         .unwrap_or_default();
     
-    let reprocessing_started;
+    let mut reprocessing_started = false;
     
     match request.action.as_str() {
         "add" => {
@@ -260,20 +438,98 @@ pub async fn manage_masks(
         });
     }
     
-    // If remember_for_vendor is true, store the mask pattern for future use
+    // If remember_for_vendor is true, store the mask pattern in vendor_templates
     if request.remember_for_vendor {
-        // Get vendor_id from the case
-        let vendor_id_result = sqlx::query_scalar::<_, Option<String>>(
-            "SELECT vendor_id FROM review_cases WHERE id = ?"
+        if let Some(ref vid) = vendor_id {
+            // Store mask in vendor template
+            let mask_json = serde_json::to_string(&request.region).unwrap_or_default();
+            
+            // Check if vendor template exists
+            let existing_template = sqlx::query_scalar::<_, Option<String>>(
+                "SELECT mask_regions FROM vendor_templates WHERE vendor_id = ?"
+            )
+            .bind(vid)
+            .fetch_optional(pool.get_ref())
+            .await;
+            
+            match existing_template {
+                Ok(Some(Some(existing_masks_json))) => {
+                    // Parse existing masks and add new one
+                    let mut masks: Vec<BoundingBox> = serde_json::from_str(&existing_masks_json)
+                        .unwrap_or_default();
+                    
+                    // Only add if not already present
+                    let already_exists = masks.iter().any(|m| 
+                        m.x == request.region.x && m.y == request.region.y &&
+                        m.width == request.region.width && m.height == request.region.height
+                    );
+                    
+                    if !already_exists {
+                        masks.push(request.region.clone());
+                        let updated_masks_json = serde_json::to_string(&masks).unwrap_or_default();
+                        
+                        let _ = sqlx::query(
+                            "UPDATE vendor_templates SET mask_regions = ?, updated_at = ? WHERE vendor_id = ?"
+                        )
+                        .bind(&updated_masks_json)
+                        .bind(&now)
+                        .bind(vid)
+                        .execute(pool.get_ref())
+                        .await;
+                        
+                        log::info!("Updated vendor template masks for vendor {}", vid);
+                    }
+                }
+                Ok(Some(None)) | Ok(None) => {
+                    // Create new vendor template with mask
+                    let masks = vec![request.region.clone()];
+                    let masks_json = serde_json::to_string(&masks).unwrap_or_default();
+                    let template_id = uuid::Uuid::new_v4().to_string();
+                    
+                    let _ = sqlx::query(
+                        "INSERT INTO vendor_templates (id, vendor_id, mask_regions, created_at, updated_at) 
+                         VALUES (?, ?, ?, ?, ?)
+                         ON CONFLICT(vendor_id) DO UPDATE SET mask_regions = excluded.mask_regions, updated_at = excluded.updated_at"
+                    )
+                    .bind(&template_id)
+                    .bind(vid)
+                    .bind(&masks_json)
+                    .bind(&now)
+                    .bind(&now)
+                    .execute(pool.get_ref())
+                    .await;
+                    
+                    log::info!("Created vendor template with mask for vendor {}", vid);
+                }
+                Err(e) => {
+                    log::warn!("Failed to update vendor template: {}", e);
+                }
+            }
+        }
+    }
+    
+    // Trigger OCR reprocessing if masks changed
+    if reprocessing_started {
+        // Queue OCR reprocessing job
+        let job_id = uuid::Uuid::new_v4().to_string();
+        let job_data = serde_json::json!({
+            "case_id": case_id,
+            "masks": validation.masks,
+            "source_file": source_file_path,
+        });
+        
+        let _ = sqlx::query(
+            "INSERT INTO ocr_jobs (id, case_id, job_type, status, job_data, created_at) 
+             VALUES (?, ?, 'reprocess_with_masks', 'pending', ?, ?)"
         )
+        .bind(&job_id)
         .bind(&case_id)
-        .fetch_optional(pool.get_ref())
+        .bind(serde_json::to_string(&job_data).unwrap_or_default())
+        .bind(&now)
+        .execute(pool.get_ref())
         .await;
         
-        if let Ok(Some(Some(vendor_id))) = vendor_id_result {
-            // Store mask in vendor template (simplified - in production would update vendor_templates table)
-            log::info!("Remembering mask for vendor {}: {:?}", vendor_id, request.region);
-        }
+        log::info!("Queued OCR reprocessing job {} for case {}", job_id, case_id);
     }
     
     HttpResponse::Ok().json(MaskResponse {

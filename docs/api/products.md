@@ -2,7 +2,7 @@
 
 API reference for product management operations.
 
-**Base URL**: `http://localhost:3000/api`
+**Base URL**: `http://localhost:8923/api`
 
 **Authentication**: All endpoints require JWT Bearer token
 
@@ -34,7 +34,7 @@ GET /api/products
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/products?search=cap&category=caps&limit=25" \
+curl -X GET "http://localhost:8923/api/products?search=cap&category=caps&limit=25" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -109,7 +109,7 @@ GET /api/products/{id}
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/products/1" \
+curl -X GET "http://localhost:8923/api/products/1" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -199,7 +199,7 @@ GET /api/products/barcode/{barcode}
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/products/barcode/123456789012" \
+curl -X GET "http://localhost:8923/api/products/barcode/123456789012" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -258,7 +258,7 @@ POST /api/products
 ### Request Example
 
 ```bash
-curl -X POST "http://localhost:3000/api/products" \
+curl -X POST "http://localhost:8923/api/products" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -342,7 +342,7 @@ Only include fields to update:
 ### Request Example
 
 ```bash
-curl -X PUT "http://localhost:3000/api/products/2" \
+curl -X PUT "http://localhost:8923/api/products/2" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -390,7 +390,7 @@ DELETE /api/products/{id}
 ### Request Example
 
 ```bash
-curl -X DELETE "http://localhost:3000/api/products/2" \
+curl -X DELETE "http://localhost:8923/api/products/2" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -451,7 +451,7 @@ POST /api/products/search
 ### Request Example
 
 ```bash
-curl -X POST "http://localhost:3000/api/products/search" \
+curl -X POST "http://localhost:8923/api/products/search" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -519,7 +519,7 @@ Blue Baseball Cap,123456789013,CAP-BLUE-001,caps,19.99,8.50,25
 ### Request Example
 
 ```bash
-curl -X POST "http://localhost:3000/api/products/import" \
+curl -X POST "http://localhost:8923/api/products/import" \
   -H "Authorization: Bearer <token>" \
   -F "file=@products.csv" \
   -F "update_existing=true"
@@ -570,7 +570,7 @@ GET /api/products/export
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/products/export?format=csv&category=caps" \
+curl -X GET "http://localhost:8923/api/products/export?format=csv&category=caps" \
   -H "Authorization: Bearer <token>" \
   -o products.csv
 ```
@@ -594,7 +594,7 @@ GET /api/products/categories
 ### Request Example
 
 ```bash
-curl -X GET "http://localhost:3000/api/products/categories" \
+curl -X GET "http://localhost:8923/api/products/categories" \
   -H "Authorization: Bearer <token>"
 ```
 

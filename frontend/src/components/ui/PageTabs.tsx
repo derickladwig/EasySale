@@ -73,8 +73,8 @@ const StatusBadge: React.FC<{ status: TabStatus }> = ({ status }) => {
   if (status === 'ready' || status === 'hidden') return null;
 
   const styles = {
-    beta: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
-    comingSoon: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+    beta: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
+    comingSoon: 'bg-surface-elevated dark:bg-surface-base text-text-tertiary dark:text-text-tertiary',
   };
 
   const labels = {
@@ -97,7 +97,7 @@ const CountBadge: React.FC<{ count: number }> = ({ count }) => {
   if (count <= 0) return null;
 
   return (
-    <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-blue-500 text-white min-w-[18px] text-center">
+    <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent text-accent-foreground min-w-[18px] text-center">
       {count > 99 ? '99+' : count}
     </span>
   );
@@ -128,16 +128,16 @@ export const PageTabs: React.FC<PageTabsProps> = ({
 
   // Container classes based on variant
   const containerClasses = {
-    pills: 'inline-flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg',
-    underline: 'inline-flex gap-0 border-b border-gray-200 dark:border-gray-700',
-    segmented: 'inline-flex gap-0 p-0.5 bg-gray-100 dark:bg-gray-800 rounded-lg',
+    pills: 'inline-flex gap-1 p-1 bg-secondary-100 dark:bg-secondary-800 rounded-lg',
+    underline: 'inline-flex gap-0 border-b border-secondary-200 dark:border-secondary-700',
+    segmented: 'inline-flex gap-0 p-0.5 bg-secondary-100 dark:bg-secondary-800 rounded-lg',
   };
 
   // Tab classes based on variant and state
   const getTabClasses = (tab: TabDefinition, isActive: boolean) => {
     const base = `
       relative flex items-center justify-center font-medium transition-all duration-200
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
       ${sizeClasses[size]}
       ${fullWidth ? 'flex-1' : ''}
     `;
@@ -145,24 +145,24 @@ export const PageTabs: React.FC<PageTabsProps> = ({
     const disabled = tab.disabled || tab.status === 'comingSoon';
 
     if (disabled) {
-      return `${base} cursor-not-allowed opacity-50 text-gray-400 dark:text-gray-500`;
+      return `${base} cursor-not-allowed opacity-50 text-secondary-400 dark:text-secondary-500`;
     }
 
     switch (variant) {
       case 'pills':
         return isActive
-          ? `${base} bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm rounded-md font-semibold`
-          : `${base} text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-md`;
+          ? `${base} bg-white dark:bg-secondary-700 text-text-primary dark:text-white shadow-sm rounded-md font-semibold`
+          : `${base} text-secondary-600 dark:text-secondary-300 hover:text-text-primary dark:hover:text-white hover:bg-white/50 dark:hover:bg-secondary-700/50 rounded-md`;
 
       case 'underline':
         return isActive
-          ? `${base} text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 -mb-px font-semibold`
-          : `${base} text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 -mb-px`;
+          ? `${base} text-accent dark:text-accent border-b-2 border-accent dark:border-accent -mb-px font-semibold`
+          : `${base} text-secondary-600 dark:text-secondary-300 hover:text-text-primary dark:hover:text-white border-b-2 border-transparent hover:border-secondary-300 dark:hover:border-secondary-600 -mb-px`;
 
       case 'segmented':
         return isActive
-          ? `${base} bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm rounded-md font-semibold`
-          : `${base} text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-md`;
+          ? `${base} bg-white dark:bg-secondary-700 text-text-primary dark:text-white shadow-sm rounded-md font-semibold`
+          : `${base} text-secondary-600 dark:text-secondary-300 hover:text-text-primary dark:hover:text-white rounded-md`;
 
       default:
         return base;
@@ -212,7 +212,7 @@ export const PageTabs: React.FC<PageTabsProps> = ({
 
             {/* Active indicator for underline variant */}
             {variant === 'underline' && isActive && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent dark:bg-accent" />
             )}
           </button>
         );

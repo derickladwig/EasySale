@@ -11,6 +11,7 @@ import { Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { Button } from '@common/components/atoms/Button';
 import { cn } from '@common/utils/classNames';
 import { useAuth } from '@common/contexts/AuthContext';
+import { apiClient } from '@common/utils/apiClient';
 import type { StepContentProps, AdminStepData } from './types';
 import wizardStyles from '../../pages/SetupWizard.module.css';
 
@@ -83,12 +84,19 @@ export function AdminStepContent({
 
     setIsSubmitting(true);
     try {
-      // TODO: Call backend API to create admin user
-      // await api.createFirstAdmin(formData);
+      // Call backend API to create admin user
+      await apiClient.post('/api/users/first-admin', {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        display_name: formData.displayName || formData.username,
+        role: 'admin',
+      });
       onComplete(formData);
     } catch (error) {
       console.error('Failed to create admin:', error);
-      setErrors({ username: 'Failed to create admin account. Please try again.' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create admin account';
+      setErrors({ username: errorMessage });
     } finally {
       setIsSubmitting(false);
     }

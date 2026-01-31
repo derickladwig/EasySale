@@ -12,6 +12,7 @@ import { Input } from '@common/components/atoms/Input';
 import { cn } from '@common/utils/classNames';
 import { syncApi } from '../../../services/syncApi';
 import { toast } from '@common/components/molecules/Toast';
+import { useConfig } from '../../../config/ConfigProvider';
 import type { StepContentProps, IntegrationsStepData } from './types';
 
 interface IntegrationOption {
@@ -27,6 +28,8 @@ export function IntegrationsStepContent({
   data,
   isComplete,
 }: StepContentProps<IntegrationsStepData>) {
+  const { brandConfig } = useConfig();
+  const appName = brandConfig?.appName || brandConfig?.company?.name || 'this application';
   const [integrations, setIntegrations] = useState<IntegrationOption[]>([
     {
       id: 'woocommerce',
@@ -279,7 +282,7 @@ export function IntegrationsStepContent({
                               <div className="flex items-start gap-2 p-3 bg-surface-elevated rounded-lg text-sm">
                                 <AlertCircle className="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0" />
                                 <p className="text-text-secondary">
-                                  QuickBooks uses OAuth authentication. Click the button below to authorize EasySale to access your QuickBooks account.
+                                  QuickBooks uses OAuth authentication. Click the button below to authorize {appName} to access your QuickBooks account.
                                 </p>
                               </div>
                               <div className="flex gap-2">

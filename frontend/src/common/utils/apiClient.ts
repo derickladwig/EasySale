@@ -23,6 +23,22 @@ export interface ApiResponse<T> {
 
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean;
+  skipCsrf?: boolean;
+}
+
+/**
+ * Get CSRF token from cookie
+ * The CSRF token is stored in a non-httpOnly cookie so JavaScript can read it
+ */
+function getCsrfToken(): string | null {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrf_token') {
+      return decodeURIComponent(value);
+    }
+  }
+  return null;
 }
 
 class ApiClient {
@@ -43,10 +59,6 @@ class ApiClient {
     }
   }
 
-  private getAuthToken(): string | null {
-    return localStorage.getItem('auth_token');
-  }
-
   private async handleResponse<T>(response: Response): Promise<T> {
     const contentType = response.headers.get('content-type');
     const isJson = contentType?.includes('application/json');
@@ -59,7 +71,7 @@ class ApiClient {
       if (isJson) {
         try {
           const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
+          errorMessage = errorData.message || errorData.error || errorMessage;
           errorCode = errorData.code;
           errorDetails = errorData.details;
         } catch {
@@ -86,7 +98,7 @@ class ApiClient {
   }
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { skipAuth, ...fetchOptions } = options;
+    const { skipAuth, skipCsrf, ...fetchOptions } = options;
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -97,11 +109,13 @@ class ApiClient {
       Object.assign(headers, fetchOptions.headers);
     }
 
-    // Add auth token if not skipped
-    if (!skipAuth) {
-      const token = this.getAuthToken();
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+    // Add CSRF token for state-changing requests (POST, PUT, DELETE, PATCH)
+    // unless explicitly skipped (e.g., for login which doesn't have a token yet)
+    const method = (fetchOptions.method || 'GET').toUpperCase();
+    if (!skipCsrf && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
       }
     }
 
@@ -111,6 +125,7 @@ class ApiClient {
       const response = await fetch(url, {
         ...fetchOptions,
         headers,
+        credentials: 'include', // Include httpOnly cookies for authentication
       });
 
       return this.handleResponse<T>(response);
@@ -153,10 +168,18 @@ class ApiClient {
   async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
+
+  async patch<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
 }
 
 // Singleton instance
 const apiClient = new ApiClient();
 
 export default apiClient;
-export { apiClient }; // Named export for convenience
+export { apiClient, getCsrfToken }; // Named export for convenience

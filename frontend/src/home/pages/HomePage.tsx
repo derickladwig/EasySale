@@ -73,7 +73,7 @@ const quickActions: QuickAction[] = [
     label: 'Reports',
     description: 'View analytics',
     icon: BarChart3,
-    color: 'bg-secondary-600 hover:bg-secondary-500',
+    color: 'bg-surface-overlay hover:bg-surface-elevated',
     permission: 'access_admin',
   },
   {

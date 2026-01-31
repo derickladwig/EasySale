@@ -68,7 +68,7 @@ build-prod-windows.bat --no-pause --skip-wizard
 
 ### View Logs
 ```cmd
-docker-compose -p EasySale -f docker-compose.prod.yml logs -f
+docker-compose -p easysale -f docker-compose.prod.yml logs -f
 ```
 
 ### Stop Services

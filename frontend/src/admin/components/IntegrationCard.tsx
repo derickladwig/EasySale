@@ -10,12 +10,17 @@
  * - Disabled state: Capability is off (feature not enabled)
  * - Bug state: Capability is on but backend is missing (this is a bug)
  * 
- * Validates: Requirements 10.1, 10.2
+ * RBAC Controls:
+ * - Actions are disabled when user lacks required permissions
+ * - Tooltips explain why actions are disabled
+ * 
+ * Validates: Requirements 9.1, 9.4, 9.5, 10.1, 10.2
  */
 
 import React from 'react';
 import { Card } from '@common/components/molecules/Card';
 import { Button } from '@common/components/atoms/Button';
+import { usePermissions, Permission } from '@common/contexts/PermissionsContext';
 import { 
   CheckCircle, 
   XCircle, 
@@ -24,7 +29,8 @@ import {
   Plug,
   Settings as SettingsIcon,
   TestTube,
-  Power
+  Power,
+  Lock
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 
@@ -97,6 +103,41 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
   showConfig = false,
   configContent,
 }) => {
+  // RBAC: Get user permissions
+  const { hasPermission, hasAnyPermission } = usePermissions();
+  
+  // Permission checks for different actions
+  const canManageIntegrations = hasPermission('manage_integrations');
+  const canConnect = hasAnyPermission('manage_integrations', 'connect_integrations');
+  const canDisconnect = hasAnyPermission('manage_integrations', 'disconnect_integrations');
+  const canTriggerSync = hasAnyPermission('manage_integrations', 'trigger_sync');
+  const canConfigure = hasAnyPermission('manage_integrations', 'manage_settings');
+
+  /**
+   * Get tooltip text explaining why an action is disabled
+   * Validates: Requirements 9.4, 9.5
+   */
+  const getPermissionTooltip = (action: 'connect' | 'disconnect' | 'configure' | 'sync' | 'toggle'): string | undefined => {
+    switch (action) {
+      case 'connect':
+        if (!canConnect) return 'You need the "Connect Integrations" permission to connect this integration';
+        break;
+      case 'disconnect':
+        if (!canDisconnect) return 'You need the "Disconnect Integrations" permission to disconnect this integration';
+        break;
+      case 'configure':
+        if (!canConfigure) return 'You need the "Manage Settings" permission to configure this integration';
+        break;
+      case 'sync':
+        if (!canTriggerSync) return 'You need the "Trigger Sync" permission to sync this integration';
+        break;
+      case 'toggle':
+        if (!canManageIntegrations) return 'You need the "Manage Integrations" permission to enable/disable integrations';
+        break;
+    }
+    return undefined;
+  };
+
   // Determine the display state
   const getDisplayState = (): DisplayState => {
     // Bug state: capability is on but backend is missing
@@ -181,14 +222,17 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
         Connect your {name} account to sync data automatically.
       </p>
       {actions?.onConnect && (
-        <Button
-          onClick={actions.onConnect}
-          variant="primary"
-          size="sm"
-          disabled={displayState === 'disabled' || displayState === 'bug'}
-        >
-          Connect {name}
-        </Button>
+        <div className="relative inline-block" title={getPermissionTooltip('connect')}>
+          <Button
+            onClick={actions.onConnect}
+            variant="primary"
+            size="sm"
+            disabled={displayState === 'disabled' || displayState === 'bug' || !canConnect}
+          >
+            {!canConnect && <Lock className="w-3 h-3 mr-1" />}
+            Connect {name}
+          </Button>
+        </div>
       )}
     </div>
   );
@@ -259,15 +303,21 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
 
           {/* Toggle switch - only show if not disabled or bug state */}
           {displayState !== 'disabled' && displayState !== 'bug' && actions?.onToggle && (
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={enabled}
-                onChange={(e) => actions.onToggle?.(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-surface-elevated peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-            </label>
+            <div title={getPermissionTooltip('toggle')}>
+              <label className={cn(
+                "relative inline-flex items-center",
+                canManageIntegrations ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+              )}>
+                <input
+                  type="checkbox"
+                  checked={enabled}
+                  onChange={(e) => canManageIntegrations && actions.onToggle?.(e.target.checked)}
+                  disabled={!canManageIntegrations}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-surface-elevated peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+              </label>
+            </div>
           )}
         </div>
 
@@ -295,39 +345,48 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
             {/* Action buttons */}
             <div className="flex gap-2">
               {actions?.onConfigure && (
-                <Button
-                  onClick={actions.onConfigure}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 flex items-center justify-center gap-2"
-                >
-                  <SettingsIcon className="w-4 h-4" />
-                  Configure
-                </Button>
+                <div className="flex-1" title={getPermissionTooltip('configure')}>
+                  <Button
+                    onClick={actions.onConfigure}
+                    variant="outline"
+                    size="sm"
+                    disabled={!canConfigure}
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    {!canConfigure ? <Lock className="w-4 h-4" /> : <SettingsIcon className="w-4 h-4" />}
+                    Configure
+                  </Button>
+                </div>
               )}
               
               {actions?.onTestConnection && displayState !== 'not_connected' && (
-                <Button
-                  onClick={actions.onTestConnection}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 flex items-center justify-center gap-2"
-                  disabled={displayState === 'syncing'}
-                >
-                  <TestTube className="w-4 h-4" />
-                  Test
-                </Button>
+                <div className="flex-1" title={getPermissionTooltip('sync')}>
+                  <Button
+                    onClick={actions.onTestConnection}
+                    variant="outline"
+                    size="sm"
+                    className="w-full flex items-center justify-center gap-2"
+                    disabled={displayState === 'syncing' || !canTriggerSync}
+                  >
+                    {!canTriggerSync ? <Lock className="w-4 h-4" /> : <TestTube className="w-4 h-4" />}
+                    Test
+                  </Button>
+                </div>
               )}
               
               {actions?.onDisconnect && displayState === 'connected' && (
-                <Button
-                  onClick={actions.onDisconnect}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                >
-                  Disconnect
-                </Button>
+                <div className="flex-1" title={getPermissionTooltip('disconnect')}>
+                  <Button
+                    onClick={actions.onDisconnect}
+                    variant="outline"
+                    size="sm"
+                    disabled={!canDisconnect}
+                    className="w-full"
+                  >
+                    {!canDisconnect && <Lock className="w-3 h-3 mr-1" />}
+                    Disconnect
+                  </Button>
+                </div>
               )}
             </div>
 

@@ -130,7 +130,7 @@ export function UsersTab() {
         <div className="flex items-center gap-2">
           <span className="font-medium">{user.username}</span>
           {!user.is_active && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-secondary-100 text-secondary-700 rounded">
+            <span className="px-2 py-0.5 text-xs font-medium bg-surface-elevated text-text-secondary rounded">
               Inactive
             </span>
           )}
@@ -161,7 +161,7 @@ export function UsersTab() {
         ].includes(user.role);
 
         if (!roleRequiresStore) {
-          return <span className="text-secondary-400">N/A</span>;
+          return <span className="text-text-tertiary">N/A</span>;
         }
 
         if (!user.store_id) {
@@ -174,7 +174,7 @@ export function UsersTab() {
         }
 
         return (
-          <div className="flex items-center gap-1 text-secondary-700">
+          <div className="flex items-center gap-1 text-text-secondary">
             <Store className="w-4 h-4" />
             <span className="text-sm">{user.store_id}</span>
           </div>
@@ -186,11 +186,11 @@ export function UsersTab() {
       label: 'Station',
       render: (user) => {
         if (user.station_policy === 'none') {
-          return <span className="text-secondary-400">None</span>;
+          return <span className="text-text-tertiary">None</span>;
         }
 
         if (user.station_policy === 'any') {
-          return <span className="text-secondary-700">Any</span>;
+          return <span className="text-text-secondary">Any</span>;
         }
 
         if (user.station_policy === 'specific') {
@@ -204,7 +204,7 @@ export function UsersTab() {
           }
 
           return (
-            <div className="flex items-center gap-1 text-secondary-700">
+            <div className="flex items-center gap-1 text-text-secondary">
               <Monitor className="w-4 h-4" />
               <span className="text-sm">{user.station_id}</span>
             </div>
@@ -227,8 +227,8 @@ export function UsersTab() {
             </>
           ) : (
             <>
-              <UserX className="w-4 h-4 text-secondary-400" />
-              <span className="text-sm text-secondary-600">Inactive</span>
+              <UserX className="w-4 h-4 text-text-tertiary" />
+              <span className="text-sm text-text-secondary">Inactive</span>
             </>
           )}
         </div>
@@ -429,18 +429,18 @@ export function UsersTab() {
         title="Assign Store"
       >
         <div className="space-y-4">
-          <p className="text-sm text-secondary-600">
+          <p className="text-sm text-text-secondary">
             Assign a store to {selectedUserIds.length} selected user
             {selectedUserIds.length !== 1 ? 's' : ''}.
           </p>
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Select Store
             </label>
             <select
               value={selectedStore}
               onChange={(e) => setSelectedStore(e.target.value)}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Select a store</option>
               {stores.map((store) => (
@@ -472,16 +472,16 @@ export function UsersTab() {
         title="Assign Role"
       >
         <div className="space-y-4">
-          <p className="text-sm text-secondary-600">
+          <p className="text-sm text-text-secondary">
             Assign a role to {selectedUserIds.length} selected user
             {selectedUserIds.length !== 1 ? 's' : ''}.
           </p>
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">Select Role</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Select Role</label>
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-3 py-2 border border-secondary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Select a role</option>
               {roles.map((role) => (

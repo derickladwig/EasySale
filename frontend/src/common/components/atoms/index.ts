@@ -93,3 +93,14 @@ export type { EmptyStateProps, EmptyStateVariant } from './EmptyState';
 // Logo with fallback component
 export { LogoWithFallback } from './LogoWithFallback';
 export type { LogoWithFallbackProps } from './LogoWithFallback';
+
+// Status chip component for sync/connector statuses
+export { StatusChip } from './StatusChip';
+export type { 
+  StatusChipProps, 
+  StatusChipStatus, 
+  StatusChipSize,
+  ConnectorStatus,
+  SyncRunStatus,
+  CircuitBreakerState,
+} from './StatusChip';

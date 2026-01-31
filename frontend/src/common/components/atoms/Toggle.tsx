@@ -111,7 +111,7 @@ export const Toggle: React.FC<ToggleProps> = ({
             sizeClasses[size].thumb,
             sizeClasses[size].translate,
             "after:content-[''] after:absolute after:top-[2px] after:left-[2px]",
-            'after:bg-white after:border-gray-300 after:border after:rounded-full',
+            'after:bg-white after:border-border after:border after:rounded-full',
             'after:transition-all'
           )}
         />
@@ -172,7 +172,7 @@ export const Toggle: React.FC<ToggleProps> = ({
             sizeClasses[size].thumb,
             sizeClasses[size].translate,
             "after:content-[''] after:absolute after:top-[2px] after:left-[2px]",
-            'after:bg-white after:border-gray-300 after:border after:rounded-full',
+            'after:bg-white after:border-border after:border after:rounded-full',
             'after:transition-all'
           )}
         />

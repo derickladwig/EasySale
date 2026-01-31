@@ -160,7 +160,7 @@ export function StoreStepContent({
             type="text"
             value={formData.storeName}
             onChange={handleChange('storeName')}
-            placeholder="EasySale Store"
+            placeholder="Your Store Name"
             className={cn(
               wizardStyles.formInput,
               errors.storeName && wizardStyles.formInputError

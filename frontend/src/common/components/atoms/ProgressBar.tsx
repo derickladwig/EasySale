@@ -36,7 +36,7 @@ const sizeConfig: Record<ProgressBarSize, string> = {
 
 // Variant color configurations for the progress bar fill
 const variantConfig: Record<ProgressBarVariant, string> = {
-  default: 'bg-secondary-400',
+  default: 'bg-text-tertiary',
   primary: 'bg-primary-500',
   success: 'bg-success-DEFAULT',
   warning: 'bg-warning-DEFAULT',

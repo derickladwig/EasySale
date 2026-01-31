@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={cn(
-        'flex-shrink-0 bg-surface-base flex flex-col z-40',
+        'flex-shrink-0 bg-surface-base flex flex-col',
         // Subtle right border
         'border-r border-border/50',
         // Width: full (224px) when expanded, collapsed (64px) on tablet when collapsed
@@ -76,6 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
         className
       )}
+      style={{ zIndex: 'var(--z-sidebar)' }}
     >
       <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         {items.map((item) => {

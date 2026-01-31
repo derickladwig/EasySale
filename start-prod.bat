@@ -86,12 +86,12 @@ if exist "runtime\docker-compose.override.yml" (
 
 REM Stop any existing containers
 echo [1/4] Stopping existing containers...
-docker-compose -p EasySale %COMPOSE_FILES% down >nul 2>&1
+docker-compose -p easysale %COMPOSE_FILES% down >nul 2>&1
 echo [OK] Containers stopped
 
 REM Start containers
 echo [2/4] Starting production containers...
-docker-compose -p EasySale %COMPOSE_FILES% up -d
+docker-compose -p easysale %COMPOSE_FILES% up -d
 set COMPOSE_EXIT=%errorlevel%
 
 REM Check if containers are actually running (more reliable than exit code)
@@ -101,14 +101,14 @@ docker ps --filter "name=easysale-backend" --format "{{.Status}}" | findstr /i "
 if errorlevel 1 (
     echo [ERROR] Backend container failed to start!
     echo docker-compose exit code was: %COMPOSE_EXIT%
-    echo Run: docker-compose -p EasySale %COMPOSE_FILES% logs backend
+    echo Run: docker-compose -p easysale %COMPOSE_FILES% logs backend
     goto ERROR_EXIT
 )
 docker ps --filter "name=easysale-frontend" --format "{{.Status}}" | findstr /i "Up" >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Frontend container failed to start!
     echo docker-compose exit code was: %COMPOSE_EXIT%
-    echo Run: docker-compose -p EasySale %COMPOSE_FILES% logs frontend
+    echo Run: docker-compose -p easysale %COMPOSE_FILES% logs frontend
     goto ERROR_EXIT
 )
 echo [OK] Containers started
@@ -142,7 +142,7 @@ goto HEALTH_LOOP
 
 :HEALTH_TIMEOUT
 echo [WARNING] Health check timed out, but services may still be starting.
-echo Check logs: docker-compose -p EasySale %COMPOSE_FILES% logs
+echo Check logs: docker-compose -p easysale %COMPOSE_FILES% logs
 goto SHOW_URLS
 
 :HEALTH_DONE
@@ -185,8 +185,8 @@ if not defined NO_BROWSER (
 
 echo.
 echo Useful commands:
-echo   View logs:  docker-compose -p EasySale %COMPOSE_FILES% logs -f
-echo   Stop:       docker-compose -p EasySale %COMPOSE_FILES% down
+echo   View logs:  docker-compose -p easysale %COMPOSE_FILES% logs -f
+echo   Stop:       docker-compose -p easysale %COMPOSE_FILES% down
 echo   Restart:    start-prod.bat
 echo.
 

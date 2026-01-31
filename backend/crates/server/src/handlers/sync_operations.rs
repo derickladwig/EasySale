@@ -10,6 +10,7 @@ use sqlx::SqlitePool;
 use std::sync::Arc;
 use uuid::Uuid;
 
+use crate::models::UserContext;
 use crate::services::SyncOrchestrator;
 use crate::services::dry_run_executor::DryRunExecutor;
 use crate::services::bulk_operation_safety::{BulkOperationSafety, OperationType, ChangeDescription};
@@ -20,6 +21,7 @@ use crate::services::bulk_operation_safety::{BulkOperationSafety, OperationType,
 pub async fn trigger_sync(
     pool: web::Data<SqlitePool>,
     orchestrator: web::Data<Arc<SyncOrchestrator>>,
+    user_ctx: web::ReqData<UserContext>,
     path: web::Path<String>,
     req: web::Json<TriggerSyncRequest>,
 ) -> impl Responder {
@@ -65,8 +67,8 @@ pub async fn trigger_sync(
         }));
     }
 
-    // Queue sync operation
-    let tenant_id = "default-tenant"; // TODO: Extract from auth context
+    // Extract tenant_id from auth context
+    let tenant_id = user_ctx.tenant_id.clone();
     let mode = req.mode.as_str();
     let filters_json = serde_json::to_string(&req.filters).unwrap_or_else(|_| "{}".to_string());
     let ids_json = serde_json::to_string(&req.ids).unwrap_or_else(|_| "[]".to_string());
@@ -77,7 +79,7 @@ pub async fn trigger_sync(
     )
     .bind(Uuid::new_v4().to_string())
     .bind(&sync_id)
-    .bind(tenant_id)
+    .bind(&tenant_id)
     .bind(&entity)
     .bind(mode)
     .bind(&filters_json)
@@ -88,7 +90,7 @@ pub async fn trigger_sync(
         Ok(_) => {
             // Trigger async sync in background
             let orchestrator_clone = Arc::clone(&orchestrator);
-            let tenant_id_clone = tenant_id.to_string();
+            let tenant_id_clone = tenant_id.clone();
             let entity_clone = entity.clone();
             let mode_clone = req.mode.clone();
             
@@ -135,11 +137,12 @@ pub async fn trigger_sync(
 pub async fn sync_woocommerce_orders(
     _pool: web::Data<SqlitePool>,
     orchestrator: web::Data<Arc<SyncOrchestrator>>,
+    user_ctx: web::ReqData<UserContext>,
     req: web::Json<WooCommerceSyncRequest>,
 ) -> impl Responder {
     tracing::info!("Triggering WooCommerce orders sync to {}", req.target);
 
-    let tenant_id = "default-tenant"; // TODO: Extract from auth context
+    let tenant_id = user_ctx.tenant_id.clone();
     let connector_id = format!("woocommerce-to-{}", req.target);
     
     let options = crate::services::sync_orchestrator::SyncOptions {
@@ -157,7 +160,7 @@ pub async fn sync_woocommerce_orders(
         filters: std::collections::HashMap::new(),
     };
 
-    match orchestrator.start_sync(tenant_id, &connector_id, options).await {
+    match orchestrator.start_sync(&tenant_id, &connector_id, options).await {
         Ok(result) => HttpResponse::Ok().json(serde_json::json!({
             "sync_id": result.sync_id,
             "status": format!("{:?}", result.status),
@@ -187,11 +190,12 @@ pub async fn sync_woocommerce_orders(
 pub async fn sync_woocommerce_products(
     _pool: web::Data<SqlitePool>,
     orchestrator: web::Data<Arc<SyncOrchestrator>>,
+    user_ctx: web::ReqData<UserContext>,
     req: web::Json<WooCommerceSyncRequest>,
 ) -> impl Responder {
     tracing::info!("Triggering WooCommerce products sync to {}", req.target);
 
-    let tenant_id = "default-tenant"; // TODO: Extract from auth context
+    let tenant_id = user_ctx.tenant_id.clone();
     let connector_id = format!("woocommerce-to-{}", req.target);
     
     let options = crate::services::sync_orchestrator::SyncOptions {
@@ -209,7 +213,7 @@ pub async fn sync_woocommerce_products(
         filters: std::collections::HashMap::new(),
     };
 
-    match orchestrator.start_sync(tenant_id, &connector_id, options).await {
+    match orchestrator.start_sync(&tenant_id, &connector_id, options).await {
         Ok(result) => HttpResponse::Ok().json(serde_json::json!({
             "sync_id": result.sync_id,
             "status": format!("{:?}", result.status),
@@ -239,11 +243,12 @@ pub async fn sync_woocommerce_products(
 pub async fn sync_woocommerce_customers(
     _pool: web::Data<SqlitePool>,
     orchestrator: web::Data<Arc<SyncOrchestrator>>,
+    user_ctx: web::ReqData<UserContext>,
     req: web::Json<WooCommerceSyncRequest>,
 ) -> impl Responder {
     tracing::info!("Triggering WooCommerce customers sync to {}", req.target);
 
-    let tenant_id = "default-tenant"; // TODO: Extract from auth context
+    let tenant_id = user_ctx.tenant_id.clone();
     let connector_id = format!("woocommerce-to-{}", req.target);
     
     let options = crate::services::sync_orchestrator::SyncOptions {
@@ -261,7 +266,7 @@ pub async fn sync_woocommerce_customers(
         filters: std::collections::HashMap::new(),
     };
 
-    match orchestrator.start_sync(tenant_id, &connector_id, options).await {
+    match orchestrator.start_sync(&tenant_id, &connector_id, options).await {
         Ok(result) => HttpResponse::Ok().json(serde_json::json!({
             "sync_id": result.sync_id,
             "status": format!("{:?}", result.status),
@@ -447,6 +452,7 @@ pub async fn get_sync_status(
 pub async fn retry_failed_records(
     pool: web::Data<SqlitePool>,
     orchestrator: web::Data<Arc<SyncOrchestrator>>,
+    user_ctx: web::ReqData<UserContext>,
     req: web::Json<RetryRequest>,
 ) -> impl Responder {
     tracing::info!("Retrying failed records");
@@ -508,7 +514,7 @@ pub async fn retry_failed_records(
 
             // Trigger retry in background
             let orchestrator_clone = Arc::clone(&orchestrator);
-            let tenant_id = "default-tenant".to_string();
+            let tenant_id = user_ctx.tenant_id.clone();
             
             tokio::spawn(async move {
                 for record in records {
@@ -546,6 +552,7 @@ pub async fn retry_failed_records(
 pub async fn retry_single_failure(
     pool: web::Data<SqlitePool>,
     orchestrator: web::Data<Arc<SyncOrchestrator>>,
+    user_ctx: web::ReqData<UserContext>,
     path: web::Path<String>,
 ) -> impl Responder {
     let record_id = path.into_inner();
@@ -585,7 +592,7 @@ pub async fn retry_single_failure(
                     // Trigger retry in background
                     let orchestrator_clone = Arc::clone(&orchestrator);
                     let entity_type = record.entity_type.clone();
-                    let tenant_id = "default-tenant".to_string();
+                    let tenant_id = user_ctx.tenant_id.clone();
                     
                     tokio::spawn(async move {
                         let options = crate::services::sync_orchestrator::SyncOptions {
@@ -695,6 +702,7 @@ pub async fn list_failures(
 #[post("/api/sync/dry-run")]
 pub async fn execute_dry_run(
     pool: web::Data<SqlitePool>,
+    user_ctx: web::ReqData<UserContext>,
     req: web::Json<DryRunRequest>,
 ) -> impl Responder {
     tracing::info!(
@@ -705,7 +713,7 @@ pub async fn execute_dry_run(
     );
 
     let executor = DryRunExecutor::new(pool.get_ref().clone());
-    let tenant_id = "default-tenant"; // TODO: Extract from auth context
+    let tenant_id = user_ctx.tenant_id.as_str();
 
     match executor
         .execute_dry_run(
@@ -788,6 +796,7 @@ pub async fn check_confirmation_requirement(
 pub async fn execute_confirmed_operation(
     pool: web::Data<SqlitePool>,
     orchestrator: web::Data<Arc<SyncOrchestrator>>,
+    user_ctx: web::ReqData<UserContext>,
     path: web::Path<String>,
     req: web::Json<ExecuteConfirmedRequest>,
 ) -> impl Responder {
@@ -817,7 +826,7 @@ pub async fn execute_confirmed_operation(
     match confirmation.operation_type {
         OperationType::Sync => {
             // Trigger sync operation
-            let tenant_id = "default-tenant".to_string();
+            let tenant_id = user_ctx.tenant_id.clone();
             let entity_type = confirmation.entity_type.clone();
             
             let orchestrator_clone = Arc::clone(&orchestrator);
@@ -892,10 +901,13 @@ pub async fn execute_confirmed_operation(
 /// GET /api/settings/sandbox
 /// Get sandbox mode status and configuration
 #[get("/api/settings/sandbox")]
-pub async fn get_sandbox_status(pool: web::Data<SqlitePool>) -> impl Responder {
+pub async fn get_sandbox_status(
+    pool: web::Data<SqlitePool>,
+    user_ctx: web::ReqData<UserContext>,
+) -> impl Responder {
     tracing::info!("Getting sandbox mode status");
 
-    let tenant_id = "default-tenant"; // TODO: Extract from auth context
+    let tenant_id = user_ctx.tenant_id.as_str();
     let safety = BulkOperationSafety::new(pool.get_ref().clone());
 
     match safety.is_sandbox_mode(tenant_id).await {
@@ -927,11 +939,12 @@ pub async fn get_sandbox_status(pool: web::Data<SqlitePool>) -> impl Responder {
 #[post("/api/settings/sandbox")]
 pub async fn set_sandbox_mode(
     pool: web::Data<SqlitePool>,
+    user_ctx: web::ReqData<UserContext>,
     req: web::Json<SetSandboxRequest>,
 ) -> impl Responder {
     tracing::info!("Setting sandbox mode: {}", req.enabled);
 
-    let tenant_id = "default-tenant"; // TODO: Extract from auth context
+    let tenant_id = user_ctx.tenant_id.as_str();
     let safety = BulkOperationSafety::new(pool.get_ref().clone());
 
     match safety.set_sandbox_mode(tenant_id, req.enabled).await {

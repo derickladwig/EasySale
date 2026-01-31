@@ -51,7 +51,8 @@ export const Panel: React.FC<PanelProps> = ({
       {/* Backdrop */}
       {isOpen && !isCollapsed && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 md:hidden"
+          style={{ zIndex: 'var(--z-overlay-backdrop)' }}
           onClick={onClose}
           aria-hidden="true"
         />
@@ -60,12 +61,13 @@ export const Panel: React.FC<PanelProps> = ({
       {/* Panel */}
       <aside
         className={`
-          fixed top-16 right-0 bottom-0 bg-background-primary border-l border-border z-50
+          fixed top-16 right-0 bottom-0 bg-background-primary border-l border-border
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
           ${isCollapsed ? 'w-12' : widthClasses[width]}
           ${className}
         `}
+        style={{ zIndex: 'var(--z-modal)' }}
         aria-label={title || 'Context panel'}
       >
         {/* Header */}

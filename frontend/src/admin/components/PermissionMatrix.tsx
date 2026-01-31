@@ -69,15 +69,15 @@ export function PermissionMatrix({ roles, permissions }: PermissionMatrixProps) 
     return role.permissions.includes('*') || role.permissions.includes(permissionId);
   };
 
-  // Get module color
+  // Get module color - uses semantic theme tokens
   const getModuleColor = (module: string): string => {
     const colors: Record<string, string> = {
       sales: 'bg-info-100 text-info-dark',
-      inventory: 'bg-green-100 text-green-700',
-      customers: 'bg-purple-100 text-purple-700',
-      reports: 'bg-orange-100 text-orange-700',
-      settings: 'bg-red-100 text-red-700',
-      users: 'bg-pink-100 text-pink-700',
+      inventory: 'bg-success-100 text-success-700',
+      customers: 'bg-purple-500/20 text-purple-400',
+      reports: 'bg-warning-100 text-warning-700',
+      settings: 'bg-error-100 text-error-700',
+      users: 'bg-primary-100 text-primary-700',
     };
     return colors[module.toLowerCase()] || 'bg-secondary-100 text-secondary-700';
   };
@@ -201,8 +201,8 @@ export function PermissionMatrix({ roles, permissions }: PermissionMatrixProps) 
                       <td key={role.id} className="px-4 py-3 text-center">
                         {hasPermission(role, permission.id) ? (
                           <div className="flex justify-center">
-                            <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                              <Check className="w-4 h-4 text-green-600" />
+                            <div className="w-6 h-6 rounded-full bg-success-100 flex items-center justify-center">
+                              <Check className="w-4 h-4 text-success-600" />
                             </div>
                           </div>
                         ) : (
@@ -225,8 +225,8 @@ export function PermissionMatrix({ roles, permissions }: PermissionMatrixProps) 
       {/* Legend */}
       <div className="flex items-center gap-4 text-sm text-secondary-600">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-            <Check className="w-4 h-4 text-green-600" />
+          <div className="w-6 h-6 rounded-full bg-success-100 flex items-center justify-center">
+            <Check className="w-4 h-4 text-success-600" />
           </div>
           <span>Has Permission</span>
         </div>

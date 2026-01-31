@@ -30,7 +30,7 @@ build-prod.bat
 - Removed foreign key constraints from backup_jobs table to allow system backups
 
 ### 5. Batch Files
-All batch files now use `-p EasySale` flag:
+All batch files now use `-p easysale` flag:
 - `docker-clean.bat` - Cleans all EasySale resources
 - `docker-start.bat` - Starts development environment
 - `docker-stop.bat` - Stops all services
@@ -168,4 +168,4 @@ STORE_NAME=Main Store
 1. Run `docker-clean.bat` to remove old resources
 2. Run `build-prod.bat` to build fresh
 3. Access application at http://localhost:7945
-4. Check logs if any issues: `docker-compose -p EasySale -f docker-compose.prod.yml logs -f`
+4. Check logs if any issues: `docker-compose -p easysale -f docker-compose.prod.yml logs -f`

@@ -158,7 +158,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
   return (
     <div
       ref={canvasRef}
-      className={`relative bg-gray-100 dark:bg-gray-800 h-[500px] ${
+      className={`relative bg-surface-base dark:bg-surface-elevated h-[500px] ${
         isSelecting ? 'cursor-crosshair' : 'cursor-default'
       }`}
       onMouseDown={handleMouseDown}
@@ -205,7 +205,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
       {/* Selected region (persistent, from normalized coords) */}
       {displayRegion && !isSelecting && (
         <div
-          className="absolute border-2 border-green-500 bg-green-200/30 dark:bg-green-800/30"
+          className="absolute border-2 border-success-500 bg-success-200/30 dark:bg-success-800/30"
           style={{
             left: `${displayRegion.x}px`,
             top: `${displayRegion.y}px`,
@@ -213,7 +213,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             height: `${displayRegion.height}px`,
           }}
         >
-          <div className="absolute -top-6 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+          <div className="absolute -top-6 left-0 bg-success-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
             Selected: {Math.round(displayRegion.width)} × {Math.round(displayRegion.height)}px
             {showCoordinates && selectedRegion && (
               <span className="ml-2 opacity-75">

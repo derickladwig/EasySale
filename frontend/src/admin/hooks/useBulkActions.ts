@@ -28,11 +28,12 @@ export function useBulkActions() {
       try {
         await action(id);
         results.push({ id, success: true });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         results.push({
           id,
           success: false,
-          error: error.message || 'Unknown error',
+          error: errorMessage,
         });
       }
 

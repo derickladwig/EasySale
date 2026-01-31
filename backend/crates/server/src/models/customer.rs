@@ -94,6 +94,10 @@ pub struct CustomerResponse {
     pub credit_balance: f64,
     pub created_at: String,
     pub updated_at: String,
+    // Sales statistics
+    pub total_spent: Option<f64>,
+    pub order_count: Option<i64>,
+    pub last_order: Option<String>,
 }
 
 impl From<Customer> for CustomerResponse {
@@ -110,6 +114,55 @@ impl From<Customer> for CustomerResponse {
             credit_balance: customer.credit_balance,
             created_at: customer.created_at,
             updated_at: customer.updated_at,
+            // Default to None when converting from basic Customer
+            total_spent: None,
+            order_count: None,
+            last_order: None,
+        }
+    }
+}
+
+/// Customer with sales statistics from joined query
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct CustomerWithStats {
+    pub id: String,
+    pub tenant_id: String,
+    pub name: String,
+    pub email: Option<String>,
+    pub phone: Option<String>,
+    #[sqlx(rename = "pricing_tier")]
+    pub pricing_tier_str: String,
+    pub loyalty_points: i32,
+    pub store_credit: f64,
+    pub credit_limit: Option<f64>,
+    pub credit_balance: f64,
+    pub created_at: String,
+    pub updated_at: String,
+    pub sync_version: i64,
+    pub store_id: String,
+    // Sales statistics from aggregation
+    pub total_spent: Option<f64>,
+    pub order_count: Option<i64>,
+    pub last_order: Option<String>,
+}
+
+impl From<CustomerWithStats> for CustomerResponse {
+    fn from(customer: CustomerWithStats) -> Self {
+        Self {
+            id: customer.id,
+            name: customer.name,
+            email: customer.email,
+            phone: customer.phone,
+            pricing_tier: customer.pricing_tier_str,
+            loyalty_points: customer.loyalty_points,
+            store_credit: customer.store_credit,
+            credit_limit: customer.credit_limit,
+            credit_balance: customer.credit_balance,
+            created_at: customer.created_at,
+            updated_at: customer.updated_at,
+            total_spent: customer.total_spent,
+            order_count: customer.order_count,
+            last_order: customer.last_order,
         }
     }
 }

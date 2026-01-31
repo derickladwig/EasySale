@@ -183,14 +183,12 @@ async fn main() -> std::io::Result<()> {
 
     // Start HTTP server
     HttpServer::new(move || {
-        // Configure CORS - permissive for development and LAN access
+        // Configure CORS - support credentials for httpOnly cookie auth
         // Note: allow_any_origin() cannot be used with supports_credentials()
-        // For setup wizard and LAN access, we need permissive CORS
-        let cors = Cors::default()
-            .allow_any_origin() // Allow any origin for LAN access during development/setup
-            .allow_any_method()
-            .allow_any_header()
-            .expose_any_header()
+        // Instead, we use permissive() which reflects the Origin header back
+        // This allows LAN access while still supporting credentials
+        let cors = Cors::permissive()
+            .supports_credentials()
             .max_age(3600);
 
         App::new()
@@ -290,6 +288,11 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/api/admin/users")
                     .route(web::get().to(handlers::users::get_users))
             )
+            // First admin creation (no auth required - fresh install only)
+            .service(
+                web::resource("/api/users/first-admin")
+                    .route(web::post().to(handlers::user_handlers::create_first_admin))
+            )
             // User management endpoints (protected with manage_settings permission)
             .service(
                 web::resource("/api/users")
@@ -310,6 +313,13 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::customer::update_customer)
             .service(handlers::customer::delete_customer)
             .service(handlers::customer::list_customers)
+            .service(handlers::customer::get_customer_orders)
+            // Zone management endpoints (for review editor)
+            .service(handlers::zones::list_zones)
+            .service(handlers::zones::create_zone)
+            .service(handlers::zones::get_zone)
+            .service(handlers::zones::update_zone)
+            .service(handlers::zones::delete_zone)
             // Product catalog endpoints
             .service(handlers::product::list_products)
             .service(handlers::product::get_product)
@@ -846,6 +856,8 @@ async fn main() -> std::io::Result<()> {
             .configure(handlers::file_operations::configure)
             // Receiving operations (inventory receiving)
             .configure(handlers::receiving_operations::configure)
+            // Sales operations (POS checkout)
+            .configure(handlers::sales::configure)
             // Tenant operations (multi-tenant context and configuration)
             .configure(handlers::tenant_operations::configure)
             // Supabase operations (data warehouse sync)

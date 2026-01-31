@@ -6,7 +6,7 @@
  * Requirements: 3.1, 3.3, 3.4
  */
 
-use EasySale_server::{
+use easysale_server::{
     MappingEngine,
     FieldMapping,
     FieldMap,

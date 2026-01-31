@@ -3,29 +3,14 @@
 
 use crate::models::{InputArtifact, PageArtifact};
 use image::{DynamicImage, ImageBuffer, Rgba};
-use lopdf::Document as PdfDocument;
+use lopdf::Document as LopdfDocument;
 use pdfium_render::prelude::*;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::Read;
-use std::sync::OnceLock;
 use thiserror::Error;
 use uuid::Uuid;
-
-/// Global Pdfium instance (loaded once, reused)
-static PDFIUM: OnceLock<Option<Pdfium>> = OnceLock::new();
-
-/// Get or initialize the Pdfium library
-fn get_pdfium() -> Option<&'static Pdfium> {
-    PDFIUM.get_or_init(|| {
-        // Try to bind to system pdfium library
-        Pdfium::bind_to_system_library()
-            .or_else(|_| Pdfium::bind_to_library("pdfium"))
-            .or_else(|_| Pdfium::bind_to_library("libpdfium"))
-            .ok()
-    }).as_ref()
-}
 
 /// Errors that can occur during document ingestion
 #[derive(Debug, Error)]
@@ -76,6 +61,30 @@ pub struct IngestResult {
     pub input_artifact: InputArtifact,
     pub page_artifacts: Vec<PageArtifact>,
     pub processing_time_ms: u64,
+}
+
+/// Configuration for image enhancement
+#[derive(Debug, Clone)]
+pub struct EnhancementConfig {
+    /// Whether to convert to grayscale
+    pub grayscale: bool,
+    /// Contrast enhancement factor (1.0 = no change, >1.0 = more contrast)
+    pub contrast_factor: f32,
+    /// Whether to attempt deskewing
+    pub deskew: bool,
+    /// Maximum skew angle to correct (in degrees)
+    pub max_skew_angle: f32,
+}
+
+impl Default for EnhancementConfig {
+    fn default() -> Self {
+        Self {
+            grayscale: true,
+            contrast_factor: 1.2,
+            deskew: true,
+            max_skew_angle: 15.0,
+        }
+    }
 }
 
 /// Document ingest service
@@ -156,16 +165,23 @@ impl DocumentIngestService {
         fs::create_dir_all(&self.config.storage_dir)?;
 
         // Load the PDF document with lopdf for text extraction
-        let doc = PdfDocument::load(file_path)
+        let doc = LopdfDocument::load(file_path)
             .map_err(|e| IngestError::Pdf(format!("Failed to load PDF: {}", e)))?;
 
         let page_count = doc.get_pages().len();
         let mut page_artifacts = Vec::with_capacity(page_count);
 
-        // Try to use pdfium for rasterization
-        let pdfium = get_pdfium();
-        let pdfium_doc = pdfium.and_then(|p| {
-            p.load_pdf_from_file(file_path, None).ok()
+        // Try to bind to pdfium for rasterization
+        let pdfium_bindings = Pdfium::bind_to_system_library()
+            .or_else(|_| Pdfium::bind_to_library("pdfium"))
+            .or_else(|_| Pdfium::bind_to_library("libpdfium"))
+            .ok();
+
+        // Create pdfium instance and load document if bindings are available
+        // We need to keep pdfium alive for the duration of the document
+        let pdfium_instance = pdfium_bindings.map(Pdfium::new);
+        let pdfium_doc = pdfium_instance.as_ref().and_then(|pdfium| {
+            pdfium.load_pdf_from_file(file_path, None).ok()
         });
 
         // Process each page
@@ -222,7 +238,7 @@ impl DocumentIngestService {
     /// Rasterize a single PDF page to an image using pdfium
     fn rasterize_pdf_page(
         &self,
-        doc: &PdfiumDocument,
+        doc: &PdfDocument,
         page_index: usize,
         output_path: &Path,
     ) -> Result<(), IngestError> {
@@ -247,7 +263,7 @@ impl DocumentIngestService {
         // Convert to image and save
         let img = bitmap.as_image();
         img.save(output_path)
-            .map_err(|e| IngestError::Image(e))?;
+            .map_err(|e| IngestError::Pdf(format!("Failed to save rendered image: {}", e)))?;
 
         Ok(())
     }
@@ -263,16 +279,318 @@ impl DocumentIngestService {
         });
 
         let dynamic_img = DynamicImage::ImageRgba8(img);
-        dynamic_img.save(output_path)?;
+        dynamic_img.save(output_path)
+            .map_err(|e| IngestError::Pdf(format!("Failed to save placeholder image: {}", e)))?;
 
         tracing::info!("Created placeholder image for page {} at {:?}", page_number, output_path);
+        Ok(())
+    }
+
+    // ============================================================================
+    // Image Enhancement for OCR
+    // ============================================================================
+
+    /// Enhance an image for better OCR results
+    /// 
+    /// This applies a series of image processing steps:
+    /// 1. Grayscale conversion (reduces noise from color variations)
+    /// 2. Contrast enhancement (makes text stand out from background)
+    /// 3. Deskewing (corrects rotated scans)
+    pub fn enhance_image_for_ocr(
+        &self,
+        img: &DynamicImage,
+        config: &EnhancementConfig,
+    ) -> DynamicImage {
+        let mut result = img.clone();
+
+        // Step 1: Convert to grayscale
+        if config.grayscale {
+            result = self.convert_to_grayscale(&result);
+        }
+
+        // Step 2: Enhance contrast
+        if config.contrast_factor != 1.0 {
+            result = self.enhance_contrast(&result, config.contrast_factor);
+        }
+
+        // Step 3: Deskew if enabled
+        if config.deskew {
+            if let Some(deskewed) = self.deskew_image(&result, config.max_skew_angle) {
+                result = deskewed;
+            }
+        }
+
+        result
+    }
+
+    /// Convert an image to grayscale
+    /// 
+    /// Grayscale images are better for OCR because:
+    /// - Reduces color noise that can confuse text detection
+    /// - Simplifies the image to just luminance values
+    /// - Faster processing for subsequent steps
+    pub fn convert_to_grayscale(&self, img: &DynamicImage) -> DynamicImage {
+        DynamicImage::ImageLuma8(img.to_luma8())
+    }
+
+    /// Enhance image contrast using linear scaling
+    /// 
+    /// Higher contrast makes text stand out more from the background,
+    /// which improves OCR accuracy especially for faded or low-quality scans.
+    /// 
+    /// # Arguments
+    /// * `img` - The input image
+    /// * `factor` - Contrast factor (1.0 = no change, >1.0 = more contrast)
+    pub fn enhance_contrast(&self, img: &DynamicImage, factor: f32) -> DynamicImage {
+        let rgba = img.to_rgba8();
+        let (width, height) = rgba.dimensions();
+
+        let enhanced: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_fn(width, height, |x, y| {
+            let pixel = rgba.get_pixel(x, y);
+            let r = pixel[0] as f32;
+            let g = pixel[1] as f32;
+            let b = pixel[2] as f32;
+            let a = pixel[3];
+
+            // Apply contrast adjustment around midpoint (128)
+            let adjust = |v: f32| -> u8 {
+                let adjusted = ((v - 128.0) * factor + 128.0).clamp(0.0, 255.0);
+                adjusted as u8
+            };
+
+            Rgba([adjust(r), adjust(g), adjust(b), a])
+        });
+
+        DynamicImage::ImageRgba8(enhanced)
+    }
+
+    /// Attempt to deskew a rotated image
+    /// 
+    /// Scanned documents are often slightly rotated. This function:
+    /// 1. Detects the skew angle by analyzing horizontal lines
+    /// 2. Rotates the image to correct the skew
+    /// 
+    /// # Arguments
+    /// * `img` - The input image
+    /// * `max_angle` - Maximum skew angle to correct (in degrees)
+    /// 
+    /// # Returns
+    /// * `Some(DynamicImage)` - The deskewed image if skew was detected and corrected
+    /// * `None` - If no significant skew was detected
+    pub fn deskew_image(&self, img: &DynamicImage, max_angle: f32) -> Option<DynamicImage> {
+        // Detect skew angle
+        let skew_angle = self.detect_skew_angle(img, max_angle);
+
+        // Only correct if skew is significant (> 0.5 degrees)
+        if skew_angle.abs() < 0.5 {
+            tracing::debug!("Skew angle {} is too small, skipping deskew", skew_angle);
+            return None;
+        }
+
+        tracing::info!("Detected skew angle: {} degrees, correcting...", skew_angle);
+
+        // Rotate the image to correct the skew
+        Some(self.rotate_image(img, -skew_angle))
+    }
+
+    /// Detect the skew angle of an image using projection profile analysis
+    /// 
+    /// This method works by:
+    /// 1. Converting to binary (black/white)
+    /// 2. Computing horizontal projection profiles at various angles
+    /// 3. Finding the angle that maximizes the variance of the projection
+    ///    (text lines create peaks in the projection when properly aligned)
+    fn detect_skew_angle(&self, img: &DynamicImage, max_angle: f32) -> f32 {
+        let gray = img.to_luma8();
+        let (width, height) = gray.dimensions();
+
+        // Binarize the image using Otsu's threshold approximation
+        let threshold = self.compute_otsu_threshold(&gray);
+
+        let mut best_angle = 0.0f32;
+        let mut best_variance = 0.0f32;
+
+        // Test angles from -max_angle to +max_angle in 0.5 degree steps
+        let step = 0.5f32;
+        let mut angle = -max_angle;
+
+        while angle <= max_angle {
+            let variance = self.compute_projection_variance(&gray, threshold, angle, width, height);
+
+            if variance > best_variance {
+                best_variance = variance;
+                best_angle = angle;
+            }
+
+            angle += step;
+        }
+
+        best_angle
+    }
+
+    /// Compute Otsu's threshold for binarization
+    fn compute_otsu_threshold(&self, img: &image::GrayImage) -> u8 {
+        // Build histogram
+        let mut histogram = [0u32; 256];
+        for pixel in img.pixels() {
+            histogram[pixel[0] as usize] += 1;
+        }
+
+        let total_pixels = img.width() * img.height();
+        let mut sum = 0u64;
+        for (i, &count) in histogram.iter().enumerate() {
+            sum += (i as u64) * (count as u64);
+        }
+
+        let mut sum_b = 0u64;
+        let mut w_b = 0u32;
+        let mut max_variance = 0.0f64;
+        let mut threshold = 0u8;
+
+        for (i, &count) in histogram.iter().enumerate() {
+            w_b += count;
+            if w_b == 0 {
+                continue;
+            }
+
+            let w_f = total_pixels - w_b;
+            if w_f == 0 {
+                break;
+            }
+
+            sum_b += (i as u64) * (count as u64);
+
+            let m_b = sum_b as f64 / w_b as f64;
+            let m_f = (sum - sum_b) as f64 / w_f as f64;
+
+            let variance = (w_b as f64) * (w_f as f64) * (m_b - m_f) * (m_b - m_f);
+
+            if variance > max_variance {
+                max_variance = variance;
+                threshold = i as u8;
+            }
+        }
+
+        threshold
+    }
+
+    /// Compute the variance of horizontal projection at a given angle
+    fn compute_projection_variance(
+        &self,
+        img: &image::GrayImage,
+        threshold: u8,
+        angle: f32,
+        width: u32,
+        height: u32,
+    ) -> f32 {
+        let angle_rad = angle.to_radians();
+        let cos_a = angle_rad.cos();
+        let sin_a = angle_rad.sin();
+
+        let cx = width as f32 / 2.0;
+        let cy = height as f32 / 2.0;
+
+        // Compute projection profile
+        let mut projection = vec![0u32; height as usize];
+
+        for y in 0..height {
+            for x in 0..width {
+                // Rotate point around center
+                let dx = x as f32 - cx;
+                let dy = y as f32 - cy;
+                let new_y = (dy * cos_a - dx * sin_a + cy) as i32;
+
+                if new_y >= 0 && new_y < height as i32 {
+                    let pixel = img.get_pixel(x, y)[0];
+                    if pixel < threshold {
+                        // Dark pixel (text)
+                        projection[new_y as usize] += 1;
+                    }
+                }
+            }
+        }
+
+        // Compute variance of projection
+        let sum: u64 = projection.iter().map(|&v| v as u64).sum();
+        let mean = sum as f32 / projection.len() as f32;
+
+        let variance: f32 = projection
+            .iter()
+            .map(|&v| {
+                let diff = v as f32 - mean;
+                diff * diff
+            })
+            .sum::<f32>()
+            / projection.len() as f32;
+
+        variance
+    }
+
+    /// Rotate an image by a given angle (in degrees)
+    fn rotate_image(&self, img: &DynamicImage, angle_degrees: f32) -> DynamicImage {
+        let rgba = img.to_rgba8();
+        let (width, height) = rgba.dimensions();
+
+        let angle_rad = angle_degrees.to_radians();
+        let cos_a = angle_rad.cos();
+        let sin_a = angle_rad.sin();
+
+        let cx = width as f32 / 2.0;
+        let cy = height as f32 / 2.0;
+
+        // Create output image with same dimensions
+        let rotated: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_fn(width, height, |x, y| {
+            // Inverse rotation to find source pixel
+            let dx = x as f32 - cx;
+            let dy = y as f32 - cy;
+
+            let src_x = (dx * cos_a + dy * sin_a + cx) as i32;
+            let src_y = (-dx * sin_a + dy * cos_a + cy) as i32;
+
+            if src_x >= 0 && src_x < width as i32 && src_y >= 0 && src_y < height as i32 {
+                *rgba.get_pixel(src_x as u32, src_y as u32)
+            } else {
+                // Fill with white for out-of-bounds pixels
+                Rgba([255, 255, 255, 255])
+            }
+        });
+
+        DynamicImage::ImageRgba8(rotated)
+    }
+
+    /// Enhance an image file and save the result
+    /// 
+    /// This is a convenience method that loads an image, enhances it,
+    /// and saves the result to a new file.
+    pub async fn enhance_image_file(
+        &self,
+        input_path: &Path,
+        output_path: &Path,
+        config: Option<EnhancementConfig>,
+    ) -> Result<(), IngestError> {
+        let img = image::open(input_path)?;
+        let config = config.unwrap_or_default();
+
+        let enhanced = self.enhance_image_for_ocr(&img, &config);
+
+        enhanced.save(output_path)
+            .map_err(|e| IngestError::Pdf(format!("Failed to save enhanced image: {}", e)))?;
+
+        tracing::info!(
+            "Enhanced image saved to {:?} (grayscale={}, contrast={}, deskew={})",
+            output_path,
+            config.grayscale,
+            config.contrast_factor,
+            config.deskew
+        );
+
         Ok(())
     }
 
     /// Extract text from a specific PDF page
     fn extract_text_from_page(
         &self,
-        doc: &PdfDocument,
+        doc: &LopdfDocument,
         page_num: usize,
     ) -> Result<String, IngestError> {
         // Get the page ID
@@ -642,6 +960,132 @@ mod tests {
 
         let confidence = DocumentIngestService::calculate_text_confidence(text);
         assert!(confidence < 0.8, "Expected lower confidence for text without whitespace");
+    }
+
+    #[test]
+    fn test_grayscale_conversion() {
+        let (config, _temp_dir) = create_test_config();
+        let service = DocumentIngestService::new(config);
+
+        // Create a color image
+        let img = DynamicImage::new_rgb8(100, 100);
+
+        // Convert to grayscale
+        let gray = service.convert_to_grayscale(&img);
+
+        // Verify it's a grayscale image
+        match gray {
+            DynamicImage::ImageLuma8(_) => {
+                // Expected
+            }
+            _ => panic!("Expected grayscale image"),
+        }
+    }
+
+    #[test]
+    fn test_contrast_enhancement() {
+        let (config, _temp_dir) = create_test_config();
+        let service = DocumentIngestService::new(config);
+
+        // Create a gray image with mid-tone pixels
+        let mut img = ImageBuffer::from_fn(10, 10, |_, _| {
+            Rgba([128u8, 128u8, 128u8, 255u8])
+        });
+
+        // Add some variation
+        img.put_pixel(0, 0, Rgba([100, 100, 100, 255]));
+        img.put_pixel(1, 1, Rgba([156, 156, 156, 255]));
+
+        let dynamic_img = DynamicImage::ImageRgba8(img);
+
+        // Enhance contrast
+        let enhanced = service.enhance_contrast(&dynamic_img, 1.5);
+
+        // Verify the image was processed (dimensions should be the same)
+        assert_eq!(enhanced.width(), 10);
+        assert_eq!(enhanced.height(), 10);
+    }
+
+    #[test]
+    fn test_enhance_image_for_ocr() {
+        let (config, _temp_dir) = create_test_config();
+        let service = DocumentIngestService::new(config);
+
+        // Create a test image
+        let img = DynamicImage::new_rgb8(100, 100);
+
+        // Apply full enhancement pipeline
+        let enhancement_config = super::EnhancementConfig {
+            grayscale: true,
+            contrast_factor: 1.2,
+            deskew: false, // Skip deskew for simple test
+            max_skew_angle: 15.0,
+        };
+
+        let enhanced = service.enhance_image_for_ocr(&img, &enhancement_config);
+
+        // Verify the image was processed
+        assert_eq!(enhanced.width(), 100);
+        assert_eq!(enhanced.height(), 100);
+    }
+
+    #[test]
+    fn test_otsu_threshold() {
+        let (config, _temp_dir) = create_test_config();
+        let service = DocumentIngestService::new(config);
+
+        // Create a bimodal image with some variation
+        // Use values that create a clear bimodal distribution
+        let img: image::GrayImage = ImageBuffer::from_fn(100, 100, |x, y| {
+            if x < 50 {
+                // Dark region with slight variation
+                image::Luma([((y % 10) as u8).saturating_add(20)])
+            } else {
+                // Light region with slight variation
+                image::Luma([200u8.saturating_add((y % 10) as u8)])
+            }
+        });
+
+        let threshold = service.compute_otsu_threshold(&img);
+
+        // Threshold should be somewhere between the two modes
+        // Dark mode is around 20-30, light mode is around 200-210
+        // So threshold should be somewhere in between
+        assert!(threshold >= 20 && threshold < 210, "Threshold {} should be between 20 and 210", threshold);
+    }
+
+    #[test]
+    fn test_rotate_image() {
+        let (config, _temp_dir) = create_test_config();
+        let service = DocumentIngestService::new(config);
+
+        // Create a simple test image
+        let img = DynamicImage::new_rgb8(100, 100);
+
+        // Rotate by 5 degrees
+        let rotated = service.rotate_image(&img, 5.0);
+
+        // Verify dimensions are preserved
+        assert_eq!(rotated.width(), 100);
+        assert_eq!(rotated.height(), 100);
+    }
+
+    #[tokio::test]
+    async fn test_enhance_image_file() {
+        let (config, temp_dir) = create_test_config();
+        let service = DocumentIngestService::new(config);
+
+        // Create a test image
+        let input_path = temp_dir.path().join("input.png");
+        let output_path = temp_dir.path().join("output.png");
+        create_test_image(&input_path, 100, 100).unwrap();
+
+        // Enhance the image
+        let result = service.enhance_image_file(&input_path, &output_path, None).await;
+        assert!(result.is_ok());
+
+        // Verify output file exists
+        assert!(output_path.exists());
     }
 }
 

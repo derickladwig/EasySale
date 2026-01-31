@@ -121,7 +121,18 @@ export function EditUserModal({
     },
   ];
 
-  const validate = (data: any): ValidationError[] => {
+interface UserFormData {
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  role?: string;
+  store_id?: string;
+  station_policy?: string;
+  station_id?: string;
+  is_active?: boolean;
+}
+
+  const validate = (data: UserFormData): ValidationError[] => {
     const errors: ValidationError[] = [];
 
     // Validate email format
@@ -134,7 +145,7 @@ export function EditUserModal({
 
     // Validate store requirement for POS roles
     const posRoles = ['cashier', 'manager', 'specialist', 'technician'];
-    if (posRoles.includes(data.role) && !data.store_id) {
+    if (data.role && posRoles.includes(data.role) && !data.store_id) {
       errors.push({
         field: 'store_id',
         message: `Role "${data.role}" requires a store assignment`,
@@ -159,7 +170,7 @@ export function EditUserModal({
     return errors;
   };
 
-  const handleSave = async (data: any) => {
+  const handleSave = async (data: UserFormData) => {
     if (!user) return;
 
     const updateData: UpdateUserData = {

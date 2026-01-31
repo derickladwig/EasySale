@@ -53,7 +53,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ cases, onDocumentC
     switch (state) {
       case 'NeedsReview':
       case 'InReview':
-        return <AlertCircle className="w-4 h-4 text-yellow-400" />;
+        return <AlertCircle className="w-4 h-4 text-[var(--color-warning-400)]" />;
       case 'Processing':
       case 'Queued':
         return <Clock className="w-4 h-4 text-info" />;
@@ -73,7 +73,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ cases, onDocumentC
     switch (state) {
       case 'NeedsReview':
       case 'InReview':
-        return 'text-yellow-400';
+        return 'text-[var(--color-warning-400)]';
       case 'Processing':
       case 'Queued':
         return 'text-info';

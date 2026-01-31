@@ -76,14 +76,14 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold">Targeted Re-OCR</h3>
           <button
             onClick={onComplete}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-text-tertiary hover:text-text-primary text-2xl"
           >
             ×
           </button>
@@ -110,9 +110,9 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
 
           {/* Region Info */}
           {selectedRegion && (
-            <div className="mb-4 p-3 bg-gray-50 rounded">
+            <div className="mb-4 p-3 bg-surface-base rounded">
               <p className="text-sm font-semibold mb-1">Selected Region:</p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-text-secondary">
                 Position: ({selectedRegion.x}, {selectedRegion.y}) | 
                 Size: {selectedRegion.width} × {selectedRegion.height}
               </p>
@@ -128,33 +128,33 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
                 className={`p-3 rounded border-2 ${
                   selectedProfile === 'fast'
                     ? 'border-accent bg-info-50'
-                    : 'border-gray-200 hover:bg-gray-50'
+                    : 'border-border-light hover:bg-surface-base'
                 }`}
               >
                 <p className="font-semibold">Fast</p>
-                <p className="text-xs text-gray-600">~2 seconds</p>
+                <p className="text-xs text-text-secondary">~2 seconds</p>
               </button>
               <button
                 onClick={() => setSelectedProfile('balanced')}
                 className={`p-3 rounded border-2 ${
                   selectedProfile === 'balanced'
                     ? 'border-accent bg-info-50'
-                    : 'border-gray-200 hover:bg-gray-50'
+                    : 'border-border-light hover:bg-surface-base'
                 }`}
               >
                 <p className="font-semibold">Balanced</p>
-                <p className="text-xs text-gray-600">~5 seconds</p>
+                <p className="text-xs text-text-secondary">~5 seconds</p>
               </button>
               <button
                 onClick={() => setSelectedProfile('high_accuracy')}
                 className={`p-3 rounded border-2 ${
                   selectedProfile === 'high_accuracy'
                     ? 'border-accent bg-info-50'
-                    : 'border-gray-200 hover:bg-gray-50'
+                    : 'border-border-light hover:bg-surface-base'
                 }`}
               >
                 <p className="font-semibold">High Accuracy</p>
-                <p className="text-xs text-gray-600">~10 seconds</p>
+                <p className="text-xs text-text-secondary">~10 seconds</p>
               </button>
             </div>
           </div>
@@ -164,9 +164,9 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-semibold">Processing...</span>
-                <span className="text-sm text-gray-600">{progress}%</span>
+                <span className="text-sm text-text-secondary">{progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-secondary-200 rounded-full h-2">
                 <div
                   className="bg-accent h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
@@ -177,13 +177,13 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t bg-gray-50">
+        <div className="p-4 border-t bg-surface-base">
           <div className="flex gap-2">
             {!selectedRegion ? (
               <button
                 onClick={handleStartSelection}
                 disabled={isSelecting}
-                className="flex-1 px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-gray-300"
+                className="flex-1 px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-secondary-300"
               >
                 {isSelecting ? 'Selecting Region...' : 'Select Region'}
               </button>
@@ -192,14 +192,14 @@ export const ReOcrTool: React.FC<ReOcrToolProps> = ({ caseId, onComplete }) => {
                 <button
                   onClick={() => setSelectedRegion(null)}
                   disabled={isProcessing}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300"
+                  className="px-4 py-2 bg-secondary-600 text-white rounded hover:bg-secondary-700 disabled:bg-secondary-300"
                 >
                   Clear
                 </button>
                 <button
                   onClick={handleReOcr}
                   disabled={isProcessing}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-300"
+                  className="flex-1 px-4 py-2 bg-success-600 text-white rounded hover:bg-success-700 disabled:bg-secondary-300"
                 >
                   {isProcessing ? 'Processing...' : 'Re-OCR Region'}
                 </button>

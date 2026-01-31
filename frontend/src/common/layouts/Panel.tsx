@@ -21,7 +21,7 @@ export function Panel({ children, title, padding = 'md', className = '', ...prop
     >
       {title && (
         <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-          <h3 className="text-base sm:text-lg font-semibold text-secondary-900">{title}</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-text-primary">{title}</h3>
         </div>
       )}
       <div className={paddingClasses[padding]}>{children}</div>

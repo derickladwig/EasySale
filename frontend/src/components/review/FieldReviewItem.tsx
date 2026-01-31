@@ -26,9 +26,9 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
   const [editValue, setEditValue] = useState(field.value);
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return 'text-green-600 bg-green-50';
-    if (confidence >= 70) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (confidence >= 90) return 'text-success-dark bg-success-50 dark:bg-success-900/20';
+    if (confidence >= 70) return 'text-warning-dark bg-warning-50 dark:bg-warning-900/20';
+    return 'text-error-dark bg-error-50 dark:bg-error-900/20';
   };
 
   const getConfidenceIcon = (confidence: number) => {
@@ -38,22 +38,22 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
   };
 
   const handleSaveEdit = () => {
-    // Save edited value
-    console.log('Save edit:', editValue);
+    // TODO: Implement field value save via API
+    // PUT /api/fields/:fieldId with new value
     setIsEditing(false);
   };
 
   const handleLocateOnPage = () => {
-    // Highlight field on document
-    console.log('Locate on page:', field.name);
+    // TODO: Implement document highlight for field location
+    // This should scroll to and highlight the field on the document preview
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">
+    <div className="bg-surface-elevated rounded-lg shadow-sm border border-border p-4 mb-4">
       {/* Field Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold capitalize">
+          <span className="text-lg font-semibold capitalize text-text-primary">
             {field.name.replace(/_/g, ' ')}
           </span>
           <span className={`px-2 py-1 rounded text-sm font-medium ${getConfidenceColor(field.confidence)}`}>
@@ -71,7 +71,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
       {/* Field Value */}
       {!isEditing ? (
         <div className="mb-3">
-          <div className="text-2xl font-mono bg-gray-50 p-3 rounded">
+          <div className="text-2xl font-mono bg-surface-base p-3 rounded text-text-primary">
             {field.value}
           </div>
         </div>
@@ -81,7 +81,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="w-full text-2xl font-mono bg-gray-50 p-3 rounded border-2 border-accent"
+            className="w-full text-2xl font-mono bg-surface-base p-3 rounded border-2 border-accent text-text-primary"
             autoFocus
             onKeyPress={(e) => {
               if (e.key === 'Enter') handleSaveEdit();
@@ -93,13 +93,13 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
       {/* Alternatives */}
       {field.alternatives.length > 1 && (
         <div className="mb-3">
-          <p className="text-sm font-semibold text-gray-700 mb-1">Alternatives:</p>
+          <p className="text-sm font-semibold text-text-secondary mb-1">Alternatives:</p>
           <div className="flex flex-wrap gap-2">
             {field.alternatives.slice(0, 3).map((alt, i) => (
               <button
                 key={i}
                 onClick={() => setEditValue(alt)}
-                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+                className="px-3 py-1 bg-secondary-100 dark:bg-secondary-800 hover:bg-secondary-200 dark:hover:bg-secondary-700 rounded text-sm text-text-primary"
               >
                 {alt}
               </button>
@@ -116,7 +116,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
         >
           📋 View Evidence
         </button>
-        <p className="text-sm text-gray-600 mt-1">{field.evidence}</p>
+        <p className="text-sm text-text-secondary mt-1">{field.evidence}</p>
       </div>
 
       {/* Actions */}
@@ -125,7 +125,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
           <>
             <button
               onClick={onAccept}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="flex-1 px-4 py-2 bg-success text-white rounded hover:bg-success-dark"
             >
               ✓ Accept (A)
             </button>
@@ -140,7 +140,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
           <>
             <button
               onClick={handleSaveEdit}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="flex-1 px-4 py-2 bg-success text-white rounded hover:bg-success-dark"
             >
               💾 Save (Enter)
             </button>
@@ -149,7 +149,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
                 setIsEditing(false);
                 setEditValue(field.value);
               }}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              className="px-4 py-2 bg-secondary-600 text-white rounded hover:bg-secondary-700"
             >
               Cancel (Esc)
             </button>

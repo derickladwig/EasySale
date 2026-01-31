@@ -102,24 +102,24 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
   };
 
   const handleDeleteZone = (zoneId: string) => {
-    // Delete zone
-    console.log('Delete zone:', zoneId);
+    // TODO: Implement zone deletion via API
+    // DELETE /api/zones/:zoneId
   };
 
   const handleAdjustZone = (zoneId: string) => {
-    // Enable adjustment mode
-    console.log('Adjust zone:', zoneId);
+    // TODO: Implement zone adjustment mode
+    // This should enable drag handles on the zone
   };
 
-  // Zone colors using CSS tokens where available
+  // Zone colors using semantic CSS tokens
   const getZoneColor = (type: string) => {
     const colors: Record<string, string> = {
       HeaderFields: 'border-accent bg-info-100 dark:bg-info-900/20',
-      TotalsBox: 'border-green-500 bg-green-100 dark:bg-green-900/20',
-      LineItemsTable: 'border-purple-500 bg-purple-100 dark:bg-purple-900/20',
-      FooterNotes: 'border-orange-500 bg-orange-100 dark:bg-orange-900/20',
+      TotalsBox: 'border-success-500 bg-success-100 dark:bg-success-900/20',
+      LineItemsTable: 'border-primary-500 bg-primary-100 dark:bg-primary-900/20',
+      FooterNotes: 'border-warning-500 bg-warning-100 dark:bg-warning-900/20',
     };
-    return colors[type] || 'border-gray-500 bg-gray-100 dark:bg-gray-800';
+    return colors[type] || 'border-border bg-surface-base dark:bg-surface-elevated';
   };
 
   return (
@@ -140,10 +140,10 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
                 selectedZone === zone.id 
                   ? 'border-accent bg-info-50 dark:bg-info-900/20' 
                   : hasCriticalOverlap
-                    ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
+                    ? 'border-error-400 bg-error-50 dark:bg-error-900/20'
                     : hasWarningOverlap
-                      ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20'
-                      : 'border-gray-200 dark:border-gray-700'
+                      ? 'border-warning-400 bg-warning-50 dark:bg-warning-900/20'
+                      : 'border-border-light dark:border-border'
               }`}
               onClick={() => onZoneSelect(zone.id)}
             >
@@ -159,16 +159,16 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
               {overlaps.length > 0 && (
                 <div className={`mt-2 p-2 rounded text-xs ${
                   hasCriticalOverlap 
-                    ? 'bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800' 
-                    : 'bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800'
+                    ? 'bg-error-100 dark:bg-error-900/30 border border-error-200 dark:border-error-800' 
+                    : 'bg-warning-100 dark:bg-warning-900/30 border border-warning-200 dark:border-warning-800'
                 }`}>
                   <p className={`font-medium mb-1 ${
-                    hasCriticalOverlap ? 'text-red-800 dark:text-red-200' : 'text-yellow-800 dark:text-yellow-200'
+                    hasCriticalOverlap ? 'text-error-800 dark:text-error-200' : 'text-warning-800 dark:text-warning-200'
                   }`}>
                     {hasCriticalOverlap ? '⚠️ Critical Zone Overlap' : '⚡ Shield Overlap Detected'}
                   </p>
                   {overlaps.map((overlap, i) => (
-                    <p key={i} className={hasCriticalOverlap ? 'text-red-700 dark:text-red-300' : 'text-yellow-700 dark:text-yellow-300'}>
+                    <p key={i} className={hasCriticalOverlap ? 'text-error-700 dark:text-error-300' : 'text-warning-700 dark:text-warning-300'}>
                       {overlap.shieldType} shield: {Math.round(overlap.overlapRatio * 100)}% overlap
                       {overlap.isCritical && ' - Forced to Suggested'}
                     </p>
@@ -191,7 +191,7 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
                     e.stopPropagation();
                     handleDeleteZone(zone.id);
                   }}
-                  className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-900/50"
+                  className="text-xs px-2 py-1 bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-300 rounded hover:bg-error-200 dark:hover:bg-error-900/50"
                 >
                   Delete
                 </button>
@@ -204,19 +204,19 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
       {/* Add Zone */}
       <button
         onClick={handleAddZone}
-        className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        className="w-full px-4 py-2 bg-success-600 text-white rounded hover:bg-success-700"
       >
         + Add New Zone
       </button>
 
       {isAddingZone && (
-        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-          <p className="text-sm text-yellow-800">
+        <div className="mt-3 p-3 bg-warning-50 border border-warning-200 rounded">
+          <p className="text-sm text-warning-800">
             Click and drag on the document to create a new zone
           </p>
           <button
             onClick={() => setIsAddingZone(false)}
-            className="mt-2 text-sm text-yellow-700 hover:text-yellow-900"
+            className="mt-2 text-sm text-warning-700 hover:text-warning-900"
           >
             Cancel
           </button>

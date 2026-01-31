@@ -40,16 +40,16 @@ describe('Card', () => {
     it('should apply default variant styles', () => {
       const { container } = render(<Card>Content</Card>);
       const card = container.firstChild;
-      expect(card).toHaveClass('bg-[#1e293b]');
+      expect(card).toHaveClass('bg-surface-base');
       expect(card).toHaveClass('border');
-      expect(card).toHaveClass('border-[#334155]');
+      expect(card).toHaveClass('border-border');
       expect(card).toHaveClass('shadow-md');
     });
 
     it('should apply elevated variant styles', () => {
       const { container } = render(<Card variant="elevated">Content</Card>);
       const card = container.firstChild;
-      expect(card).toHaveClass('bg-[#1e293b]');
+      expect(card).toHaveClass('bg-surface-base');
       expect(card).toHaveClass('shadow-lg');
     });
 
@@ -58,7 +58,7 @@ describe('Card', () => {
       const card = container.firstChild;
       expect(card).toHaveClass('bg-transparent');
       expect(card).toHaveClass('border-2');
-      expect(card).toHaveClass('border-[#334155]');
+      expect(card).toHaveClass('border-border');
       expect(card).toHaveClass('shadow-md');
     });
   });

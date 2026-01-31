@@ -58,8 +58,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
             const currentCase = data.cases[selectedCaseIndex];
             if (currentCase) {
               // TODO: Implement assign to me functionality
-              // This would call an API endpoint to assign the case to the current user
-              console.log('Assign to me:', currentCase.case_id);
+              // POST /api/cases/:caseId/assign with current user
               // Navigate to the case detail page for manual assignment
               navigate(`/review/${currentCase.case_id}`);
             }
@@ -72,8 +71,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
             const currentCase = data.cases[selectedCaseIndex];
             if (currentCase) {
               // TODO: Implement export functionality
-              // This would call an API endpoint to export the case
-              console.log('Export case:', currentCase.case_id);
+              // POST /api/cases/:caseId/export
               // Navigate to exports page
               navigate('/exports');
             }
@@ -87,21 +85,21 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
   }, [data, selectedCaseIndex, onSelectCase]);
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return 'text-green-600';
-    if (confidence >= 70) return 'text-yellow-600';
-    return 'text-red-600';
+    if (confidence >= 90) return 'text-success-600';
+    if (confidence >= 70) return 'text-warning-600';
+    return 'text-error-600';
   };
 
   const getStateColor = (state: string) => {
     const colors: Record<string, string> = {
-      NeedsReview: 'bg-yellow-100 text-yellow-800',
+      NeedsReview: 'bg-warning-100 text-warning-800',
       InReview: 'bg-info-100 text-info-dark',
-      Approved: 'bg-green-100 text-green-800',
-      Rejected: 'bg-red-100 text-red-800',
-      AutoApproved: 'bg-green-200 text-green-900',
-      Exported: 'bg-gray-100 text-gray-800',
+      Approved: 'bg-success-100 text-success-800',
+      Rejected: 'bg-error-100 text-error-800',
+      AutoApproved: 'bg-success-200 text-success-900',
+      Exported: 'bg-surface-elevated text-text-secondary',
     };
-    return colors[state] || 'bg-gray-100 text-gray-800';
+    return colors[state] || 'bg-surface-elevated text-text-secondary';
   };
 
   const getDisplayState = (state: string) => {
@@ -122,9 +120,9 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background-secondary">
       {/* Sidebar - Filters & Stats */}
-      <div className="w-80 bg-white border-r overflow-y-auto">
+      <div className="w-80 bg-surface-base border-r border-border overflow-y-auto">
         {/* Stats */}
         {data && (
           <div className="p-4 border-b">
@@ -191,23 +189,23 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                <div className="h-4 bg-surface-elevated rounded w-1/4 mb-4"></div>
                 <div className="space-y-3">
-                  <div className="h-16 bg-gray-200 rounded"></div>
-                  <div className="h-16 bg-gray-200 rounded"></div>
-                  <div className="h-16 bg-gray-200 rounded"></div>
+                  <div className="h-16 bg-surface-elevated rounded"></div>
+                  <div className="h-16 bg-surface-elevated rounded"></div>
+                  <div className="h-16 bg-surface-elevated rounded"></div>
                 </div>
               </div>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-red-600 bg-red-50 p-4 rounded-lg">
+              <div className="text-error-600 bg-error-50 p-4 rounded-lg">
                 Error loading review queue: {getErrorMessage(error)}
               </div>
             </div>
           ) : !data?.cases?.length ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No cases found</p>
+              <p className="text-text-tertiary">No cases found</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -238,11 +236,11 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">
+                    <span className="text-text-secondary">
                       Fields needing attention: {c.fields_needing_attention}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-500">
+                      <span className="text-text-tertiary">
                         {new Date(c.created_at).toLocaleDateString()}
                       </span>
                       {/* Export button for approved cases - Requirement 11.11 */}
@@ -277,22 +275,22 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
 
         {/* Pagination */}
         {data && data.total > data.per_page && (
-          <div className="p-4 bg-white border-t">
+          <div className="p-4 bg-surface-base border-t border-border">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => handlePageChange(Math.max(1, data.page - 1))}
                 disabled={data.page === 1}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:bg-surface-elevated disabled:text-text-tertiary disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-text-secondary">
                 Page {data.page} of {Math.ceil(data.total / data.per_page)}
               </span>
               <button
                 onClick={() => handlePageChange(Math.min(Math.ceil(data.total / data.per_page), data.page + 1))}
                 disabled={data.page >= Math.ceil(data.total / data.per_page)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:bg-surface-elevated disabled:text-text-tertiary disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -301,18 +299,18 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
         )}
 
         {/* Keyboard Shortcuts Footer */}
-        <div className="p-3 bg-gray-50 border-t">
-          <div className="flex items-center justify-center gap-6 text-xs text-gray-600">
+        <div className="p-3 bg-surface-base border-t border-border">
+          <div className="flex items-center justify-center gap-6 text-xs text-text-secondary">
             <div className="flex items-center gap-1">
-              <kbd className="px-2 py-1 bg-white border border-gray-300 rounded shadow-sm font-mono">N</kbd>
+              <kbd className="px-2 py-1 bg-background-primary border border-border rounded shadow-sm font-mono">N</kbd>
               <span>Next case</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="px-2 py-1 bg-white border border-gray-300 rounded shadow-sm font-mono">A</kbd>
+              <kbd className="px-2 py-1 bg-background-primary border border-border rounded shadow-sm font-mono">A</kbd>
               <span>Assign to me</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="px-2 py-1 bg-white border border-gray-300 rounded shadow-sm font-mono">E</kbd>
+              <kbd className="px-2 py-1 bg-background-primary border border-border rounded shadow-sm font-mono">E</kbd>
               <span>Export</span>
             </div>
           </div>

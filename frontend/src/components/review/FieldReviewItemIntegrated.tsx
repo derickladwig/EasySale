@@ -39,16 +39,16 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
   };
 
   const getConfidenceColor = (conf: number) => {
-    if (conf >= 90) return 'text-green-600';
-    if (conf >= 70) return 'text-yellow-600';
-    return 'text-red-600';
+    if (conf >= 90) return 'text-success-dark';
+    if (conf >= 70) return 'text-warning-dark';
+    return 'text-error-dark';
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
+    <div className="bg-surface-elevated rounded-lg shadow-sm border border-border p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2">{label}</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-semibold text-text-primary mb-2">{label}</h3>
+        <p className="text-sm text-text-secondary">
           Review the extracted value and choose the correct option
         </p>
       </div>
@@ -56,18 +56,18 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
       {/* Current Value */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Extracted Value</span>
+          <span className="text-sm font-medium text-text-secondary">Extracted Value</span>
           <span className={`text-sm font-semibold ${getConfidenceColor(confidence)}`}>
             {confidence}% confidence
           </span>
         </div>
-        <div className="bg-info-50 border border-info-200 rounded p-4 mb-3">
-          <div className="text-lg font-mono">{currentValue || '(empty)'}</div>
+        <div className="bg-info-50 dark:bg-info-900/20 border border-info-200 dark:border-info-dark rounded p-4 mb-3">
+          <div className="text-lg font-mono text-text-primary">{currentValue || '(empty)'}</div>
         </div>
         <button
           onClick={handleAcceptCurrent}
           disabled={isLoading || !currentValue}
-          className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-success text-white rounded hover:bg-success-dark disabled:bg-secondary-300 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Processing...' : '✓ Accept This Value'}
         </button>
@@ -76,15 +76,15 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
       {/* Alternatives */}
       {alternatives.length > 0 && (
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Alternative Values</h4>
+          <h4 className="text-sm font-medium text-text-secondary mb-2">Alternative Values</h4>
           <div className="space-y-2">
             {alternatives.map((alt, index) => (
-              <div key={index} className="flex items-center justify-between bg-gray-50 border rounded p-3">
-                <span className="font-mono">{alt}</span>
+              <div key={index} className="flex items-center justify-between bg-surface-base border border-border rounded p-3">
+                <span className="font-mono text-text-primary">{alt}</span>
                 <button
                   onClick={() => handleSelectAlternative(alt, index)}
                   disabled={isLoading}
-                  className="px-3 py-1 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-gray-300 text-sm"
+                  className="px-3 py-1 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-secondary-300 text-sm"
                 >
                   Select
                 </button>
@@ -96,11 +96,11 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
 
       {/* Custom Input */}
       <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Manual Entry</h4>
+        <h4 className="text-sm font-medium text-text-secondary mb-2">Manual Entry</h4>
         {!showCustomInput ? (
           <button
             onClick={() => setShowCustomInput(true)}
-            className="w-full px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            className="w-full px-4 py-2 bg-secondary-600 text-white rounded hover:bg-secondary-700"
           >
             ✏️ Enter Custom Value
           </button>
@@ -111,7 +111,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
               value={customValue}
               onChange={(e) => setCustomValue(e.target.value)}
               placeholder={`Enter ${label.toLowerCase()}...`}
-              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-accent focus:border-accent"
+              className="w-full px-3 py-2 border border-border rounded bg-surface-base text-text-primary focus:ring-2 focus:ring-accent focus:border-accent"
               onKeyPress={(e) => e.key === 'Enter' && handleCustomSubmit()}
               autoFocus
             />
@@ -119,7 +119,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
               <button
                 onClick={handleCustomSubmit}
                 disabled={!customValue.trim() || isLoading}
-                className="flex-1 px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-gray-300"
+                className="flex-1 px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-secondary-300"
               >
                 Submit
               </button>
@@ -128,7 +128,7 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
                   setShowCustomInput(false);
                   setCustomValue('');
                 }}
-                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                className="px-4 py-2 bg-secondary-400 text-white rounded hover:bg-secondary-500"
               >
                 Cancel
               </button>
@@ -138,10 +138,10 @@ export const FieldReviewItem: React.FC<FieldReviewItemProps> = ({
       </div>
 
       {/* Keyboard Shortcuts Help */}
-      <div className="mt-6 pt-4 border-t text-xs text-gray-500">
-        <p><kbd className="bg-gray-100 px-1 rounded">Enter</kbd> Accept current value</p>
-        <p><kbd className="bg-gray-100 px-1 rounded">Tab</kbd> Next field</p>
-        <p><kbd className="bg-gray-100 px-1 rounded">Shift+Tab</kbd> Previous field</p>
+      <div className="mt-6 pt-4 border-t border-border text-xs text-text-tertiary">
+        <p><kbd className="bg-surface-base px-1 rounded">Enter</kbd> Accept current value</p>
+        <p><kbd className="bg-surface-base px-1 rounded">Tab</kbd> Next field</p>
+        <p><kbd className="bg-surface-base px-1 rounded">Shift+Tab</kbd> Previous field</p>
       </div>
     </div>
   );

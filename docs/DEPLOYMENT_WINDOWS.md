@@ -266,7 +266,7 @@ build-prod-windows.bat --skip-wizard
 **Solution**:
 1. Check Docker logs:
    ```cmd
-   docker-compose -p EasySale -f docker-compose.prod.yml logs
+   docker-compose -p easysale -f docker-compose.prod.yml logs
    ```
 
 2. Check backend logs specifically:
@@ -335,7 +335,7 @@ docker build --no-cache -f Dockerfile.backend -t EasySale-backend:latest .
 ### 5. Start Services
 
 ```cmd
-docker-compose -p EasySale -f docker-compose.prod.yml up -d
+docker-compose -p easysale -f docker-compose.prod.yml up -d
 ```
 
 ### 6. Verify Services
@@ -351,7 +351,7 @@ curl http://localhost:7945
 
 **All services**:
 ```cmd
-docker-compose -p EasySale -f docker-compose.prod.yml logs -f
+docker-compose -p easysale -f docker-compose.prod.yml logs -f
 ```
 
 **Backend only**:
@@ -372,13 +372,13 @@ docker-stop.bat
 
 Or manually:
 ```cmd
-docker-compose -p EasySale -f docker-compose.prod.yml down
+docker-compose -p easysale -f docker-compose.prod.yml down
 ```
 
 ### Restarting Services
 
 ```cmd
-docker-compose -p EasySale -f docker-compose.prod.yml restart
+docker-compose -p easysale -f docker-compose.prod.yml restart
 ```
 
 ### Updating Configuration
@@ -386,8 +386,8 @@ docker-compose -p EasySale -f docker-compose.prod.yml restart
 1. Edit `.env` file
 2. Restart services:
    ```cmd
-   docker-compose -p EasySale -f docker-compose.prod.yml down
-   docker-compose -p EasySale -f docker-compose.prod.yml up -d
+   docker-compose -p easysale -f docker-compose.prod.yml down
+   docker-compose -p easysale -f docker-compose.prod.yml up -d
    ```
 
 ### Backing Up Data

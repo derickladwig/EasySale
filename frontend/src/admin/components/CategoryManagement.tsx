@@ -101,8 +101,9 @@ export function CategoryManagement() {
       } else {
         throw new Error('Failed to delete category');
       }
-    } catch (error: any) {
-      alert(`Failed to delete: ${error.message}`);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Failed to delete');
+      alert(`Failed to delete: ${err.message}`);
     }
   };
 
@@ -113,14 +114,14 @@ export function CategoryManagement() {
     return (
       <div key={category.id}>
         <div
-          className="flex items-center gap-2 py-2 px-3 hover:bg-secondary-50 rounded-lg group"
+          className="flex items-center gap-2 py-2 px-3 hover:bg-surface-elevated rounded-lg group"
           style={{ paddingLeft: `${level * 24 + 12}px` }}
         >
           {/* Expand/Collapse Button */}
           {hasChildren ? (
             <button
               onClick={() => toggleExpand(category.id)}
-              className="text-secondary-400 hover:text-secondary-600"
+              className="text-text-tertiary hover:text-text-secondary"
             >
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
@@ -135,15 +136,15 @@ export function CategoryManagement() {
           {/* Category Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-secondary-900">{category.name}</span>
+              <span className="font-medium text-text-primary">{category.name}</span>
               {category.product_count > 0 && (
-                <span className="text-xs text-secondary-500">
+                <span className="text-xs text-text-tertiary">
                   ({category.product_count} products)
                 </span>
               )}
             </div>
             {category.description && (
-              <p className="text-sm text-secondary-600 truncate">{category.description}</p>
+              <p className="text-sm text-text-secondary truncate">{category.description}</p>
             )}
           </div>
 
@@ -151,13 +152,13 @@ export function CategoryManagement() {
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setEditingCategory(category)}
-              className="p-1 text-secondary-400 hover:text-primary-600"
+              className="p-1 text-text-tertiary hover:text-primary-600"
             >
               <Edit2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleDelete(category)}
-              className="p-1 text-secondary-400 hover:text-error-600"
+              className="p-1 text-text-tertiary hover:text-error-600"
               disabled={category.product_count > 0}
             >
               <Trash2 className="w-4 h-4" />
@@ -174,7 +175,7 @@ export function CategoryManagement() {
   };
 
   if (loading) {
-    return <div className="p-6 text-secondary-500">Loading categories...</div>;
+    return <div className="p-6 text-text-secondary">Loading categories...</div>;
   }
 
   return (
@@ -182,8 +183,8 @@ export function CategoryManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FolderTree className="w-5 h-5 text-secondary-400" />
-          <h3 className="text-lg font-medium text-secondary-900">Product Categories</h3>
+          <FolderTree className="w-5 h-5 text-text-tertiary" />
+          <h3 className="text-lg font-medium text-text-primary">Product Categories</h3>
         </div>
         <Button
           onClick={() => setEditingCategory({} as Category)}
@@ -254,16 +255,17 @@ function CategoryEditorModal({ category, onClose, onSave }: CategoryEditorModalP
       } else {
         throw new Error('Failed to save category');
       }
-    } catch (error: any) {
-      alert(`Failed to save: ${error.message}`);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Failed to save');
+      alert(`Failed to save: ${err.message}`);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-surface-base rounded-lg shadow-xl max-w-md w-full p-6 border border-border">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-md w-full p-6 border border-border" style={{ boxShadow: 'var(--shadow-modal)' }}>
         <h2 className="text-xl font-semibold text-text-primary mb-4">
           {category.id ? 'Edit Category' : 'Add Category'}
         </h2>

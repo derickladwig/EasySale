@@ -80,7 +80,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
   return (
     <div
       ref={canvasRef}
-      className={`relative bg-gray-100 h-[500px] ${
+      className={`relative bg-surface-base h-[500px] ${
         isSelecting ? 'cursor-crosshair' : 'cursor-default'
       }`}
       onMouseDown={handleMouseDown}
@@ -89,7 +89,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
     >
       {/* Document placeholder */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <p className="text-gray-500">
+        <p className="text-text-tertiary">
           {isSelecting ? 'Click and drag to select region' : 'Document preview'}
         </p>
       </div>
@@ -114,7 +114,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
       {/* Selected region (persistent) */}
       {selectedRegion && !isSelecting && (
         <div
-          className="absolute border-2 border-green-500 bg-green-200 bg-opacity-30"
+          className="absolute border-2 border-success-500 bg-success-200 bg-opacity-30"
           style={{
             left: `${selectedRegion.x}px`,
             top: `${selectedRegion.y}px`,
@@ -122,7 +122,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             height: `${selectedRegion.height}px`,
           }}
         >
-          <div className="absolute -top-6 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded">
+          <div className="absolute -top-6 left-0 bg-success-500 text-white text-xs px-2 py-1 rounded">
             Selected: {Math.round(selectedRegion.width)} × {Math.round(selectedRegion.height)}
           </div>
         </div>

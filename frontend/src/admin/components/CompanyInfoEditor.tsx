@@ -114,15 +114,16 @@ export function CompanyInfoEditor() {
       } else {
         throw new Error('Failed to update company info');
       }
-    } catch (error: any) {
-      alert(`Failed to save: ${error.message}`);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Failed to save');
+      alert(`Failed to save: ${err.message}`);
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="p-6 text-secondary-500">Loading company information...</div>;
+    return <div className="p-6 text-text-secondary">Loading company information...</div>;
   }
 
   return (
@@ -131,7 +132,7 @@ export function CompanyInfoEditor() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Building2 className="w-6 h-6 text-primary-600" />
-          <h2 className="text-xl font-semibold text-secondary-900">Company Information</h2>
+          <h2 className="text-xl font-semibold text-text-primary">Company Information</h2>
         </div>
         <Button onClick={handleSave} disabled={saving} leftIcon={<Save className="w-4 h-4" />}>
           {saving ? 'Saving...' : 'Save Changes'}
@@ -179,7 +180,7 @@ export function CompanyInfoEditor() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Company Name *
             </label>
             <Input
@@ -190,7 +191,7 @@ export function CompanyInfoEditor() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-secondary-700 mb-1">Address</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Address</label>
             <Input
               value={companyInfo.address}
               onChange={(e) => handleChange('address', e.target.value)}
@@ -199,7 +200,7 @@ export function CompanyInfoEditor() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">City</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">City</label>
             <Input
               value={companyInfo.city}
               onChange={(e) => handleChange('city', e.target.value)}
@@ -208,7 +209,7 @@ export function CompanyInfoEditor() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               State/Province
             </label>
             <Input
@@ -219,7 +220,7 @@ export function CompanyInfoEditor() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               ZIP/Postal Code
             </label>
             <Input
@@ -230,7 +231,7 @@ export function CompanyInfoEditor() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">Country</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Country</label>
             <Input
               value={companyInfo.country}
               onChange={(e) => handleChange('country', e.target.value)}
@@ -246,7 +247,7 @@ export function CompanyInfoEditor() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Phone Number
             </label>
             <Input
@@ -258,7 +259,7 @@ export function CompanyInfoEditor() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Email Address
             </label>
             <Input
@@ -270,7 +271,7 @@ export function CompanyInfoEditor() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-secondary-700 mb-1">Website</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Website</label>
             <Input
               type="url"
               value={companyInfo.website}

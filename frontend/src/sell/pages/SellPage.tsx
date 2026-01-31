@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Plus,
@@ -15,18 +15,27 @@ import {
   Grid3X3,
   List,
   Scan,
+  Check,
+  RotateCcw,
+  Pause,
+  Play,
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 import { useConfig, DynamicIcon } from '../../config';
 import { useProductsQuery, Product } from '@domains/product';
+import { Customer } from '@domains/customer';
 import { LoadingSpinner } from '@common/components/organisms/LoadingSpinner';
 import { Alert } from '@common/components/organisms/Alert';
 import { EmptyState } from '@common/components/molecules/EmptyState';
-// AppShell and Navigation removed - AppLayout provides navigation
-// import { AppShell } from '../../components/AppShell';
-// import { PageHeader } from '../../components/PageHeader';
-// import { Navigation } from '@common/components/Navigation';
 import { Stack } from '../../components/ui/Stack';
+import { PaymentModal } from '../components/PaymentModal';
+import { DiscountModal } from '../components/DiscountModal';
+import { CustomerSearchModal } from '../components/CustomerSearchModal';
+import { CouponModal } from '../components/CouponModal';
+import { ReturnModal } from '../components/ReturnModal';
+import { HoldModal } from '../components/HoldModal';
+import { useCreateSale } from '../hooks/useSales';
+import { useTaxRulesQuery, getApplicableTaxRate } from '../../settings/hooks/useTaxRulesQuery';
 
 interface CartItem {
   product: Product;
@@ -40,11 +49,39 @@ export function SellPage() {
   const { data: productsResponse, isLoading, error } = useProductsQuery();
   const products = productsResponse?.products ?? [];
 
+  // Fetch tax rules
+  const { data: taxRules = [] } = useTaxRulesQuery();
+
+  // Sale mutation
+  const createSale = useCreateSale();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [discount, setDiscount] = useState(0);
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+  
+  // Modal states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showHoldModal, setShowHoldModal] = useState(false);
+  const [lastSale, setLastSale] = useState<{ transactionNumber: string; total: number } | null>(null);
+  
+  // Held transactions
+  const [heldTransactions, setHeldTransactions] = useState<Array<{
+    id: string;
+    cart: CartItem[];
+    customer: Customer | null;
+    discount: number;
+    couponCode: string | null;
+    heldAt: Date;
+    note: string;
+  }>>([]);
 
   // Build category list from config
   const categoryOptions = ['All', ...categories.map((cat) => cat.id)];
@@ -87,15 +124,170 @@ export function SellPage() {
     setCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    setDiscount(0);
+    setSelectedCustomer(null);
+    setCouponCode(null);
+  };
 
   // Calculate totals
   const subtotal = cart.reduce(
     (sum, item) => sum + (item.product.unitPrice || 0) * item.quantity,
     0
   );
-  const tax = subtotal * 0.13; // 13% tax
-  const total = subtotal + tax;
+  const discountedSubtotal = subtotal - discount;
+  
+  // Get applicable tax rate from configured rules
+  const taxRate = getApplicableTaxRate(taxRules) / 100; // Convert percentage to decimal
+  const tax = discountedSubtotal * taxRate;
+  const total = discountedSubtotal + tax;
+
+  // Handle payment completion
+  const handlePayment = async (paymentMethod: 'cash' | 'card' | 'other') => {
+    try {
+      const result = await createSale.mutateAsync({
+        customer_id: selectedCustomer?.id,
+        items: cart.map((item) => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          unit_price: item.product.unitPrice || 0,
+        })),
+        payment_method: paymentMethod,
+        discount_amount: discount > 0 ? discount : undefined,
+      });
+
+      // Show success and clear cart
+      setLastSale({ transactionNumber: result.transaction_number, total: result.total_amount });
+      setShowPaymentModal(false);
+      clearCart();
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setLastSale(null), 5000);
+    } catch {
+      // Error is handled by React Query
+    }
+  };
+
+  // Handle discount application
+  const handleApplyDiscount = (amount: number) => {
+    setDiscount(amount);
+    setCouponCode(null); // Clear coupon if manual discount applied
+  };
+
+  // Handle coupon application
+  const handleApplyCoupon = (discountAmount: number, code: string) => {
+    setDiscount(discountAmount);
+    setCouponCode(code);
+  };
+
+  // Hold/suspend transaction
+  const handleHoldTransaction = (note: string) => {
+    if (cart.length === 0) return;
+    
+    const heldTransaction = {
+      id: `hold-${Date.now()}`,
+      cart: [...cart],
+      customer: selectedCustomer,
+      discount,
+      couponCode,
+      heldAt: new Date(),
+      note,
+    };
+    
+    setHeldTransactions(prev => [...prev, heldTransaction]);
+    
+    // Save to localStorage for persistence
+    const stored = JSON.parse(localStorage.getItem('EasySale_held_transactions') || '[]');
+    stored.push(heldTransaction);
+    localStorage.setItem('EasySale_held_transactions', JSON.stringify(stored));
+    
+    clearCart();
+    setShowHoldModal(false);
+  };
+
+  // Resume held transaction
+  const handleResumeTransaction = (heldId: string) => {
+    const held = heldTransactions.find(h => h.id === heldId);
+    if (!held) return;
+    
+    // If current cart has items, hold it first
+    if (cart.length > 0) {
+      handleHoldTransaction('Auto-held when resuming another transaction');
+    }
+    
+    setCart(held.cart);
+    setSelectedCustomer(held.customer);
+    setDiscount(held.discount);
+    setCouponCode(held.couponCode);
+    
+    // Remove from held list
+    setHeldTransactions(prev => prev.filter(h => h.id !== heldId));
+    
+    // Update localStorage
+    const stored = JSON.parse(localStorage.getItem('EasySale_held_transactions') || '[]');
+    const updated = stored.filter((h: { id: string }) => h.id !== heldId);
+    localStorage.setItem('EasySale_held_transactions', JSON.stringify(updated));
+    
+    setShowHoldModal(false);
+  };
+
+  // Delete held transaction
+  const handleDeleteHeld = (heldId: string) => {
+    setHeldTransactions(prev => prev.filter(h => h.id !== heldId));
+    
+    const stored = JSON.parse(localStorage.getItem('EasySale_held_transactions') || '[]');
+    const updated = stored.filter((h: { id: string }) => h.id !== heldId);
+    localStorage.setItem('EasySale_held_transactions', JSON.stringify(updated));
+  };
+
+  // Load held transactions from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('EasySale_held_transactions');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setHeldTransactions(parsed.map((h: { heldAt: string }) => ({
+          ...h,
+          heldAt: new Date(h.heldAt),
+        })));
+      } catch {
+        // Invalid data, clear it
+        localStorage.removeItem('EasySale_held_transactions');
+      }
+    }
+  }, []);
+
+  // Cart persistence - load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('EasySale_current_cart');
+    if (savedCart) {
+      try {
+        const parsed = JSON.parse(savedCart);
+        if (parsed.cart?.length > 0) {
+          setCart(parsed.cart);
+          setDiscount(parsed.discount || 0);
+          setCouponCode(parsed.couponCode || null);
+        }
+      } catch {
+        localStorage.removeItem('EasySale_current_cart');
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (cart.length > 0) {
+      localStorage.setItem('EasySale_current_cart', JSON.stringify({
+        cart,
+        discount,
+        couponCode,
+        savedAt: new Date().toISOString(),
+      }));
+    } else {
+      localStorage.removeItem('EasySale_current_cart');
+    }
+  }, [cart, discount, couponCode]);
 
   // Loading state
   if (isLoading) {
@@ -133,9 +325,40 @@ export function SellPage() {
 
   return (
     <div className="h-full flex flex-col">
+      {/* Success Banner */}
+      {lastSale && (
+        <div className="bg-success text-white px-4 py-3 flex items-center justify-center gap-2">
+          <Check size={20} />
+          <span>
+            Sale completed! Transaction #{lastSale.transactionNumber} - {formatCurrency(lastSale.total)}
+          </span>
+        </div>
+      )}
+
       {/* Page Header */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border flex items-center justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Point of Sale</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowHoldModal(true)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors",
+              heldTransactions.length > 0
+                ? "bg-warning/20 text-warning hover:bg-warning/30"
+                : "bg-surface-2 hover:bg-surface-3 text-text-secondary hover:text-text-primary"
+            )}
+          >
+            <Pause size={18} />
+            <span>Hold{heldTransactions.length > 0 ? ` (${heldTransactions.length})` : ''}</span>
+          </button>
+          <button
+            onClick={() => setShowReturnModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-2 hover:bg-surface-3 text-text-secondary hover:text-text-primary rounded-lg transition-colors"
+          >
+            <RotateCcw size={18} />
+            <span>Returns</span>
+          </button>
+        </div>
       </div>
       
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
@@ -248,7 +471,6 @@ export function SellPage() {
                   className="bg-surface-2 border border-border rounded-lg p-4 text-left hover:border-accent hover:bg-surface-3 transition-colors group"
                 >
                   <div className="aspect-square bg-surface-3 rounded-lg mb-3 flex items-center justify-center">
-                    {/* Show category icon if available */}
                     {(() => {
                       const category = categories.find((c) => c.id === product.category);
                       return category?.icon ? (
@@ -330,18 +552,27 @@ export function SellPage() {
         {/* Customer selection */}
         <div className="p-4 border-b border-border-subtle">
           <button
-            onClick={() => setSelectedCustomer(selectedCustomer ? null : 'Walk-in Customer')}
+            onClick={() => setShowCustomerModal(true)}
             className="w-full flex items-center gap-3 p-3 bg-surface-3 rounded-lg hover:bg-surface-3/80 transition-colors"
           >
-            <div className="w-10 h-10 bg-surface-2 rounded-full flex items-center justify-center">
-              <User className="text-text-secondary" size={20} />
+            <div className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center",
+              selectedCustomer ? "bg-accent/20" : "bg-surface-2"
+            )}>
+              {selectedCustomer ? (
+                <span className="text-accent font-medium">
+                  {selectedCustomer.name.charAt(0).toUpperCase()}
+                </span>
+              ) : (
+                <User className="text-text-secondary" size={20} />
+              )}
             </div>
             <div className="flex-1 text-left">
               <div className="font-medium text-text-primary">
-                {selectedCustomer || 'Select Customer'}
+                {selectedCustomer?.name || 'Walk-in Customer'}
               </div>
               <div className="text-xs text-text-secondary">
-                {selectedCustomer ? 'Tap to change' : 'Walk-in or search customer'}
+                {selectedCustomer ? selectedCustomer.email || selectedCustomer.phone || 'Tap to change' : 'Tap to select customer'}
               </div>
             </div>
             <ChevronRight className="text-text-secondary" size={20} />
@@ -408,13 +639,29 @@ export function SellPage() {
           <div className="p-4 border-t border-border-subtle space-y-3">
             {/* Quick actions */}
             <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-3 rounded-lg text-text-secondary hover:bg-surface-3/80 hover:text-text-primary transition-colors">
+              <button 
+                onClick={() => setShowDiscountModal(true)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors",
+                  discount > 0 && !couponCode
+                    ? "bg-accent text-white" 
+                    : "bg-surface-3 text-text-secondary hover:bg-surface-3/80 hover:text-text-primary"
+                )}
+              >
                 <Percent size={18} />
-                <span className="text-sm">Discount</span>
+                <span className="text-sm">{discount > 0 && !couponCode ? formatCurrency(discount) : 'Discount'}</span>
               </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-3 rounded-lg text-text-secondary hover:bg-surface-3/80 hover:text-text-primary transition-colors">
+              <button 
+                onClick={() => setShowCouponModal(true)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors",
+                  couponCode
+                    ? "bg-accent text-white" 
+                    : "bg-surface-3 text-text-secondary hover:bg-surface-3/80 hover:text-text-primary"
+                )}
+              >
                 <Tag size={18} />
-                <span className="text-sm">Coupon</span>
+                <span className="text-sm">{couponCode || 'Coupon'}</span>
               </button>
               <button
                 onClick={clearCart}
@@ -435,8 +682,14 @@ export function SellPage() {
               <span>Subtotal</span>
               <span>{formatCurrency(subtotal)}</span>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-error">
+                <span>Discount</span>
+                <span>-{formatCurrency(discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-text-secondary">
-              <span>Tax (13%)</span>
+              <span>Tax ({(taxRate * 100).toFixed(0)}%)</span>
               <span>{formatCurrency(tax)}</span>
             </div>
             <div className="flex justify-between text-xl font-bold text-text-primary pt-2 border-t border-border-subtle">
@@ -448,6 +701,7 @@ export function SellPage() {
           {/* Payment buttons */}
           <div className="grid grid-cols-3 gap-2">
             <button
+              onClick={() => setShowPaymentModal(true)}
               disabled={cart.length === 0}
               className="flex flex-col items-center gap-1 py-4 bg-success hover:bg-success/90 disabled:bg-surface-3 disabled:text-text-muted rounded-lg text-white font-medium transition-colors"
             >
@@ -455,6 +709,7 @@ export function SellPage() {
               <span className="text-sm">Cash</span>
             </button>
             <button
+              onClick={() => setShowPaymentModal(true)}
               disabled={cart.length === 0}
               className="flex flex-col items-center gap-1 py-4 bg-accent hover:bg-accent-hover disabled:bg-surface-3 disabled:text-text-muted rounded-lg text-white font-medium transition-colors"
             >
@@ -462,6 +717,7 @@ export function SellPage() {
               <span className="text-sm">Card</span>
             </button>
             <button
+              onClick={() => setShowPaymentModal(true)}
               disabled={cart.length === 0}
               className="flex flex-col items-center gap-1 py-4 bg-surface-3 hover:bg-surface-3/80 disabled:bg-surface-3 disabled:text-text-muted rounded-lg text-text-primary font-medium transition-colors"
             >
@@ -472,6 +728,66 @@ export function SellPage() {
         </div>
       </div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onComplete={handlePayment}
+        cart={cart}
+        subtotal={discountedSubtotal}
+        tax={tax}
+        total={total}
+        formatCurrency={formatCurrency}
+        isProcessing={createSale.isPending}
+      />
+
+      {/* Discount Modal */}
+      <DiscountModal
+        isOpen={showDiscountModal}
+        onClose={() => setShowDiscountModal(false)}
+        onApply={handleApplyDiscount}
+        subtotal={subtotal}
+        formatCurrency={formatCurrency}
+      />
+
+      {/* Customer Search Modal */}
+      <CustomerSearchModal
+        isOpen={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+        onSelect={setSelectedCustomer}
+        selectedCustomerId={selectedCustomer?.id}
+      />
+
+      {/* Coupon Modal */}
+      <CouponModal
+        isOpen={showCouponModal}
+        onClose={() => setShowCouponModal(false)}
+        onApply={handleApplyCoupon}
+        subtotal={subtotal}
+        formatCurrency={formatCurrency}
+      />
+
+      {/* Return Modal */}
+      <ReturnModal
+        isOpen={showReturnModal}
+        onClose={() => setShowReturnModal(false)}
+        onComplete={() => {
+          // Optionally refresh data after return
+        }}
+      />
+
+      {/* Hold Modal */}
+      <HoldModal
+        isOpen={showHoldModal}
+        onClose={() => setShowHoldModal(false)}
+        onHold={handleHoldTransaction}
+        onResume={handleResumeTransaction}
+        onDelete={handleDeleteHeld}
+        heldTransactions={heldTransactions}
+        currentCartHasItems={cart.length > 0}
+        formatCurrency={formatCurrency}
+      />
     </div>
   );
 }

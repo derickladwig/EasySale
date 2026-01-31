@@ -56,8 +56,9 @@ export function EffectiveSettingsView() {
       const data: EffectiveSettingsResponse = await response.json();
       setSettings(data.settings);
       setContext(data.context);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch effective settings');
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -69,11 +70,11 @@ export function EffectiveSettingsView() {
       case 'global':
         return 'bg-info-100 text-info-dark border-info-200';
       case 'store':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-success-100 text-success-700 border-success-200';
       case 'station':
-        return 'bg-purple-100 text-purple-700 border-purple-200';
+        return 'bg-primary-100 text-primary-700 border-primary-200';
       case 'user':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
+        return 'bg-warning-100 text-warning-700 border-warning-200';
     }
   };
 

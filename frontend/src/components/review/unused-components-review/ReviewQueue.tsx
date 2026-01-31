@@ -84,25 +84,25 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 90) return 'text-green-600';
-    if (confidence >= 70) return 'text-yellow-600';
-    return 'text-red-600';
+    if (confidence >= 90) return 'text-success-600';
+    if (confidence >= 70) return 'text-warning-600';
+    return 'text-error-600';
   };
 
   const getStateColor = (state: string) => {
     const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
+      pending: 'bg-warning-100 text-warning-800',
       in_review: 'bg-info-100 text-info-dark',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
+      approved: 'bg-success-100 text-success-800',
+      rejected: 'bg-error-100 text-error-800',
     };
-    return colors[state] || 'bg-gray-100 text-gray-800';
+    return colors[state] || 'bg-surface-base text-text-secondary';
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background-secondary">
       {/* Sidebar - Filters & Stats */}
-      <div className="w-80 bg-white border-r overflow-y-auto">
+      <div className="w-80 bg-surface-base border-r border-border overflow-y-auto">
         {/* Stats */}
         {stats && (
           <div className="p-4 border-b">
@@ -114,7 +114,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Pending:</span>
-                <span className="font-semibold text-yellow-600">{stats.pending}</span>
+                <span className="font-semibold text-warning-600">{stats.pending}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>In Review:</span>
@@ -122,11 +122,11 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Approved:</span>
-                <span className="font-semibold text-green-600">{stats.approved}</span>
+                <span className="font-semibold text-success-600">{stats.approved}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Rejected:</span>
-                <span className="font-semibold text-red-600">{stats.rejected}</span>
+                <span className="font-semibold text-error-600">{stats.rejected}</span>
               </div>
               <div className="flex justify-between text-sm pt-2 border-t">
                 <span>Avg Confidence:</span>
@@ -143,7 +143,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
       {/* Main Content - Queue List */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-4 bg-white border-b">
+        <div className="p-4 bg-surface-base border-b border-border">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold">Review Queue</h2>
             <button
@@ -159,7 +159,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
             <select
               value={sortField}
               onChange={(e) => setSortField(e.target.value)}
-              className="px-3 py-1 border rounded text-sm"
+              className="px-3 py-1 border border-border rounded text-sm bg-surface-base"
             >
               <option value="priority">Priority (Low Confidence First)</option>
               <option value="created_at">Date Created</option>
@@ -169,7 +169,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="px-3 py-1 border rounded text-sm"
+              className="px-3 py-1 border border-border rounded text-sm bg-surface-base"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -181,11 +181,11 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">Loading...</p>
+              <p className="text-text-secondary">Loading...</p>
             </div>
           ) : cases.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">No cases found</p>
+              <p className="text-text-secondary">No cases found</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -193,12 +193,12 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
                 <div
                   key={c.case_id}
                   onClick={() => onSelectCase(c.case_id)}
-                  className="bg-white p-4 rounded-lg shadow-sm border hover:border-accent cursor-pointer transition-colors"
+                  className="bg-surface-base p-4 rounded-lg shadow-sm border border-border hover:border-accent cursor-pointer transition-colors"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-semibold">{c.invoice_number}</h3>
-                      <p className="text-sm text-gray-600">{c.vendor_name}</p>
+                      <p className="text-sm text-text-secondary">{c.vendor_name}</p>
                     </div>
                     <div className="text-right">
                       <p className={`text-2xl font-bold ${getConfidenceColor(c.confidence)}`}>
@@ -211,16 +211,16 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">
+                    <span className="text-text-secondary">
                       Total: ${c.total.toFixed(2)}
                     </span>
-                    <span className="text-gray-500">
+                    <span className="text-text-tertiary">
                       {new Date(c.created_at).toLocaleDateString()}
                     </span>
                   </div>
 
                   {c.has_flags && (
-                    <div className="mt-2 text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded">
+                    <div className="mt-2 text-xs bg-warning-50 text-warning-700 px-2 py-1 rounded">
                       ⚠️ Has validation warnings
                     </div>
                   )}
@@ -231,22 +231,22 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase }) => {
         </div>
 
         {/* Pagination */}
-        <div className="p-4 bg-white border-t">
+        <div className="p-4 bg-surface-base border-t border-border">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
               disabled={page === 0}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-secondary-600 text-white rounded hover:bg-secondary-700 disabled:bg-secondary-300 disabled:cursor-not-allowed"
             >
               Previous
             </button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-text-secondary">
               Page {page + 1} of {totalPages}
             </span>
             <button
               onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
               disabled={page >= totalPages - 1}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-secondary-600 text-white rounded hover:bg-secondary-700 disabled:bg-secondary-300 disabled:cursor-not-allowed"
             >
               Next
             </button>

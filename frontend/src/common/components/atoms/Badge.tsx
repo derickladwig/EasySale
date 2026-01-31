@@ -79,7 +79,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
           ref={ref}
           className={cn(
             'inline-block rounded-full',
-            variant === 'default' && 'bg-secondary-400',
+            variant === 'default' && 'bg-text-tertiary',
             variant === 'primary' && 'bg-primary-500',
             variant === 'success' && 'bg-success-500',
             variant === 'warning' && 'bg-warning-500',

@@ -83,7 +83,7 @@ This guide covers deploying the CAPS POS system to production environments. The 
    
    # Test health endpoints
    curl http://localhost/health
-   curl http://localhost:3000/health
+   curl http://localhost:8923/health
    ```
 
 ### Method 2: Manual Installation
@@ -359,7 +359,7 @@ curl http://localhost/health
 
 **Backend**:
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:8923/health
 # Expected: {"status":"healthy","timestamp":"...","version":"0.1.0"}
 ```
 

@@ -81,8 +81,8 @@ export function AppLayout() {
       {/* Demo Mode Indicator - Shows only in demo mode */}
       <DemoModeIndicator />
 
-      {/* Top Bar - Full width, fixed height */}
-      <header className="h-14 flex-shrink-0 bg-surface-base border-b border-border flex items-center px-4 gap-4 z-50">
+      {/* Top Bar - Full width, fixed height - uses z-header token */}
+      <header className="h-14 flex-shrink-0 bg-surface-base border-b border-border flex items-center px-4 gap-4 z-[var(--z-header)]" style={{ zIndex: 'var(--z-header)' }}>
         {/* Mobile menu button */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -156,10 +156,11 @@ export function AppLayout() {
 
       {/* Main area - Sidebar + Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - Desktop: static, Tablet: collapsible, Mobile: overlay */}
+        {/* Sidebar - Desktop: static, Tablet: collapsible, Mobile: overlay
+            Uses z-sidebar token for consistent layering */}
         <aside
           className={cn(
-            'flex-shrink-0 bg-surface-base border-r border-border flex flex-col z-40',
+            'flex-shrink-0 bg-surface-base border-r border-border flex flex-col',
             // Width: full (224px) when expanded, collapsed (64px) on tablet when collapsed
             'transition-all duration-300 ease-in-out',
             isSidebarCollapsed ? 'w-16' : 'w-56',
@@ -169,6 +170,7 @@ export function AppLayout() {
             'md:translate-x-0',
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           )}
+          style={{ zIndex: 'var(--z-sidebar)' }}
         >
           {/* Collapse toggle button - visible on tablet and desktop */}
           <div className="hidden md:flex justify-end p-2 border-b border-border">
@@ -193,7 +195,7 @@ export function AppLayout() {
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-sm relative',
                     'active:scale-95 active:shadow-sm',
                     isActive
-                      ? 'bg-primary-600 text-white shadow-md'
+                      ? 'bg-primary-600 text-text-inverse shadow-md'
                       : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
                     // Center icon when collapsed
                     isSidebarCollapsed && 'justify-center'
@@ -206,7 +208,7 @@ export function AppLayout() {
                     <>
                       <span className="font-medium flex-1">{item.label}</span>
                       {item.badge && (
-                        <span className="ml-auto px-2 py-0.5 bg-primary-500 text-white text-xs rounded-full">
+                        <span className="ml-auto px-2 py-0.5 bg-primary-500 text-text-inverse text-xs rounded-full">
                           {item.badge}
                         </span>
                       )}
@@ -232,10 +234,11 @@ export function AppLayout() {
           )}
         </aside>
 
-        {/* Mobile sidebar backdrop */}
+        {/* Mobile sidebar backdrop - uses overlay-backdrop token, below sidebar */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity duration-300"
+            className="fixed inset-0 bg-black/50 md:hidden transition-opacity duration-300"
+            style={{ zIndex: 'calc(var(--z-sidebar) - 5)' }}
             onClick={() => setIsSidebarOpen(false)}
           />
         )}

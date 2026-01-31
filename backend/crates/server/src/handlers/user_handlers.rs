@@ -43,6 +43,16 @@ pub struct UserResponse {
     pub is_active: bool,
     pub created_at: String,
     pub updated_at: String,
+    pub last_login_at: Option<String>,
+}
+
+/// Query parameters for listing users
+#[derive(Debug, Deserialize)]
+pub struct ListUsersQuery {
+    pub never_logged_in: Option<bool>,
+    pub role: Option<String>,
+    pub store_id: Option<String>,
+    pub is_active: Option<bool>,
 }
 
 /// Validate user creation request
@@ -222,31 +232,70 @@ pub async fn get_user(
     }
 }
 
-/// List all users
+/// List all users with optional filtering
 pub async fn list_users(
     pool: web::Data<SqlitePool>,
+    query: web::Query<ListUsersQuery>,
 ) -> Result<HttpResponse> {
-    let users = sqlx::query_as!(
-        UserResponse,
+    // Build dynamic query based on filters
+    let mut sql = String::from(
         r#"
         SELECT 
-            id as "id!", username, email,
-            display_name as "display_name!: String",
+            id, username, email,
+            display_name,
             role,
             store_id,
             station_policy,
             station_id,
-            is_active as "is_active: bool",
-            created_at, updated_at
+            is_active,
+            created_at, updated_at,
+            last_login_at
         FROM users
-        ORDER BY created_at DESC
+        WHERE 1=1
         "#
-    )
-    .fetch_all(pool.get_ref())
-    .await;
+    );
+    
+    // Add filter conditions
+    if query.never_logged_in == Some(true) {
+        sql.push_str(" AND last_login_at IS NULL");
+    }
+    if let Some(ref role) = query.role {
+        sql.push_str(&format!(" AND role = '{}'", role));
+    }
+    if let Some(ref store_id) = query.store_id {
+        sql.push_str(&format!(" AND store_id = '{}'", store_id));
+    }
+    if let Some(is_active) = query.is_active {
+        sql.push_str(&format!(" AND is_active = {}", if is_active { 1 } else { 0 }));
+    }
+    
+    sql.push_str(" ORDER BY created_at DESC");
+    
+    let users: Result<Vec<(String, String, String, String, String, Option<String>, Option<String>, Option<String>, i32, String, String, Option<String>)>, _> = 
+        sqlx::query_as(&sql)
+        .fetch_all(pool.get_ref())
+        .await;
 
     match users {
-        Ok(users) => Ok(HttpResponse::Ok().json(users)),
+        Ok(rows) => {
+            let users: Vec<UserResponse> = rows.into_iter().map(|(id, username, email, display_name, role, store_id, station_policy, station_id, is_active, created_at, updated_at, last_login_at)| {
+                UserResponse {
+                    id,
+                    username,
+                    email,
+                    display_name,
+                    role,
+                    store_id,
+                    station_policy,
+                    station_id,
+                    is_active: is_active == 1,
+                    created_at,
+                    updated_at,
+                    last_login_at,
+                }
+            }).collect();
+            Ok(HttpResponse::Ok().json(users))
+        }
         Err(e) => Ok(HttpResponse::InternalServerError().json(serde_json::json!({
             "error": format!("Failed to fetch users: {}", e)
         }))),
@@ -475,4 +524,112 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             .route("/{id}", web::put().to(update_user))
             .route("/{id}", web::delete().to(delete_user))
     );
+}
+
+
+// ============================================================================
+// First Admin Creation (No Auth Required - Fresh Install Only)
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+pub struct CreateFirstAdminRequest {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub display_name: Option<String>,
+}
+
+/// Create the first admin user during fresh install
+/// This endpoint does NOT require authentication but will fail if any admin already exists
+pub async fn create_first_admin(
+    pool: web::Data<SqlitePool>,
+    req: web::Json<CreateFirstAdminRequest>,
+) -> Result<HttpResponse> {
+    // Check if any admin user already exists
+    let existing_admin = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = 1"
+    )
+    .fetch_one(pool.get_ref())
+    .await
+    .unwrap_or(0);
+
+    if existing_admin > 0 {
+        return Ok(HttpResponse::Conflict().json(serde_json::json!({
+            "error": "An admin user already exists. Use the regular user creation endpoint."
+        })));
+    }
+
+    // Validate request
+    if req.username.len() < 3 {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Username must be at least 3 characters"
+        })));
+    }
+
+    if req.password.len() < 8 {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Password must be at least 8 characters"
+        })));
+    }
+
+    if !req.email.contains('@') {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Invalid email address"
+        })));
+    }
+
+    // Hash password
+    let password_hash = crate::services::PasswordService::hash_password(&req.password)
+        .map_err(|_| ApiError::internal("Password hashing failed"))?;
+    
+    let now = Utc::now().to_rfc3339();
+    let display_name = req.display_name.clone().unwrap_or_else(|| req.username.clone());
+    let user_id = uuid::Uuid::new_v4().to_string();
+    let tenant_id = "default-tenant"; // First admin gets default tenant
+
+    // Insert admin user
+    let result = sqlx::query(
+        r#"
+        INSERT INTO users (
+            id, tenant_id, username, email, password_hash, display_name, role,
+            is_active, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 'admin', 1, ?, ?)
+        "#
+    )
+    .bind(&user_id)
+    .bind(tenant_id)
+    .bind(&req.username)
+    .bind(&req.email)
+    .bind(&password_hash)
+    .bind(&display_name)
+    .bind(&now)
+    .bind(&now)
+    .execute(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(_) => {
+            tracing::info!("First admin user created: {}", req.username);
+            Ok(HttpResponse::Created().json(serde_json::json!({
+                "id": user_id,
+                "username": req.username,
+                "email": req.email,
+                "role": "admin",
+                "message": "First admin user created successfully"
+            })))
+        }
+        Err(e) => {
+            if e.to_string().contains("UNIQUE constraint failed") {
+                Ok(HttpResponse::Conflict().json(serde_json::json!({
+                    "error": "Username or email already exists"
+                })))
+            } else {
+                tracing::error!("Failed to create first admin: {}", e);
+                Ok(HttpResponse::InternalServerError().json(serde_json::json!({
+                    "error": format!("Failed to create admin user: {}", e)
+                })))
+            }
+        }
+    }
 }

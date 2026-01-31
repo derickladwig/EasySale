@@ -15,14 +15,14 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({
   const evidenceItems = evidence.split(',').map(e => e.trim());
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold">Evidence Breakdown</h3>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-text-tertiary hover:text-text-primary text-2xl"
           >
             ×
           </button>
@@ -35,8 +35,8 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({
             <div className="space-y-2">
               {evidenceItems.map((item, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <p className="text-gray-700">{item}</p>
+                  <span className="text-success-600 mt-1">✓</span>
+                  <p className="text-text-secondary">{item}</p>
                 </div>
               ))}
             </div>
@@ -50,17 +50,17 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({
                 <p className="text-sm font-semibold text-info-dark">Lexicon Match</p>
                 <p className="text-xs text-accent">Matched known pattern</p>
               </div>
-              <div className="bg-green-50 p-3 rounded">
-                <p className="text-sm font-semibold text-green-800">Proximity</p>
-                <p className="text-xs text-green-600">Found near label text</p>
+              <div className="bg-success-50 p-3 rounded">
+                <p className="text-sm font-semibold text-success-800">Proximity</p>
+                <p className="text-xs text-success-600">Found near label text</p>
               </div>
-              <div className="bg-purple-50 p-3 rounded">
-                <p className="text-sm font-semibold text-purple-800">Zone Prior</p>
-                <p className="text-xs text-purple-600">Expected in this zone</p>
+              <div className="bg-primary-50 p-3 rounded">
+                <p className="text-sm font-semibold text-primary-800">Zone Prior</p>
+                <p className="text-xs text-primary-600">Expected in this zone</p>
               </div>
-              <div className="bg-orange-50 p-3 rounded">
-                <p className="text-sm font-semibold text-orange-800">Consensus</p>
-                <p className="text-xs text-orange-600">Multiple passes agreed</p>
+              <div className="bg-warning-50 p-3 rounded">
+                <p className="text-sm font-semibold text-warning-800">Consensus</p>
+                <p className="text-xs text-warning-600">Multiple passes agreed</p>
               </div>
             </div>
           </div>
@@ -71,9 +71,9 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({
               <h4 className="font-semibold mb-2">Alternative Values:</h4>
               <div className="space-y-2">
                 {alternatives.map((alt, i) => (
-                  <div key={i} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                  <div key={i} className="flex items-center justify-between bg-surface-base p-2 rounded">
                     <span className="font-mono">{alt}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-text-tertiary">
                       {i === 0 ? 'Selected' : `Alternative ${i}`}
                     </span>
                   </div>
@@ -93,7 +93,7 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t bg-gray-50">
+        <div className="p-4 border-t bg-surface-base">
           <button
             onClick={onClose}
             className="w-full px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover"

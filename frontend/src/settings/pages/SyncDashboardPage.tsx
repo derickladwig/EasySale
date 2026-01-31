@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@common/components/molecules/Card';
 import { Button } from '@common/components/atoms/Button';
 import { toast } from '@common/components/molecules/Toast';
-import { RefreshCw, CheckCircle, XCircle, Clock, AlertTriangle, Activity, Eye, Users, Package, ShieldAlert, ShieldCheck, ShieldOff } from 'lucide-react';
+import { ScopeSelector } from '@common/components/molecules/ScopeSelector';
+import { RefreshCw, CheckCircle, XCircle, Clock, AlertTriangle, Activity, Eye, Users, Package, ShieldAlert, ShieldCheck, ShieldOff, WifiOff } from 'lucide-react';
 import { syncApi, ConnectionStatus, SyncStatus } from '../../services/syncApi';
 import { SyncHistory } from '../components/SyncHistory';
 import { FailedRecordsQueue } from '../components/FailedRecordsQueue';
 import { SyncScheduleManager } from '../components/SyncScheduleManager';
 import { SyncDetailsModal, useSyncDetailsModal } from '../components/SyncDetailsModal';
+import { useStores } from '../../admin/hooks/useStores';
 
 interface CircuitBreakerStatus {
   connector_id: string;
@@ -16,6 +18,11 @@ interface CircuitBreakerStatus {
 }
 
 export const SyncDashboardPage: React.FC = () => {
+  // Store scope selection for multi-store support
+  // Validates: Requirements 10.1, 10.2
+  const { stores, isLoading: storesLoading } = useStores();
+  const [selectedScope, setSelectedScope] = useState<'all' | string>('all');
+  
   const [connections, setConnections] = useState<ConnectionStatus[]>([]);
   const [recentSyncs, setRecentSyncs] = useState<SyncStatus[]>([]);
   const [metrics, setMetrics] = useState<{
@@ -40,6 +47,11 @@ export const SyncDashboardPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [syncingEntity, setSyncingEntity] = useState<string | null>(null);
   
+  // Offline state tracking
+  // Validates: Requirements 2.7, 14.2
+  const [isOnline, setIsOnline] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
+  
   // Sync details modal hook
   const { selectedSyncId, openDetails, closeDetails, isOpen: isDetailsOpen } = useSyncDetailsModal();
 
@@ -57,8 +69,15 @@ export const SyncDashboardPage: React.FC = () => {
       setMetrics(metricsData);
       setHealth(healthData);
       setCircuitBreakers(circuitBreakerData.connectors);
+      
+      // Update online status and last fetch time
+      // Validates: Requirements 2.7, 14.2
+      setIsOnline(true);
+      setLastFetchTime(new Date());
     } catch (error) {
       console.error('Failed to load sync data:', error);
+      // Mark as offline if fetch fails
+      setIsOnline(false);
       toast.error('Failed to load sync data');
     } finally {
       setLoading(false);
@@ -150,22 +169,47 @@ export const SyncDashboardPage: React.FC = () => {
   return (
     <div className="h-full overflow-auto bg-background-primary p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Offline Banner */}
+        {/* Validates: Requirements 2.7, 14.2 */}
+        {!isOnline && (
+          <div className="bg-warning-500/10 border border-warning-500/30 rounded-lg p-4 flex items-center gap-3">
+            <WifiOff className="w-5 h-5 text-warning-400" />
+            <div>
+              <div className="font-medium text-warning-400">You are currently offline</div>
+              <div className="text-sm text-text-tertiary">
+                Data shown as of {lastFetchTime?.toLocaleString() || 'unknown'}. Some actions may be unavailable.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-text-primary">Sync Dashboard</h1>
             <p className="text-text-secondary mt-2">Monitor data synchronization across platforms</p>
           </div>
-          <Button
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            disabled={refreshing}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Scope Selector for multi-store filtering */}
+            {/* Validates: Requirements 10.1, 10.2 */}
+            {!storesLoading && stores.length > 1 && (
+              <ScopeSelector
+                value={selectedScope}
+                onChange={setSelectedScope}
+                stores={stores}
+              />
+            )}
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Metrics Overview */}

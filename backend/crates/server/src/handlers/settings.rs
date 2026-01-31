@@ -311,6 +311,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             .route("/network", web::put().to(update_network))
             .route("/performance", web::get().to(get_performance))
             .route("/performance", web::put().to(update_performance))
+            .route("/tax-rules", web::get().to(get_tax_rules))
             .route("/effective", web::get().to(crate::handlers::settings_handlers::get_effective_settings))
             .route("/effective/export", web::get().to(crate::handlers::settings_handlers::export_effective_settings)),
     );
@@ -322,6 +323,64 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             .route("/preferences", web::put().to(update_preferences))
             .route("/password", web::put().to(change_password)),
     );
+}
+
+/// GET /api/settings/tax-rules
+/// Get tax rules for current tenant
+pub async fn get_tax_rules(
+    pool: web::Data<SqlitePool>,
+    context: web::ReqData<UserContext>,
+) -> ApiResult<HttpResponse> {
+    // First try to get from tax_rules table
+    let rules: Vec<TaxRule> = sqlx::query_as::<_, TaxRule>(
+        "SELECT id, name, rate, category, is_default, store_id
+         FROM tax_rules WHERE tenant_id = ? ORDER BY is_default DESC, name ASC"
+    )
+    .bind(&context.tenant_id)
+    .fetch_all(pool.get_ref())
+    .await
+    .unwrap_or_default();
+    
+    // If no rules exist, return default from localization settings
+    if rules.is_empty() {
+        let localization = sqlx::query_as::<_, LocalizationSettings>(
+            "SELECT tenant_id, language, currency, currency_symbol, currency_position, decimal_places,
+                    tax_enabled, tax_rate, tax_name, date_format, time_format, timezone
+             FROM localization_settings WHERE tenant_id = ?"
+        )
+        .bind(&context.tenant_id)
+        .fetch_optional(pool.get_ref())
+        .await
+        .ok()
+        .flatten();
+        
+        let default_rate = localization.map(|l| l.tax_rate).unwrap_or(13.0);
+        
+        return Ok(HttpResponse::Ok().json(serde_json::json!({
+            "rules": [{
+                "id": "default",
+                "name": "Default Tax",
+                "rate": default_rate,
+                "category": null,
+                "is_default": true,
+                "store_id": "default"
+            }]
+        })));
+    }
+    
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "rules": rules
+    })))
+}
+
+#[derive(Debug, serde::Serialize, sqlx::FromRow)]
+struct TaxRule {
+    id: String,
+    name: String,
+    rate: f64,
+    category: Option<String>,
+    is_default: bool,
+    store_id: String,
 }
 
 /// PUT /api/users/me/password

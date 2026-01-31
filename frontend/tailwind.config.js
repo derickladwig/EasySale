@@ -349,11 +349,17 @@ export default {
         'hover-lg': 'var(--shadow-hover-lg, 0 15px 20px -3px rgb(0 0 0 / 0.15), 0 6px 8px -4px rgb(0 0 0 / 0.1))',
         'hover-xl': 'var(--shadow-hover-xl, 0 25px 35px -5px rgb(0 0 0 / 0.15), 0 10px 15px -6px rgb(0 0 0 / 0.1))',
         
-        // Focus shadow utilities (for accessibility and visual feedback) - purple to match theme
-        'focus': 'var(--shadow-focus, 0 0 0 2px var(--color-primary-500, #a855f7))',
-        'focus-ring': 'var(--shadow-focus-ring, 0 0 0 2px var(--color-bg-primary, #0f0d1a), 0 0 0 4px var(--color-primary-500, #a855f7))',
+        // Focus shadow utilities (for accessibility and visual feedback) - uses primary color
+        'focus': 'var(--shadow-focus, 0 0 0 2px var(--color-primary-500, #14b8a6))',
+        'focus-ring': 'var(--shadow-focus-ring, 0 0 0 2px var(--color-bg-primary, #0f0d1a), 0 0 0 4px var(--color-primary-500, #14b8a6))',
         'focus-error': 'var(--shadow-focus-error, 0 0 0 2px var(--color-bg-primary, #0f0d1a), 0 0 0 4px var(--color-error, #f87171))',
         'focus-success': 'var(--shadow-focus-success, 0 0 0 2px var(--color-bg-primary, #0f0d1a), 0 0 0 4px var(--color-success, #34d399))',
+        
+        // Overlay/elevation shadows (for dropdowns, modals, popovers)
+        'dropdown': 'var(--shadow-dropdown, 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.1))',
+        'popover': 'var(--shadow-popover, 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.1))',
+        'modal': 'var(--shadow-modal, 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15))',
+        'toast': 'var(--shadow-toast, 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.1))',
         
         // Special shadows
         'inner': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
@@ -361,6 +367,9 @@ export default {
       },
       
       // Design Tokens - Z-Index (layering)
+      // IMPORTANT: These values should match the CSS variables in tokens.css
+      // Source of truth: frontend/src/styles/tokens.css
+      // Use CSS variables via style={{ zIndex: 'var(--z-*)' }} for dynamic values
       zIndex: {
         '0': '0',
         '10': '10',
@@ -368,14 +377,19 @@ export default {
         '30': '30',
         '40': '40',
         '50': '50',
-        'dropdown': '1000',
-        'sticky': '1020',
-        'fixed': '1030',
-        'modal-backdrop': '1040',
-        'modal': '1050',
-        'popover': '1060',
-        'tooltip': '1070',
-        'toast': '1080',
+        'base': 'var(--z-base, 0)',
+        'above': 'var(--z-above, 1)',
+        'dropdown': 'var(--z-dropdown, 1000)',
+        'sticky': 'var(--z-sticky, 1020)',
+        'fixed': 'var(--z-fixed, 1030)',
+        'sidebar': 'var(--z-sidebar, 1035)',
+        'header': 'var(--z-header, 1040)',
+        'overlay-backdrop': 'var(--z-overlay-backdrop, 1045)',
+        'modal-backdrop': 'var(--z-modal-backdrop, 1050)',
+        'modal': 'var(--z-modal, 1060)',
+        'popover': 'var(--z-popover, 1070)',
+        'tooltip': 'var(--z-tooltip, 1080)',
+        'toast': 'var(--z-toast, 1090)',
       },
       
       // Design Tokens - Animation & Transitions (Req 17.1, 17.2, 17.3, 17.4)

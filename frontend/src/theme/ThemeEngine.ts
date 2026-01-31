@@ -337,7 +337,7 @@ export class ThemeEngine {
   /**
    * Get current theme configuration
    *
-   * Returns the currently applied theme
+   * Returns the currently applied theme by reading CSS variables
    */
   getCurrentTheme(): ThemeConfig | null {
     const root = document.documentElement;
@@ -345,30 +345,34 @@ export class ThemeEngine {
 
     if (!mode) return null;
 
+    // Read actual CSS variables from the DOM
+    const getVar = (name: string): string => {
+      return getComputedStyle(root).getPropertyValue(name).trim();
+    };
+
     // Reconstruct theme from CSS variables
-    // Use the full teal color scale matching tokens.css
     return {
       mode,
       colors: {
         primary: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
+          50: getVar('--color-primary-50') || '#f0fdfa',
+          100: getVar('--color-primary-100') || '#ccfbf1',
+          200: getVar('--color-primary-200') || '#99f6e4',
+          300: getVar('--color-primary-300') || '#5eead4',
+          400: getVar('--color-primary-400') || '#2dd4bf',
+          500: getVar('--color-primary-500') || '#14b8a6',
+          600: getVar('--color-primary-600') || '#0d9488',
+          700: getVar('--color-primary-700') || '#0f766e',
+          800: getVar('--color-primary-800') || '#115e59',
+          900: getVar('--color-primary-900') || '#134e4a',
         },
-        background: mode === 'dark' ? '#222224' : '#f8fafc',
-        surface: mode === 'dark' ? '#2a2a2c' : '#f1f5f9',
-        text: mode === 'dark' ? '#f5f5f7' : '#0f172a',
-        success: '#10b981',
-        warning: '#f59e0b',
-        error: '#ef4444',
-        info: '#3b82f6',
+        background: getVar('--color-background') || (mode === 'dark' ? '#222224' : '#f8fafc'),
+        surface: getVar('--color-surface') || (mode === 'dark' ? '#2a2a2c' : '#f1f5f9'),
+        text: getVar('--color-text-primary') || (mode === 'dark' ? '#f5f5f7' : '#0f172a'),
+        success: getVar('--color-success-500') || '#10b981',
+        warning: getVar('--color-warning-500') || '#f59e0b',
+        error: getVar('--color-error-500') || '#ef4444',
+        info: getVar('--color-info-500') || '#3b82f6',
       },
     };
   }

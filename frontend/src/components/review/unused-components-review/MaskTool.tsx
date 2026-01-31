@@ -84,24 +84,24 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
 
   const getMaskColor = (type: string) => {
     const colors: Record<string, string> = {
-      logo: 'border-red-500 bg-red-200',
-      watermark: 'border-orange-500 bg-orange-200',
+      logo: 'border-error-500 bg-error-200',
+      watermark: 'border-warning-500 bg-warning-200',
       header: 'border-accent bg-info-200',
-      footer: 'border-green-500 bg-green-200',
-      custom: 'border-purple-500 bg-purple-200',
+      footer: 'border-success-500 bg-success-200',
+      custom: 'border-primary-500 bg-primary-200',
     };
-    return colors[type] || 'border-gray-500 bg-gray-200';
+    return colors[type] || 'border-border bg-secondary-200';
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold">Mask Management</h3>
           <button
             onClick={onComplete}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-text-tertiary hover:text-text-primary text-2xl"
           >
             ×
           </button>
@@ -118,9 +118,9 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
           </div>
 
           {/* Document with Masks */}
-          <div className="mb-4 relative bg-gray-100 h-[400px]">
+          <div className="mb-4 relative bg-surface-base h-[400px]">
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-gray-500">Document with mask overlays</p>
+              <p className="text-text-tertiary">Document with mask overlays</p>
             </div>
 
             {/* Render masks */}
@@ -135,7 +135,7 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
                   height: `${mask.height}px`,
                 }}
               >
-                <div className="absolute -top-6 left-0 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                <div className="absolute -top-6 left-0 bg-error-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
                   <span>{mask.type}</span>
                   {mask.vendor_specific && <span>🔒</span>}
                 </div>
@@ -148,10 +148,10 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
             <h4 className="font-semibold mb-2">Active Masks ({masks.length})</h4>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {masks.map((mask) => (
-                <div key={mask.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <div key={mask.id} className="flex items-center justify-between p-2 bg-surface-base rounded">
                   <div>
                     <span className="font-medium capitalize">{mask.type}</span>
-                    <span className="text-xs text-gray-600 ml-2">
+                    <span className="text-xs text-text-secondary ml-2">
                       ({mask.x}, {mask.y}) {mask.width}×{mask.height}
                     </span>
                     {mask.vendor_specific && (
@@ -162,7 +162,7 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
                   </div>
                   <button
                     onClick={() => handleRemoveMask(mask.id)}
-                    className="text-sm px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                    className="text-sm px-2 py-1 bg-error-100 text-error-700 rounded hover:bg-error-200"
                   >
                     Remove
                   </button>
@@ -204,19 +204,19 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
               </div>
               <button
                 onClick={handleAddMask}
-                className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                className="w-full px-4 py-2 bg-success-600 text-white rounded hover:bg-success-700"
               >
                 + Draw Mask on Document
               </button>
             </div>
           ) : (
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
-              <p className="text-sm text-yellow-800 mb-2">
+            <div className="p-3 bg-warning-50 border border-warning-200 rounded">
+              <p className="text-sm text-warning-800 mb-2">
                 Click and drag on the document to create a mask region
               </p>
               <button
                 onClick={() => setIsAddingMask(false)}
-                className="text-sm text-yellow-700 hover:text-yellow-900"
+                className="text-sm text-warning-700 hover:text-warning-900"
               >
                 Cancel
               </button>
@@ -234,7 +234,7 @@ export const MaskTool: React.FC<MaskToolProps> = ({ caseId, onComplete }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t bg-gray-50">
+        <div className="p-4 border-t bg-surface-base">
           <button
             onClick={onComplete}
             className="w-full px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover"

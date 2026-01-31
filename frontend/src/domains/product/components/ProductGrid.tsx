@@ -67,7 +67,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   }
 
   if (error) {
-    return <div className="p-4 text-center text-red-600">Error: {error}</div>;
+    return <div className="p-4 text-center text-[var(--color-error-600)]">Error: {error}</div>;
   }
 
   if (products.length === 0) {

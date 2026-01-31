@@ -28,9 +28,9 @@ export interface SettingsPageShellProps {
 
 const SCOPE_BADGES = {
   global: { label: 'Global', className: 'bg-info-100 text-info-dark' },
-  store: { label: 'Store', className: 'bg-green-100 text-green-800' },
-  station: { label: 'Station', className: 'bg-purple-100 text-purple-800' },
-  user: { label: 'User', className: 'bg-orange-100 text-orange-800' },
+  store: { label: 'Store', className: 'bg-success-100 text-success-800' },
+  station: { label: 'Station', className: 'bg-primary-100 text-primary-800' },
+  user: { label: 'User', className: 'bg-warning-100 text-warning-800' },
 };
 
 export function SettingsPageShell({
@@ -63,7 +63,7 @@ export function SettingsPageShell({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-secondary-900">{title}</h1>
+            <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
             {scope && (
               <span
                 className={`px-2 py-1 text-xs font-medium rounded ${SCOPE_BADGES[scope].className}`}
@@ -72,7 +72,7 @@ export function SettingsPageShell({
               </span>
             )}
           </div>
-          {subtitle && <p className="mt-1 text-sm text-secondary-600">{subtitle}</p>}
+          {subtitle && <p className="mt-1 text-sm text-text-secondary">{subtitle}</p>}
         </div>
         {primaryAction && (
           <Button onClick={primaryAction.onClick} variant="primary">
@@ -88,7 +88,7 @@ export function SettingsPageShell({
           {/* Search */}
           {onSearch && (
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-secondary-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-tertiary" />
               <Input
                 type="text"
                 placeholder={searchPlaceholder}
@@ -109,7 +109,7 @@ export function SettingsPageShell({
                   className={`px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
                     filter.active
                       ? 'bg-primary-600 text-white'
-                      : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
+                      : 'bg-surface-elevated text-text-secondary hover:bg-surface-base'
                   }`}
                 >
                   {filter.label}

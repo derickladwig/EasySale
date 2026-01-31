@@ -53,8 +53,9 @@ export function useUsers() {
     try {
       const response = await apiClient.get<User[]>('/api/users');
       setUsers(response);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch users');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch users';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

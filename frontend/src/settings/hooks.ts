@@ -15,17 +15,22 @@ export interface Integration {
 /**
  * Hook to fetch all integrations
  *
+ * @param scope - Optional store scope filter ('all' or store ID)
  * @returns Query result with integrations array
  *
  * @example
  * const { data: integrations = [], isLoading, error } = useIntegrationsQuery();
+ * const { data: integrations = [], isLoading, error } = useIntegrationsQuery('store-123');
  */
-export function useIntegrationsQuery(): UseQueryResult<Integration[], Error> {
+export function useIntegrationsQuery(scope?: 'all' | string): UseQueryResult<Integration[], Error> {
   return useQuery({
-    queryKey: ['integrations'],
+    queryKey: ['integrations', scope ?? 'all'],
     queryFn: async () => {
       try {
-        const response = await fetch('/api/integrations');
+        const url = scope && scope !== 'all' 
+          ? `/api/integrations?store_id=${encodeURIComponent(scope)}`
+          : '/api/integrations';
+        const response = await fetch(url);
         if (!response.ok) {
           // If endpoint doesn't exist yet, return empty array
           if (response.status === 404) {
@@ -66,13 +71,9 @@ export function useRemoteStoresQuery(): UseQueryResult<RemoteStore[], Error> {
   return useQuery({
     queryKey: ['remoteStores'],
     queryFn: async () => {
-      // TODO: Replace with actual API call when backend is ready
-      // const response = await fetch('/api/network/remote-stores');
-      // if (!response.ok) throw new Error('Failed to fetch remote stores');
-      // return response.json();
-
-      // For now, return empty array to simulate no data
-      return [];
+      const response = await fetch('/api/network/remote-stores');
+      if (!response.ok) throw new Error('Failed to fetch remote stores');
+      return response.json();
     },
   });
 }

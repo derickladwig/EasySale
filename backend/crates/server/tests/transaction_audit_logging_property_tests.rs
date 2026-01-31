@@ -8,9 +8,9 @@
 
 use proptest::prelude::*;
 use serde_json::json;
-use EasySale_server::AuditLogger;
-use EasySale_server::AuditLogEntry;
-use EasySale_server::test_utils::create_test_db;
+use easysale_server::AuditLogger;
+use easysale_server::AuditLogEntry;
+use easysale_server::test_utils::create_test_db;
 use uuid::Uuid;
 
 // ============================================================================

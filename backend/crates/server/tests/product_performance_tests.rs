@@ -7,10 +7,10 @@ mod performance_tests {
     use std::sync::Arc;
     use std::time::Instant;
     use sqlx::SqlitePool;
-    use EasySale_server::{CreateProductRequest, ProductSearchRequest};
-    use EasySale_server::SearchService;
-    use EasySale_server::ProductService;
-    use EasySale_server::ConfigLoader;
+    use easysale_server::{CreateProductRequest, ProductSearchRequest};
+    use easysale_server::SearchService;
+    use easysale_server::ProductService;
+    use easysale_server::ConfigLoader;
 
     // Helper function to create test database
     async fn setup_test_db() -> SqlitePool {

@@ -69,9 +69,9 @@ export const NavGroup: React.FC<NavGroupProps> = ({
           className={`
             w-full flex items-center justify-between
             px-3 py-2 text-xs font-semibold uppercase tracking-wider
-            text-gray-500 dark:text-gray-400
-            hover:text-gray-700 dark:hover:text-gray-300
-            focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+            text-text-muted dark:text-text-muted
+            hover:text-text-secondary dark:hover:text-text-secondary
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
             rounded-md transition-colors
           `}
           onClick={toggleCollapse}
@@ -88,7 +88,7 @@ export const NavGroup: React.FC<NavGroupProps> = ({
           />
         </button>
       ) : (
-        <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-text-muted">
           {label}
         </div>
       )}

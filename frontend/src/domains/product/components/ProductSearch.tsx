@@ -158,7 +158,7 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="Search products... (or scan barcode)"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             />
 
             {/* Autocomplete suggestions */}
@@ -240,13 +240,13 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({
                       type="number"
                       placeholder="Min"
                       onChange={(e) => handleFilterChange(`${filter.field}_min`, e.target.value)}
-                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg"
+                      className="w-1/2 px-3 py-2 border border-border rounded-lg bg-surface-base text-text-primary"
                     />
                     <input
                       type="number"
                       placeholder="Max"
                       onChange={(e) => handleFilterChange(`${filter.field}_max`, e.target.value)}
-                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg"
+                      className="w-1/2 px-3 py-2 border border-border rounded-lg bg-surface-base text-text-primary"
                     />
                   </div>
                 )}

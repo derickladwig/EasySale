@@ -81,7 +81,7 @@ export const QueueFilters: React.FC<QueueFiltersProps> = ({
           </label>
           <div className="space-y-2">
             <div>
-              <label className="text-xs text-gray-600">Min:</label>
+              <label className="text-xs text-text-secondary">Min:</label>
               <input
                 type="range"
                 min="0"
@@ -92,7 +92,7 @@ export const QueueFilters: React.FC<QueueFiltersProps> = ({
               />
             </div>
             <div>
-              <label className="text-xs text-gray-600">Max:</label>
+              <label className="text-xs text-text-secondary">Max:</label>
               <input
                 type="range"
                 min="0"
@@ -118,7 +118,7 @@ export const QueueFilters: React.FC<QueueFiltersProps> = ({
                   max_confidence: 85,
                 })
               }
-              className="w-full text-left px-3 py-2 bg-red-50 hover:bg-red-100 rounded text-sm"
+              className="w-full text-left px-3 py-2 bg-error-50 hover:bg-error-100 rounded text-sm"
             >
               🔴 Low Confidence (&lt; 85%)
             </button>
@@ -131,7 +131,7 @@ export const QueueFilters: React.FC<QueueFiltersProps> = ({
                   max_confidence: 100,
                 })
               }
-              className="w-full text-left px-3 py-2 bg-yellow-50 hover:bg-yellow-100 rounded text-sm"
+              className="w-full text-left px-3 py-2 bg-warning-50 hover:bg-warning-100 rounded text-sm"
             >
               🟡 All Pending
             </button>
@@ -157,7 +157,7 @@ export const QueueFilters: React.FC<QueueFiltersProps> = ({
                   max_confidence: 100,
                 })
               }
-              className="w-full text-left px-3 py-2 bg-green-50 hover:bg-green-100 rounded text-sm"
+              className="w-full text-left px-3 py-2 bg-success-50 hover:bg-success-100 rounded text-sm"
             >
               🟢 High Confidence Approved
             </button>

@@ -159,7 +159,7 @@ export const VariantManager: React.FC<VariantManagerProps> = ({
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         {error && (
-          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded text-red-400">
+          <div className="mb-4 p-4 bg-[var(--color-error-500)]/10 border border-[var(--color-error-500)]/20 rounded text-[var(--color-error-400)]">
             {error}
           </div>
         )}

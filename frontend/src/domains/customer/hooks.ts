@@ -6,7 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import * as customerApi from './api';
-import type { CustomerResponse, CreateCustomerRequest, UpdateCustomerRequest } from './api';
+import type { CustomerResponse, CreateCustomerRequest, UpdateCustomerRequest, CustomerOrderResponse } from './api';
 
 /**
  * Hook to fetch all customers
@@ -91,6 +91,20 @@ export function useDeleteCustomerMutation(): UseMutationResult<
 }
 
 /**
+ * Hook to fetch customer orders
+ */
+export function useCustomerOrdersQuery(
+  customerId: string,
+  limit?: number
+): UseQueryResult<CustomerOrderResponse[], Error> {
+  return useQuery({
+    queryKey: ['customer-orders', customerId, limit],
+    queryFn: () => customerApi.getCustomerOrders(customerId, limit),
+    enabled: !!customerId,
+  });
+}
+
+/**
  * Transform backend CustomerResponse to frontend Customer format
  */
 export function transformCustomer(response: CustomerResponse): {
@@ -119,10 +133,11 @@ export function transformCustomer(response: CustomerResponse): {
     email: response.email || '',
     phone: response.phone || '',
     type: 'individual', // Backend doesn't have type field yet
-    tier: tierMap[response.pricing_tier] || 'standard',
-    totalSpent: response.store_credit, // Placeholder - need actual sales data
-    orderCount: 0, // Placeholder - need actual order count
-    lastOrder: response.updated_at,
+    tier: tierMap[response.pricing_tier?.toLowerCase()] || 'standard',
+    // Use actual sales statistics from backend
+    totalSpent: response.total_spent ?? 0,
+    orderCount: response.order_count ?? 0,
+    lastOrder: response.last_order || response.updated_at,
     address: undefined,
     company: undefined,
   };

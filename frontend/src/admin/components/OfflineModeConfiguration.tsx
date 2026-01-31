@@ -62,8 +62,9 @@ export function OfflineModeConfiguration() {
       } else {
         throw new Error('Failed to save settings');
       }
-    } catch (error: any) {
-      alert(`Failed to save: ${error.message}`);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Failed to save');
+      alert(`Failed to save: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -88,8 +89,9 @@ export function OfflineModeConfiguration() {
       } else {
         throw new Error('Failed to clear queue');
       }
-    } catch (error: any) {
-      alert(`Failed to clear queue: ${error.message}`);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Failed to clear queue');
+      alert(`Failed to clear queue: ${err.message}`);
     }
   };
 

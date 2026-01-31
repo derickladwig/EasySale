@@ -117,14 +117,18 @@ export function ProfileMenu({ showName = true, className }: ProfileMenuProps) {
         />
       </button>
 
-      {/* Dropdown menu */}
+      {/* Dropdown menu - uses popover z-index token and elevated surface */}
       {isOpen && (
         <div 
           className={cn(
             'absolute right-0 top-full mt-2 w-56 py-2',
-            'bg-surface-base border border-border rounded-lg shadow-lg',
-            'z-50 animate-in fade-in slide-in-from-top-2 duration-200'
+            'bg-surface-elevated border border-border rounded-xl',
+            'animate-in fade-in slide-in-from-top-2 duration-200'
           )}
+          style={{ 
+            zIndex: 'var(--z-popover)',
+            boxShadow: 'var(--shadow-dropdown)'
+          }}
           role="menu"
         >
           {/* User info header */}

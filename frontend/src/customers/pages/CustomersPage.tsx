@@ -24,7 +24,7 @@ import { cn } from '@common/utils/classNames';
 import { EmptyState } from '@common/components/molecules/EmptyState';
 import { EmptyDetailPane } from '@common/components/molecules/EmptyDetailPane';
 import { toast } from '@common/utils/toast';
-import { useCustomersQuery, useCreateCustomerMutation, transformCustomer } from '@domains/customer/hooks';
+import { useCustomersQuery, useCreateCustomerMutation, useCustomerOrdersQuery, transformCustomer } from '@domains/customer/hooks';
 import { EditCustomerModal } from '../components/EditCustomerModal';
 import { DeleteCustomerDialog } from '../components/DeleteCustomerDialog';
 import { Button } from '@common/components/atoms/Button';
@@ -85,8 +85,8 @@ function CreateCustomerModal({ isOpen, onClose, onCustomerCreated }: CreateCusto
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-surface-elevated rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-elevated rounded-lg p-6 w-full max-w-md" style={{ boxShadow: 'var(--shadow-modal)' }}>
         <h2 className="text-xl font-semibold text-text-primary mb-4">Create New Customer</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -166,6 +166,12 @@ export function CustomersPage() {
 
   // Fetch customers from backend
   const { data: customersData = [], isLoading, error } = useCustomersQuery();
+  
+  // Fetch orders for selected customer
+  const { data: customerOrders = [], isLoading: ordersLoading } = useCustomerOrdersQuery(
+    selectedCustomer?.id || '',
+    5 // Limit to 5 recent orders
+  );
   
   // Transform backend data to frontend format
   const customers = customersData.map(transformCustomer);
@@ -508,29 +514,49 @@ export function CustomersPage() {
                 </div>
               </div>
 
-              {/* Recent orders placeholder */}
+              {/* Recent orders */}
               <div className="space-y-3">
                 <h3 className="text-sm font-medium text-text-tertiary uppercase tracking-wider">
                   Recent Orders
                 </h3>
                 <div className="space-y-2">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-surface-elevated rounded-lg p-3 flex items-center justify-between"
-                    >
-                      <div>
-                        <div className="text-text-secondary font-medium">Order #{1000 + i}</div>
-                        <div className="text-xs text-text-tertiary">Jan {10 - i}, 2026</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-text-secondary font-medium">
-                          ${(150 - i * 10).toFixed(2)}
-                        </div>
-                        <div className="text-xs text-success-400">Completed</div>
-                      </div>
+                  {ordersLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
                     </div>
-                  ))}
+                  ) : customerOrders.length === 0 ? (
+                    <div className="text-center py-4 text-text-tertiary text-sm">
+                      No orders yet
+                    </div>
+                  ) : (
+                    customerOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="bg-surface-elevated rounded-lg p-3 flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="text-text-secondary font-medium">
+                            {order.transaction_number}
+                          </div>
+                          <div className="text-xs text-text-tertiary">
+                            {new Date(order.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-text-secondary font-medium">
+                            ${order.total_amount.toFixed(2)}
+                          </div>
+                          <div className="text-xs text-success-400 capitalize">
+                            {order.status}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

@@ -57,8 +57,8 @@ export const RestoreWizard: React.FC<RestoreWizardProps> = ({ backups, onClose, 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-surface-base rounded-lg border border-border w-full max-w-2xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg border border-border w-full max-w-2xl max-h-[90vh] overflow-hidden" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-text-primary">Restore Database</h2>

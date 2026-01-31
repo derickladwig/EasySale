@@ -3,7 +3,7 @@
 /// Tests the complete configuration loading and validation flow
 /// with real configuration files.
 
-use EasySale_server::{ConfigLoader, TenantConfig};
+use easysale_server::{ConfigLoader, TenantConfig};
 use std::path::PathBuf;
 
 #[tokio::test]

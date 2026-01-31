@@ -118,13 +118,13 @@ select option {
 
 select option:hover,
 select option:focus {
-  background-color: var(--color-primary-500, #0756d9);
-  color: white;
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse, #ffffff);
 }
 
 select option:checked {
-  background-color: var(--color-primary-500, #0756d9);
-  color: white;
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse, #ffffff);
 }
 
 /* Light theme select styling */
@@ -141,8 +141,8 @@ select option:checked {
 [data-theme="light"] select option:hover,
 [data-theme="light"] select option:focus,
 [data-theme="light"] select option:checked {
-  background-color: var(--color-primary-500, #0756d9);
-  color: white;
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse, #ffffff);
 }
 
 /* Dark theme select styling (explicit for clarity) */
@@ -159,8 +159,8 @@ select option:checked {
 [data-theme="dark"] select option:hover,
 [data-theme="dark"] select option:focus,
 [data-theme="dark"] select option:checked {
-  background-color: var(--color-primary-500, #0756d9);
-  color: white;
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse, #ffffff);
 }
 
 /* System theme select styling - follows OS preference */
@@ -203,16 +203,16 @@ select option:checked {
   }
 }
 
-/* Focus visible for accessibility - blue to match theme */
+/* Focus visible for accessibility - uses theme accent color */
 *:focus-visible {
-  outline: 2px solid var(--color-accent, #0756d9);
+  outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
-/* Selection color - blue to match theme */
+/* Selection color - uses theme accent color */
 ::selection {
-  background-color: var(--color-accent, #0756d9);
-  color: #ffffff;
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse, #ffffff);
 }
 
 /* Prevent layout shifts */
@@ -222,31 +222,31 @@ video {
   height: auto;
 }
 
-/* Ensure proper stacking context */
+/* Ensure proper stacking context - uses z-index tokens from tokens.css */
 header {
   position: relative;
-  z-index: 50;
+  z-index: var(--z-header);
 }
 
 aside {
   position: relative;
-  z-index: 40;
+  z-index: var(--z-sidebar);
 }
 
 main {
   position: relative;
-  z-index: 10;
+  z-index: var(--z-base);
 }
 
-/* Settings highlight animation */
+/* Settings highlight animation - uses CSS color-mix for theme-aware opacity */
 @keyframes setting-highlight {
   0% {
-    background-color: rgba(var(--color-accent-rgb, 59, 130, 246), 0.2);
-    box-shadow: 0 0 0 4px rgba(var(--color-accent-rgb, 59, 130, 246), 0.3);
+    background-color: color-mix(in srgb, var(--color-primary-500) 20%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary-500) 30%, transparent);
   }
   50% {
-    background-color: rgba(var(--color-accent-rgb, 59, 130, 246), 0.1);
-    box-shadow: 0 0 0 8px rgba(var(--color-accent-rgb, 59, 130, 246), 0.2);
+    background-color: color-mix(in srgb, var(--color-primary-500) 10%, transparent);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-primary-500) 20%, transparent);
   }
   100% {
     background-color: transparent;

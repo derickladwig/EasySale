@@ -2,8 +2,8 @@
 // Only compiled when document-processing feature is enabled
 #![cfg(feature = "document-processing")]
 
-use EasySale_server::models::{InputArtifact, PageArtifact};
-use EasySale_server::services::{DocumentIngestService, IngestConfig};
+use easysale_server::models::{InputArtifact, PageArtifact};
+use easysale_server::services::{DocumentIngestService, IngestConfig};
 use image::DynamicImage;
 use lopdf::{Document as PdfDocument, Object, Stream, Dictionary, content::Content};
 use std::path::PathBuf;
@@ -181,7 +181,7 @@ async fn test_ingest_pdf_with_text_layer() {
     let result = service.ingest_file(&test_pdf_path).await;
     
     // The PDF should be processed (even if text extraction is limited)
-    assert!(result.is_ok() || matches!(result, Err(EasySale_server::services::IngestError::Pdf(_))));
+    assert!(result.is_ok() || matches!(result, Err(easysale_server::services::IngestError::Pdf(_))));
 }
 
 #[tokio::test]

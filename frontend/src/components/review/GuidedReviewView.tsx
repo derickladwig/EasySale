@@ -86,8 +86,8 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
   };
 
   const handleEditField = () => {
-    // Open edit modal
-    console.log('Edit field');
+    // TODO: Implement field edit modal
+    // This should open a modal for editing the current field
   };
 
   const handleNextField = () => {
@@ -113,8 +113,8 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
   };
 
   const handleAcceptAllSafe = () => {
-    // Accept all fields with confidence > 95%
-    console.log('Accept all safe fields');
+    // TODO: Implement batch accept for high-confidence fields
+    // POST /api/cases/:caseId/accept-safe with confidence threshold
   };
 
   if (loading) {
@@ -129,17 +129,17 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
   const currentField = fieldsNeedingAttention[currentFieldIndex];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-surface-base">
       {/* Left Panel - Document Preview */}
-      <div className="w-1/2 bg-white border-r">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Document Preview</h2>
-          <p className="text-sm text-gray-600">Case: {reviewCase.case_id}</p>
+      <div className="w-1/2 bg-surface-elevated border-r border-border">
+        <div className="p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-text-primary">Document Preview</h2>
+          <p className="text-sm text-text-secondary">Case: {reviewCase.case_id}</p>
         </div>
         <div className="p-4">
           {/* Document image would go here */}
-          <div className="bg-gray-100 h-[600px] flex items-center justify-center">
-            <p className="text-gray-500">Document preview</p>
+          <div className="bg-surface-base h-[600px] flex items-center justify-center">
+            <p className="text-text-tertiary">Document preview</p>
           </div>
         </div>
       </div>
@@ -147,19 +147,19 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
       {/* Right Panel - Review Interface */}
       <div className="w-1/2 flex flex-col">
         {/* Header */}
-        <div className="p-4 bg-white border-b">
+        <div className="p-4 bg-surface-elevated border-b border-border">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Guided Review</h2>
-            <span className="text-sm text-gray-600">
+            <h2 className="text-lg font-semibold text-text-primary">Guided Review</h2>
+            <span className="text-sm text-text-secondary">
               Field {currentFieldIndex + 1} of {fieldsNeedingAttention.length}
             </span>
           </div>
           
           {/* Validation Warnings */}
           {reviewCase.validation_report.hard_failures.length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded p-3 mb-2">
-              <p className="text-sm font-semibold text-red-800">Blocking Issues:</p>
-              <ul className="text-sm text-red-700 list-disc list-inside">
+            <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-dark rounded p-3 mb-2">
+              <p className="text-sm font-semibold text-error-dark">Blocking Issues:</p>
+              <ul className="text-sm text-error-dark list-disc list-inside">
                 {reviewCase.validation_report.hard_failures.map((f, i) => (
                   <li key={i}>{f.message}</li>
                 ))}
@@ -168,9 +168,9 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
           )}
           
           {reviewCase.validation_report.soft_failures.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-              <p className="text-sm font-semibold text-yellow-800">Warnings:</p>
-              <ul className="text-sm text-yellow-700 list-disc list-inside">
+            <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-dark rounded p-3">
+              <p className="text-sm font-semibold text-warning-dark">Warnings:</p>
+              <ul className="text-sm text-warning-dark list-disc list-inside">
                 {reviewCase.validation_report.warnings.map((w, i) => (
                   <li key={i}>{w}</li>
                 ))}
@@ -200,11 +200,11 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="p-4 bg-white border-t">
+        <div className="p-4 bg-surface-elevated border-t border-border">
           <div className="flex gap-2 mb-3">
             <button
               onClick={handleAcceptAllSafe}
-              className="px-4 py-2 bg-green-100 text-green-700 rounded hover:bg-green-200"
+              className="px-4 py-2 bg-success-100 dark:bg-success-900/20 text-success-dark rounded hover:bg-success-200"
             >
               Accept All Safe (95%+)
             </button>
@@ -214,20 +214,20 @@ export const GuidedReviewView: React.FC<GuidedReviewViewProps> = ({
             <button
               onClick={handleApproveAndNext}
               disabled={reviewCase.validation_report.hard_failures.length > 0}
-              className="flex-1 px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-secondary-300 disabled:cursor-not-allowed"
             >
               Approve & Next (Ctrl+Enter)
             </button>
             <button
               onClick={() => onReject('Rejected via guided review')}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="px-4 py-2 bg-error text-white rounded hover:bg-error-dark"
             >
               Reject
             </button>
           </div>
 
           {/* Keyboard Shortcuts Help */}
-          <div className="mt-3 text-xs text-gray-500">
+          <div className="mt-3 text-xs text-text-tertiary">
             <p>Shortcuts: A=Accept | E=Edit | N=Next | Ctrl+Enter=Approve & Next</p>
           </div>
         </div>

@@ -7,7 +7,7 @@ use sqlx::SqlitePool;
 use uuid::Uuid;
 use chrono::Utc;
 
-use EasySale_server::models::GiftCard;
+use easysale_server::models::GiftCard;
 
 // ============================================================================
 // Test Database Setup

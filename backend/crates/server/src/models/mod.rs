@@ -43,7 +43,7 @@ pub use confidence::{CandidateValue, DocumentConfidence, ExtractionMethod, Field
 pub use context::UserContext;
 pub use credit::{CreditAccount, CreditTransaction, CreditTransactionType, CreateCreditAccountRequest, RecordChargeRequest, RecordPaymentRequest};
 pub use customer::{
-    CreateCustomerRequest, Customer, CustomerResponse, PricingTier, UpdateCustomerRequest,
+    CreateCustomerRequest, Customer, CustomerResponse, CustomerWithStats, PricingTier, UpdateCustomerRequest,
 };
 pub use errors::{ApiError, ApiResult, ValidationError};
 pub use external_entities::{

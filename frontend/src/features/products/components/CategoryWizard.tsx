@@ -34,7 +34,7 @@ export const CategoryWizard: React.FC<CategoryWizardProps> = ({
   useEffect(() => {
     if (!config) return;
 
-    const categoryConfig = config.categories?.find((c: any) => c.id === category);
+    const categoryConfig = config.categories?.find((c: { id: string }) => c.id === category);
     if (!categoryConfig?.wizard?.steps) {
       setError('No wizard configuration found for this category');
       return;

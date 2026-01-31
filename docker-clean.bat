@@ -109,8 +109,8 @@ REM ============================================
 echo.
 echo [1/6] Stopping containers...
 echo [1/6] Stopping containers... >> "%LOG_FILE%"
-docker-compose -p EasySale down -v >> "%LOG_FILE%" 2>&1
-docker-compose -p EasySale -f docker-compose.prod.yml down -v >> "%LOG_FILE%" 2>&1
+docker-compose -p easysale down -v >> "%LOG_FILE%" 2>&1
+docker-compose -p easysale -f docker-compose.prod.yml down -v >> "%LOG_FILE%" 2>&1
 docker stop easysale-frontend-dev easysale-backend-dev easysale-storybook-dev >> "%LOG_FILE%" 2>&1
 docker stop easysale-frontend easysale-backend easysale-storybook >> "%LOG_FILE%" 2>&1
 echo [OK] Containers stopped

@@ -65,7 +65,7 @@ export const ReviewPage: React.FC = () => {
       return (
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
-            <p className="text-red-600 mb-4">Case not found</p>
+            <p className="text-[var(--color-error-600)] mb-4">Case not found</p>
             <button
               onClick={handleBackToQueue}
               className="px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover"

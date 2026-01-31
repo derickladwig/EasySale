@@ -37,9 +37,9 @@ const SHIELD_TYPE_STYLES: Record<ShieldType, { bg: string; border: string; label
 };
 
 const APPLY_MODE_STYLES: Record<ApplyMode, { bg: string; text: string; icon: string }> = {
-  Applied: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', icon: '✓' },
-  Suggested: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300', icon: '?' },
-  Disabled: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-500 dark:text-gray-400', icon: '✗' },
+  Applied: { bg: 'bg-success-100 dark:bg-success-900/30', text: 'text-success-dark', icon: '✓' },
+  Suggested: { bg: 'bg-warning-100 dark:bg-warning-900/30', text: 'text-warning-dark', icon: '?' },
+  Disabled: { bg: 'bg-secondary-100 dark:bg-secondary-800', text: 'text-text-tertiary', icon: '✗' },
 };
 
 // ============================================
@@ -68,8 +68,8 @@ const ShieldListItem: React.FC<ShieldListItemProps> = ({
     <div
       className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
         isSelected
-          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+          ? 'border-accent bg-info-50 dark:bg-info-900/20'
+          : 'border-secondary-200 dark:border-secondary-700 hover:border-secondary-300 dark:hover:border-secondary-600'
       }`}
       onClick={onSelect}
     >
@@ -100,8 +100,8 @@ const ShieldListItem: React.FC<ShieldListItemProps> = ({
             }}
             className={`text-xs px-2 py-1 rounded transition-colors ${
               shield.apply_mode === mode
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700'
+                ? 'bg-accent text-white'
+                : 'bg-secondary-100 dark:bg-secondary-800 text-text-secondary hover:bg-secondary-200 dark:hover:bg-secondary-700'
             }`}
           >
             {mode}
@@ -112,7 +112,7 @@ const ShieldListItem: React.FC<ShieldListItemProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 ml-auto"
+          className="text-xs px-2 py-1 rounded bg-error-100 dark:bg-error-900/30 text-error-dark hover:bg-error-200 dark:hover:bg-error-900/50 ml-auto"
         >
           Remove
         </button>
@@ -120,8 +120,8 @@ const ShieldListItem: React.FC<ShieldListItemProps> = ({
 
       {/* Risk Warning */}
       {shield.risk_level === 'High' && (
-        <div className="mt-2 p-2 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-          <p className="text-xs text-red-700 dark:text-red-300">
+        <div className="mt-2 p-2 rounded bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800">
+          <p className="text-xs text-error-dark">
             ⚠️ High risk: Overlaps critical zone
           </p>
         </div>
@@ -212,14 +212,14 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
   const isOperating = isLoading || isSaving || isRerunning;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-surface-base rounded-lg shadow-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden border border-border flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-base rounded-lg max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden border border-border flex flex-col" style={{ boxShadow: 'var(--shadow-modal)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
             <h3 className="text-lg font-semibold text-text-primary">Cleanup Shields</h3>
             {hasUnsavedChanges && (
-              <span className="text-xs px-2 py-1 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
+              <span className="text-xs px-2 py-1 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-dark">
                 Unsaved changes
               </span>
             )}
@@ -243,8 +243,8 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
                 onClick={() => setViewMode('resolved')}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   viewMode === 'resolved'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-text-secondary hover:bg-gray-200'
+                    ? 'bg-accent text-white'
+                    : 'bg-secondary-100 dark:bg-secondary-800 text-text-secondary hover:bg-secondary-200'
                 }`}
               >
                 Show Shields (Resolved)
@@ -253,8 +253,8 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
                 onClick={() => setViewMode('suggestions')}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   viewMode === 'suggestions'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-text-secondary hover:bg-gray-200'
+                    ? 'bg-accent text-white'
+                    : 'bg-secondary-100 dark:bg-secondary-800 text-text-secondary hover:bg-secondary-200'
                 }`}
               >
                 Show Suggestions (Auto)
@@ -263,13 +263,13 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
 
             {/* Document Preview with Overlays */}
             <div
-              className={`relative bg-gray-100 dark:bg-gray-800 h-[400px] rounded-lg ${
+              className={`relative bg-secondary-100 dark:bg-secondary-800 h-[400px] rounded-lg ${
                 isDrawing ? 'cursor-crosshair' : 'cursor-default'
               }`}
             >
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
                 </div>
               ) : (
                 <>
@@ -315,13 +315,13 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
 
             {/* Drawing Controls */}
             {isDrawing ? (
-              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
+              <div className="mt-4 p-3 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-lg">
+                <p className="text-sm text-warning-dark mb-2">
                   Click and drag on the document to create a shield region
                 </p>
                 <button
                   onClick={() => setIsDrawing(false)}
-                  className="text-sm text-yellow-700 dark:text-yellow-300 hover:underline"
+                  className="text-sm text-warning-dark hover:underline"
                 >
                   Cancel
                 </button>
@@ -343,7 +343,7 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
                 </select>
                 <button
                   onClick={() => setIsDrawing(true)}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-success text-white rounded hover:bg-success-dark disabled:opacity-50"
                   disabled={isOperating}
                 >
                   + Draw Shield
@@ -380,12 +380,12 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
 
             {/* Zone Conflicts */}
             {state.zoneConflicts.length > 0 && (
-              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
+              <div className="mb-4 p-3 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+                <h5 className="font-medium text-error-dark mb-2">
                   ⚠️ Critical Zone Conflicts
                 </h5>
                 {state.zoneConflicts.map((conflict, i) => (
-                  <p key={i} className="text-xs text-red-700 dark:text-red-300">
+                  <p key={i} className="text-xs text-error-dark">
                     Shield overlaps {conflict.zone_id} ({Math.round(conflict.overlap_ratio * 100)}%)
                     - {conflict.action_taken}
                   </p>
@@ -399,14 +399,14 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
               <button
                 onClick={saveAsVendorRule}
                 disabled={isOperating || !vendorId}
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? 'Saving...' : 'Vendor Rule'}
               </button>
               <button
                 onClick={saveAsTemplateRule}
                 disabled={isOperating || !templateId}
-                className="w-full px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 bg-info text-white rounded hover:bg-info-dark disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Template Rule
               </button>
@@ -420,7 +420,7 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
               <button
                 onClick={rerunExtraction}
                 disabled={isOperating}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                className="w-full px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:opacity-50"
               >
                 {isRerunning ? 'Processing...' : 'Re-run Extraction'}
               </button>
@@ -433,26 +433,26 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
 
         {/* Error Toast */}
         {hasError && state.error && (
-          <div className="absolute bottom-4 left-4 right-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg shadow-lg">
+          <div className="absolute bottom-4 left-4 right-4 p-4 bg-error-50 dark:bg-error-900/30 border border-error-200 dark:border-error-800 rounded-lg shadow-lg">
             <div className="flex items-start gap-3">
-              <span className="text-red-600 dark:text-red-400 text-xl">⚠️</span>
+              <span className="text-error text-xl">⚠️</span>
               <div className="flex-1">
-                <p className="font-medium text-red-800 dark:text-red-200">Operation Failed</p>
-                <p className="text-sm text-red-700 dark:text-red-300">{state.error}</p>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                <p className="font-medium text-error-dark">Operation Failed</p>
+                <p className="text-sm text-error-dark">{state.error}</p>
+                <p className="text-xs text-error mt-1">
                   Your changes are preserved. You can retry or continue editing.
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={retry}
-                  className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                  className="px-3 py-1 text-sm bg-error text-white rounded hover:bg-error-dark"
                 >
                   Retry
                 </button>
                 <button
                   onClick={dismissError}
-                  className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-text-primary rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+                  className="px-3 py-1 text-sm bg-secondary-200 dark:bg-secondary-700 text-text-primary rounded hover:bg-secondary-300 dark:hover:bg-secondary-600"
                 >
                   Dismiss
                 </button>

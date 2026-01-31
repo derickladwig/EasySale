@@ -72,7 +72,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <div className="relative">
           <IconComponent size={24} className="flex-shrink-0" />
           {item.badge !== undefined && Number(item.badge) > 0 && (
-            <span className="absolute -top-1 -right-1 px-1 min-w-[16px] h-4 text-[10px] font-semibold rounded-full bg-error-500 text-white flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 px-1 min-w-[16px] h-4 text-[10px] font-semibold rounded-full bg-error-500 text-text-inverse flex items-center justify-center">
               {Number(item.badge) > 99 ? '99+' : item.badge}
             </span>
           )}
@@ -85,10 +85,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <nav
       className={`
-        fixed bottom-0 left-0 right-0 bg-background-primary border-t border-border z-50
+        fixed bottom-0 left-0 right-0 bg-background-primary border-t border-border
         md:hidden
         ${className}
       `}
+      style={{ zIndex: 'var(--z-fixed)' }}
       aria-label="Mobile navigation"
     >
       <div className="flex items-stretch">

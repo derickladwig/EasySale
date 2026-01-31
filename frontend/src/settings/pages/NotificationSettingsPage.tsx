@@ -57,8 +57,10 @@ interface WebhookConfig {
   auth_token?: string;
 }
 
+type SeverityLevel = 'info' | 'warning' | 'error' | 'critical';
+
 interface NotificationFilters {
-  min_severity: 'info' | 'warning' | 'error' | 'critical';
+  min_severity: SeverityLevel;
   connectors?: string[];
   entity_types?: string[];
   error_types?: string[];
@@ -156,7 +158,7 @@ const ChannelIcon: React.FC<{ type: string; className?: string }> = ({ type, cla
   }
 };
 
-const SeverityBadge: React.FC<{ severity: string }> = ({ severity }) => {
+const SeverityBadge: React.FC<{ severity: SeverityLevel | string }> = ({ severity }) => {
   const colors: Record<string, string> = {
     info: 'bg-info-500/20 text-info-400',
     warning: 'bg-warning-500/20 text-warning-400',
@@ -179,7 +181,21 @@ interface AddChannelModalProps {
 
 const AddChannelModal: React.FC<AddChannelModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [channelType, setChannelType] = useState<'email' | 'slack' | 'webhook'>('email');
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    smtp_host: string;
+    smtp_port: number;
+    smtp_username: string;
+    smtp_password: string;
+    from_address: string;
+    to_addresses: string;
+    webhook_url: string;
+    channel: string;
+    username: string;
+    url: string;
+    method: string;
+    auth_token: string;
+    min_severity: SeverityLevel;
+  }>({
     // Email
     smtp_host: '',
     smtp_port: 587,
@@ -196,7 +212,7 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({ isOpen, onClose, onSu
     method: 'POST',
     auth_token: '',
     // Filters
-    min_severity: 'warning' as const,
+    min_severity: 'warning',
   });
 
   if (!isOpen) return null;
@@ -246,8 +262,8 @@ const AddChannelModal: React.FC<AddChannelModalProps> = ({ isOpen, onClose, onSu
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-surface-secondary rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-secondary rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-modal)' }}>
         <h2 className="text-xl font-semibold text-text-primary mb-4">Add Notification Channel</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -482,12 +498,11 @@ export const NotificationSettingsPage: React.FC = () => {
             title="No notification channels configured"
             description="Add email, Slack, or webhook channels to receive alerts when sync issues occur"
             icon={<Bell size={48} />}
-            action={
-              <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Add Channel
-              </Button>
-            }
+            primaryAction={{
+              label: "Add Channel",
+              onClick: () => setShowAddModal(true),
+              icon: <Plus className="w-4 h-4" />,
+            }}
           />
         ) : (
           <div className="space-y-4">

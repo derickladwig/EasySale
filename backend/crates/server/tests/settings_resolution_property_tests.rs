@@ -4,7 +4,7 @@
 
 use proptest::prelude::*;
 use serde_json::json;
-use EasySale_server::services::settings_resolution::{
+use easysale_server::services::settings_resolution::{
     SettingScope, SettingValue, SettingsResolutionService,
 };
 

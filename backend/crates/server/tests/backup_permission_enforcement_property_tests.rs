@@ -6,9 +6,9 @@
 //! **Validates: Requirements 9.1 (Requirement 10.1 in design doc)**
 
 use proptest::prelude::*;
-use EasySale_server::models::context::UserContext;
-use EasySale_server::auth::jwt::Claims;
-use EasySale_server::test_constants::TEST_TENANT_ID;
+use easysale_server::models::context::UserContext;
+use easysale_server::auth::jwt::Claims;
+use easysale_server::test_constants::TEST_TENANT_ID;
 
 /// All available roles in the system
 const ROLES: &[&str] = &[

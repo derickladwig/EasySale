@@ -1,12 +1,15 @@
-use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{cookie::{Cookie, SameSite}, get, post, web, HttpRequest, HttpResponse, Responder};
 use chrono::{Duration, Utc};
 use sqlx::SqlitePool;
 use uuid::Uuid;
 
 use crate::auth::{generate_token, verify_password};
 use crate::config::Config;
-use crate::middleware::get_current_tenant_id;
+use crate::middleware::{get_current_tenant_id, generate_csrf_token, create_csrf_cookie, clear_csrf_cookie};
 use crate::models::{LoginRequest, LoginResponse, User, UserResponse};
+
+/// Cookie name for auth token
+const AUTH_COOKIE_NAME: &str = "auth_token";
 
 // Rate limiting with automatic cleanup
 use once_cell::sync::Lazy;
@@ -245,43 +248,76 @@ pub async fn login(
         }));
     }
 
+    // Update last_login_at timestamp
+    let now = Utc::now().to_rfc3339();
+    if let Err(e) = sqlx::query("UPDATE users SET last_login_at = ? WHERE id = ? AND tenant_id = ?")
+        .bind(&now)
+        .bind(&user.id)
+        .bind(get_current_tenant_id())
+        .execute(pool.get_ref())
+        .await
+    {
+        tracing::warn!("Failed to update last_login_at for user {}: {:?}", user.id, e);
+        // Don't fail login if this update fails - it's not critical
+    }
+
     tracing::info!("Login successful for user: {} ({})", user.username, user.id);
 
-    // Return response
+    // Determine if we're in production (use Secure flag)
+    let is_production = cfg!(not(debug_assertions)) || std::env::var("ENVIRONMENT").unwrap_or_default() == "production";
+    
+    // Build httpOnly cookie for secure token storage
+    let cookie = Cookie::build(AUTH_COOKIE_NAME, token.clone())
+        .path("/")
+        .http_only(true)  // Prevents JavaScript access - XSS protection
+        .secure(is_production)  // Only send over HTTPS in production
+        .same_site(SameSite::Strict)  // CSRF protection
+        .max_age(actix_web::cookie::time::Duration::hours(config.jwt_expiration_hours as i64))
+        .finish();
+
+    // Generate CSRF token and create cookie (readable by JavaScript for double-submit pattern)
+    let csrf_token = generate_csrf_token();
+    let csrf_cookie = create_csrf_cookie(&csrf_token, is_production);
+
+    // Return response with user info (token is in cookie, not body for security)
+    // We still include token in response for backward compatibility during migration
     let response = LoginResponse {
-        token,
+        token: token.clone(),
         user: UserResponse::from(user),
         expires_at,
     };
 
-    HttpResponse::Ok().json(response)
+    HttpResponse::Ok()
+        .cookie(cookie)
+        .cookie(csrf_cookie)
+        .json(response)
 }
 
 /// POST /auth/logout
 /// Invalidate a user's session
 #[post("/auth/logout")]
 pub async fn logout(pool: web::Data<SqlitePool>, req: HttpRequest) -> impl Responder {
-    // Extract token from Authorization header
-    let token = match req.headers().get("Authorization") {
-        Some(header_value) => match header_value.to_str() {
-            Ok(value) => {
-                if value.starts_with("Bearer ") {
-                    &value[7..]
-                } else {
-                    value
-                }
-            }
-            Err(_) => {
-                tracing::warn!("Invalid Authorization header format");
-                return HttpResponse::BadRequest().json(serde_json::json!({
-                    "error": "Invalid Authorization header"
-                }));
-            }
-        },
+    // Extract token from cookie first, then fall back to Authorization header
+    let token = req.cookie(AUTH_COOKIE_NAME)
+        .map(|c| c.value().to_string())
+        .or_else(|| {
+            req.headers().get("Authorization").and_then(|header_value| {
+                header_value.to_str().ok().map(|value| {
+                    if value.starts_with("Bearer ") {
+                        value[7..].to_string()
+                    } else {
+                        value.to_string()
+                    }
+                })
+            })
+        });
+
+    let token = match token {
+        Some(t) => t,
         None => {
-            tracing::warn!("Logout attempt without Authorization header");
+            tracing::warn!("Logout attempt without token");
             return HttpResponse::Unauthorized().json(serde_json::json!({
-                "error": "Missing Authorization header"
+                "error": "Missing authentication token"
             }));
         }
     };
@@ -300,9 +336,23 @@ pub async fn logout(pool: web::Data<SqlitePool>, req: HttpRequest) -> impl Respo
             } else {
                 tracing::warn!("Logout attempt with invalid token");
             }
-            HttpResponse::Ok().json(serde_json::json!({
-                "message": "Logged out successfully"
-            }))
+            
+            // Clear the auth cookie
+            let clear_cookie = Cookie::build(AUTH_COOKIE_NAME, "")
+                .path("/")
+                .http_only(true)
+                .max_age(actix_web::cookie::time::Duration::ZERO)
+                .finish();
+            
+            // Clear the CSRF cookie
+            let clear_csrf = clear_csrf_cookie();
+            
+            HttpResponse::Ok()
+                .cookie(clear_cookie)
+                .cookie(clear_csrf)
+                .json(serde_json::json!({
+                    "message": "Logged out successfully"
+                }))
         }
         Err(e) => {
             tracing::error!("Failed to logout: {:?}", e);
@@ -321,31 +371,32 @@ pub async fn get_current_user(
     config: web::Data<Config>,
     req: HttpRequest,
 ) -> impl Responder {
-    // Extract token from Authorization header
-    let token = match req.headers().get("Authorization") {
-        Some(header_value) => match header_value.to_str() {
-            Ok(value) => {
-                if value.starts_with("Bearer ") {
-                    &value[7..]
-                } else {
-                    value
-                }
-            }
-            Err(_) => {
-                return HttpResponse::BadRequest().json(serde_json::json!({
-                    "error": "Invalid Authorization header"
-                }));
-            }
-        },
+    // Extract token from cookie first, then fall back to Authorization header
+    let token = req.cookie(AUTH_COOKIE_NAME)
+        .map(|c| c.value().to_string())
+        .or_else(|| {
+            req.headers().get("Authorization").and_then(|header_value| {
+                header_value.to_str().ok().map(|value| {
+                    if value.starts_with("Bearer ") {
+                        value[7..].to_string()
+                    } else {
+                        value.to_string()
+                    }
+                })
+            })
+        });
+
+    let token = match token {
+        Some(t) => t,
         None => {
             return HttpResponse::Unauthorized().json(serde_json::json!({
-                "error": "Missing Authorization header"
+                "error": "Missing authentication token"
             }));
         }
     };
 
     // Validate token
-    let claims = match crate::auth::validate_token(token, &config.jwt_secret) {
+    let claims = match crate::auth::validate_token(&token, &config.jwt_secret) {
         Ok(claims) => claims,
         Err(_) => {
             return HttpResponse::Unauthorized().json(serde_json::json!({

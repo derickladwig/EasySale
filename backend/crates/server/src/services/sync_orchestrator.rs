@@ -615,7 +615,7 @@ impl SyncOrchestrator {
         // Sync based on entity type
         match entity_type {
             "orders" => {
-                self.sync_woo_orders_to_qbo(&flow, sync_id, options, result).await?;
+                self.sync_woo_orders_to_qbo(&flow, tenant_id, sync_id, options, result).await?;
             }
             "customers" => {
                 self.sync_woo_customers_to_qbo(&flow, tenant_id, sync_id, options, result).await?;
@@ -635,6 +635,7 @@ impl SyncOrchestrator {
     async fn sync_woo_orders_to_qbo(
         &self,
         flow: &WooToQboFlow,
+        tenant_id: &str,
         sync_id: &str,
         options: &SyncOptions,
         result: &mut SyncResult,
@@ -683,8 +684,9 @@ impl SyncOrchestrator {
                 .map(|woo_order| {
                     let flow_ref = flow;
                     let order_id = woo_order.id;
+                    let tenant_id_owned = tenant_id.to_string();
                     async move {
-                        (order_id, flow_ref.sync_order("default-tenant", order_id, false).await)
+                        (order_id, flow_ref.sync_order(&tenant_id_owned, order_id, false).await)
                     }
                 })
                 .buffer_unordered(concurrency_limit)

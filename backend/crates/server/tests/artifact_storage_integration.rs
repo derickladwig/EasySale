@@ -1,8 +1,8 @@
 // Integration tests for artifact storage service
 // These tests verify the artifact storage functionality in isolation
 
-use EasySale_server::models::{Artifact, InputArtifact, PageArtifact};
-use EasySale_server::services::{ArtifactStorage, StorageConfig};
+use easysale_server::models::{Artifact, InputArtifact, PageArtifact};
+use easysale_server::services::{ArtifactStorage, StorageConfig};
 use tempfile::TempDir;
 
 fn create_test_config() -> (StorageConfig, TempDir) {

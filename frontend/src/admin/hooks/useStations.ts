@@ -43,8 +43,9 @@ export function useStations(storeId?: string) {
       const url = storeId ? `/api/stations?store_id=${storeId}` : '/api/stations';
       const response = await apiClient.get<Station[]>(url);
       setStations(response);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch stations');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch stations';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

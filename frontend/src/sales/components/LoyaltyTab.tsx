@@ -464,10 +464,10 @@ const LoyaltyTab: React.FC = () => {
             {['Bronze', 'Silver', 'Gold', 'Platinum'].map((tier, idx) => (
               <div key={tier} className="p-4 bg-surface-elevated rounded-lg text-center">
                 <Star className={`w-8 h-8 mx-auto mb-2 ${
-                  idx === 0 ? 'text-amber-600' :
-                  idx === 1 ? 'text-gray-400' :
-                  idx === 2 ? 'text-yellow-400' :
-                  'text-cyan-400'
+                  idx === 0 ? 'text-[var(--color-warning-600)]' :
+                  idx === 1 ? 'text-text-muted' :
+                  idx === 2 ? 'text-[var(--color-warning-400)]' :
+                  'text-[var(--color-info-400)]'
                 }`} />
                 <div className="font-medium text-text-primary">{tier}</div>
                 <div className="text-xs text-text-tertiary mt-1">

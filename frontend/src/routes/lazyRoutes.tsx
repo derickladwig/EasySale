@@ -131,6 +131,14 @@ export const LazyNotificationSettingsPage = lazyWithFallback(
   () => import('../settings/pages/NotificationSettingsPage').then(m => ({ default: m.NotificationSettingsPage }))
 );
 
+export const LazyOAuthCallbackPage = lazyWithFallback(
+  () => import('../settings/pages/OAuthCallbackPage').then(m => ({ default: m.OAuthCallbackPage }))
+);
+
+export const LazySyncHistoryPage = lazyWithFallback(
+  () => import('../settings/pages/SyncHistoryPage').then(m => ({ default: m.SyncHistoryPage }))
+);
+
 // ============================================================================
 // Reporting & Analytics
 // ============================================================================
@@ -197,6 +205,10 @@ export const LazyExportsPage = lazyWithFallback(
 
 export const LazySalesManagementPage = lazyWithFallback(
   () => import('../sales/pages/SalesManagementPage').then(m => ({ default: m.SalesManagementPage }))
+);
+
+export const LazyTransactionHistoryPage = lazyWithFallback(
+  () => import('../sales/pages/TransactionHistoryPage').then(m => ({ default: m.TransactionHistoryPage }))
 );
 
 // ============================================================================

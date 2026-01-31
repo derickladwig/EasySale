@@ -54,8 +54,8 @@ function ScanModal({ isOpen, onClose, onScanComplete }: ScanModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-surface-elevated rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-elevated rounded-lg p-6 w-full max-w-md" style={{ boxShadow: 'var(--shadow-modal)' }}>
         <h2 className="text-xl font-semibold text-text-primary mb-4">Scan Item</h2>
         
         <div className="space-y-4">
@@ -102,6 +102,8 @@ function ScanModal({ isOpen, onClose, onScanComplete }: ScanModalProps) {
   );
 }
 import { LoadingSpinner } from '@common/components/organisms/LoadingSpinner';
+import { ReceivingTab } from '../components/ReceivingTab';
+import { TransfersTab } from '../components/TransfersTab';
 
 type TabType = 'inventory' | 'receiving' | 'transfers' | 'vendor-bills' | 'alerts';
 
@@ -466,25 +468,9 @@ export function InventoryPage() {
           </>
         )}
 
-        {activeTab === 'receiving' && (
-          <div className="flex-1 flex items-center justify-center text-text-tertiary">
-            <div className="text-center">
-              <TruckIcon size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Receiving Module</p>
-              <p className="text-sm">Process incoming shipments and update inventory</p>
-            </div>
-          </div>
-        )}
+        {activeTab === 'receiving' && <ReceivingTab />}
 
-        {activeTab === 'transfers' && (
-          <div className="flex-1 flex items-center justify-center text-text-tertiary">
-            <div className="text-center">
-              <ArrowUpDown size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Stock Transfers</p>
-              <p className="text-sm">Transfer inventory between locations</p>
-            </div>
-          </div>
-        )}
+        {activeTab === 'transfers' && <TransfersTab />}
 
         {activeTab === 'vendor-bills' && (
           <div className="flex-1 flex items-center justify-center text-text-tertiary">

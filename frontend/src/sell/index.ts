@@ -2,13 +2,15 @@
 // This file exports the public interface of the Sell feature
 
 // Export pages
-// export { SellPage } from './pages/SellPage';
+export { SellPage } from './pages/SellPage';
 
-// Export components (if needed by other features - use sparingly)
-// export { CartPanel } from './components/CartPanel';
+// Export components
+export { PaymentModal } from './components/PaymentModal';
+export { DiscountModal } from './components/DiscountModal';
 
-// Export types
-// export type { SellState } from './types';
+// Export hooks
+export { useCreateSale, useSale, useSalesList, useVoidSale } from './hooks/useSales';
 
-// Placeholder export
-export {};
+// Export API
+export { salesApi } from './api/salesApi';
+export type { Sale, CreateSaleRequest, SaleLineItem } from './api/salesApi';

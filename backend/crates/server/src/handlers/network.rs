@@ -332,6 +332,55 @@ fn detect_network_interfaces() -> Vec<NetworkInterface> {
     interfaces
 }
 
+/// Remote store information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteStore {
+    pub id: String,
+    pub name: String,
+    pub url: String,
+    pub status: String, // "online", "offline", "syncing"
+    pub last_sync: Option<String>,
+    pub sync_enabled: bool,
+}
+
+/// Get list of remote stores
+/// 
+/// Returns stores configured for multi-store sync
+pub async fn get_remote_stores(pool: web::Data<sqlx::SqlitePool>) -> impl Responder {
+    // Query stores from database
+    let stores_result: Result<Vec<(String, String, Option<String>, Option<String>, Option<String>)>, _> = sqlx::query_as(
+        r"SELECT id, name, COALESCE(address, '') as address, sync_status, last_sync_at 
+          FROM stores 
+          WHERE is_active = 1
+          ORDER BY name"
+    )
+    .fetch_all(pool.get_ref())
+    .await;
+    
+    match stores_result {
+        Ok(stores) => {
+            let remote_stores: Vec<RemoteStore> = stores.iter().map(|(id, name, address, sync_status, last_sync)| {
+                RemoteStore {
+                    id: id.clone(),
+                    name: name.clone(),
+                    url: address.clone().unwrap_or_default(),
+                    status: sync_status.clone().unwrap_or_else(|| "offline".to_string()),
+                    last_sync: last_sync.clone(),
+                    sync_enabled: sync_status.is_some(),
+                }
+            }).collect();
+            
+            HttpResponse::Ok().json(remote_stores)
+        }
+        Err(e) => {
+            warn!("Failed to fetch remote stores: {}", e);
+            // Return empty array on error - frontend expects array
+            HttpResponse::Ok().json(Vec::<RemoteStore>::new())
+        }
+    }
+}
+
 /// Configure network routes
 pub fn configure_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -339,5 +388,6 @@ pub fn configure_routes(cfg: &mut web::ServiceConfig) {
             .route("/interfaces", web::get().to(get_interfaces))
             .route("/config", web::get().to(get_config))
             .route("/config", web::post().to(save_config))
+            .route("/remote-stores", web::get().to(get_remote_stores))
     );
 }

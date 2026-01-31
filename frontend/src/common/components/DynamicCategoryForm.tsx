@@ -258,11 +258,11 @@ export function DynamicCategoryForm({
       case 'multi-select':
         return (
           <div key={attribute.name} className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
+            <label className="block text-sm font-medium text-text-secondary">
               {attribute.label}
-              {attribute.required && <span className="text-red-400 ml-1">*</span>}
+              {attribute.required && <span className="text-error-400 ml-1">*</span>}
             </label>
-            <div className="space-y-1 max-h-32 overflow-y-auto border border-gray-600 rounded-md p-2">
+            <div className="space-y-1 max-h-32 overflow-y-auto border border-border rounded-md p-2">
               {attribute.values?.map((option: string) => {
                 const currentValues = (formData[attribute.name] as string[] || []);
                 const isChecked = currentValues.includes(option);
@@ -277,9 +277,9 @@ export function DynamicCategoryForm({
                           : currentValues.filter(v => v !== option);
                         handleFieldChange(attribute.name, newValues);
                       }}
-                      className="rounded border-gray-600 text-accent focus:ring-accent"
+                      className="rounded border-border text-accent focus:ring-accent"
                     />
-                    <span className="text-sm text-gray-300">{option}</span>
+                    <span className="text-sm text-text-secondary">{option}</span>
                   </label>
                 );
               })}
@@ -290,15 +290,15 @@ export function DynamicCategoryForm({
       case 'hierarchy':
         return (
           <div key={attribute.name} className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
+            <label className="block text-sm font-medium text-text-secondary">
               {attribute.label}
-              {attribute.required && <span className="text-red-400 ml-1">*</span>}
+              {attribute.required && <span className="text-error-400 ml-1">*</span>}
             </label>
             <select
               value={formData[attribute.name] as string || ''}
               onChange={(e) => handleFieldChange(attribute.name, e.target.value)}
               onBlur={() => handleFieldBlur(attribute)}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="">Select {attribute.label}</option>
               {attribute.values?.map((option: string) => (
@@ -308,7 +308,7 @@ export function DynamicCategoryForm({
               ))}
             </select>
             {getFieldError(attribute.name) && (
-              <p className="text-sm text-red-400">{getFieldError(attribute.name)}</p>
+              <p className="text-sm text-error-400">{getFieldError(attribute.name)}</p>
             )}
           </div>
         );

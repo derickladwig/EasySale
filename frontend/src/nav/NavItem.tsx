@@ -52,8 +52,8 @@ const StatusBadge: React.FC<{ status: FeatureStatus; collapsed?: boolean }> = ({
   if (collapsed) return null;
 
   const styles = {
-    beta: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
-    comingSoon: 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400',
+    beta: 'bg-[var(--color-info-100)] dark:bg-[var(--color-info-900)]/40 text-[var(--color-info-700)] dark:text-[var(--color-info-300)]',
+    comingSoon: 'bg-surface-muted dark:bg-surface-muted text-text-muted dark:text-text-muted',
   };
 
   const labels = {
@@ -77,12 +77,12 @@ const CountBadge: React.FC<{ count: number; collapsed?: boolean }> = ({ count, c
 
   if (collapsed) {
     return (
-      <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
+      <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
     );
   }
 
   return (
-    <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-blue-500 text-white min-w-[18px] text-center">
+    <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-primary text-text-inverse min-w-[18px] text-center">
       {count > 99 ? '99+' : count}
     </span>
   );
@@ -113,29 +113,29 @@ export const NavItem: React.FC<NavItemProps> = ({
     relative flex items-center gap-3 w-full
     min-h-[44px] px-3 py-2.5
     rounded-lg transition-all duration-200
-    focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+    focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
     ${isCollapsed ? 'justify-center px-2' : ''}
   `;
 
   // Active state classes
   const activeClasses = `
-    bg-blue-50 dark:bg-blue-900/30
-    text-blue-700 dark:text-blue-300
+    bg-primary/10 dark:bg-primary/20
+    text-primary dark:text-primary-300
     font-semibold
     before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2
-    before:w-1 before:h-6 before:bg-blue-500 before:rounded-r-full
+    before:w-1 before:h-6 before:bg-primary before:rounded-r-full
   `;
 
   // Inactive state classes
   const inactiveClasses = `
-    text-gray-700 dark:text-gray-300
-    hover:bg-gray-100 dark:hover:bg-gray-800
-    hover:text-gray-900 dark:hover:text-white
+    text-text-secondary dark:text-text-secondary
+    hover:bg-surface-hover dark:hover:bg-surface-hover
+    hover:text-text-primary dark:hover:text-text-primary
   `;
 
   // Disabled state classes
   const disabledClasses = `
-    text-gray-400 dark:text-gray-500
+    text-text-muted dark:text-text-muted
     cursor-not-allowed
     opacity-60
   `;
@@ -185,7 +185,7 @@ export const NavItem: React.FC<NavItemProps> = ({
         <>
           <Icon 
             className={`shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} ${
-              isActive ? 'text-blue-600 dark:text-blue-400' : ''
+              isActive ? 'text-primary' : ''
             }`} 
             aria-hidden="true" 
           />

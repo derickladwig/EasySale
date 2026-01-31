@@ -6,9 +6,9 @@
 //! **Validates: Requirements 5.1, 5.2, 5.3**
 
 use proptest::prelude::*;
-use EasySale_server::UserContext;
-use EasySale_server::Claims;
-use EasySale_server::test_constants::TEST_TENANT_ID;
+use easysale_server::UserContext;
+use easysale_server::Claims;
+use easysale_server::test_constants::TEST_TENANT_ID;
 
 /// All available roles in the system (matching actual implementation)
 const ROLES: &[&str] = &[
@@ -291,7 +291,7 @@ proptest! {
 #[cfg(test)]
 mod unit_tests {
     use super::{ROLES, PERMISSIONS, get_role_permissions};
-    use EasySale_server::get_permissions_for_role as impl_get_permissions_for_role;
+    use easysale_server::get_permissions_for_role as impl_get_permissions_for_role;
 
     #[test]
     fn test_role_permissions_match_implementation() {

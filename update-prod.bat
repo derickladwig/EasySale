@@ -200,7 +200,7 @@ if defined UPDATE_BACKEND (
 REM Stop production containers
 echo.
 echo [6/8] Stopping production containers...
-docker-compose -p EasySale -f docker-compose.prod.yml down >nul 2>&1
+docker-compose -p easysale -f docker-compose.prod.yml down >nul 2>&1
 echo [OK] Containers stopped
 
 REM Rebuild production images
@@ -244,10 +244,10 @@ if not defined NO_RESTART (
         set "COMPOSE_FILES=-f docker-compose.prod.yml -f runtime\docker-compose.override.yml"
     )
     
-    docker-compose -p EasySale %COMPOSE_FILES% up -d
+    docker-compose -p easysale %COMPOSE_FILES% up -d
     if errorlevel 1 (
         echo [ERROR] Failed to start containers!
-        echo Check logs: docker-compose -p EasySale -f docker-compose.prod.yml logs
+        echo Check logs: docker-compose -p easysale -f docker-compose.prod.yml logs
         goto ERROR_EXIT
     )
     
@@ -297,7 +297,7 @@ echo   Backend:   http://localhost:8923
 echo   Health:    http://localhost:8923/health
 echo.
 echo Useful commands:
-echo   View logs:  docker-compose -p EasySale -f docker-compose.prod.yml logs -f
+echo   View logs:  docker-compose -p easysale -f docker-compose.prod.yml logs -f
 echo   Stop:       stop-prod.bat
 echo.
 

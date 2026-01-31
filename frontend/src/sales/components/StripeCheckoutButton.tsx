@@ -176,12 +176,25 @@ export function StripeCheckoutButton({
           <ExternalLink className="w-5 h-5" />
           <span>Open Stripe Checkout</span>
         </button>
-        {state === 'polling' && (
-          <div className="flex items-center gap-2 text-muted text-sm">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Waiting for payment...</span>
-          </div>
-        )}
+      </div>
+    );
+  }
+
+  if (state === 'polling') {
+    return (
+      <div className={`flex flex-col gap-3 ${className}`}>
+        <button
+          onClick={openCheckout}
+          disabled
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-accent text-on-accent rounded-md opacity-50 cursor-not-allowed"
+        >
+          <ExternalLink className="w-5 h-5" />
+          <span>Open Stripe Checkout</span>
+        </button>
+        <div className="flex items-center gap-2 text-muted text-sm">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Waiting for payment...</span>
+        </div>
       </div>
     );
   }

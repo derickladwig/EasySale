@@ -14,10 +14,10 @@ Day-to-day operations guide for running and maintaining EasySale.
 
 ```bash
 # Start all services
-docker-compose -p EasySale -f docker-compose.prod.yml up -d
+docker-compose -p easysale -f docker-compose.prod.yml up -d
 
 # Verify services are running
-docker-compose -p EasySale -f docker-compose.prod.yml ps
+docker-compose -p easysale -f docker-compose.prod.yml ps
 
 # Check health
 curl http://localhost:8923/health
@@ -27,10 +27,10 @@ curl http://localhost:8923/health
 
 ```bash
 # Start with hot-reload
-docker-compose -p EasySale up --build
+docker-compose -p easysale up --build
 
 # Or in background
-docker-compose -p EasySale up -d --build
+docker-compose -p easysale up -d --build
 ```
 
 #### Local Development
@@ -51,7 +51,7 @@ npm run dev
 
 ```bash
 # Docker
-docker-compose -p EasySale -f docker-compose.prod.yml down
+docker-compose -p easysale -f docker-compose.prod.yml down
 
 # Local - press Ctrl+C in each terminal
 ```
@@ -77,7 +77,7 @@ curl http://localhost:8923/api/capabilities
 
 ```bash
 # Docker logs (all services)
-docker-compose -p EasySale -f docker-compose.prod.yml logs -f
+docker-compose -p easysale -f docker-compose.prod.yml logs -f
 
 # Backend only
 docker logs EasySale-backend -f
@@ -120,13 +120,13 @@ docker cp EasySale-backend:/data/EasySale.db ./backup/
 
 ```bash
 # Stop services first
-docker-compose -p EasySale -f docker-compose.prod.yml down
+docker-compose -p easysale -f docker-compose.prod.yml down
 
 # Restore database
 cp backup/EasySale.db data/pos.db
 
 # Restart services
-docker-compose -p EasySale -f docker-compose.prod.yml up -d
+docker-compose -p easysale -f docker-compose.prod.yml up -d
 ```
 
 ### Migration Commands
@@ -248,15 +248,15 @@ git pull origin main
 ./build-prod.sh
 
 # Restart services
-docker-compose -p EasySale -f docker-compose.prod.yml down
-docker-compose -p EasySale -f docker-compose.prod.yml up -d
+docker-compose -p easysale -f docker-compose.prod.yml down
+docker-compose -p easysale -f docker-compose.prod.yml up -d
 ```
 
 ### Rollback
 
 ```bash
 # Stop current version
-docker-compose -p EasySale -f docker-compose.prod.yml down
+docker-compose -p easysale -f docker-compose.prod.yml down
 
 # Checkout previous version
 git checkout <previous-commit>
@@ -291,13 +291,13 @@ git checkout <previous-commit>
 **"Database is locked":**
 ```bash
 # Stop all services
-docker-compose -p EasySale -f docker-compose.prod.yml down
+docker-compose -p easysale -f docker-compose.prod.yml down
 
 # Remove WAL files
 rm data/pos.db-shm data/pos.db-wal
 
 # Restart
-docker-compose -p EasySale -f docker-compose.prod.yml up -d
+docker-compose -p easysale -f docker-compose.prod.yml up -d
 ```
 
 **Migration failed:**
@@ -394,8 +394,8 @@ curl -X POST -H "Authorization: Bearer <token>" \
 
 | Task | Command |
 |------|---------|
-| Start (Docker prod) | `docker-compose -p EasySale -f docker-compose.prod.yml up -d` |
-| Stop (Docker) | `docker-compose -p EasySale -f docker-compose.prod.yml down` |
+| Start (Docker prod) | `docker-compose -p easysale -f docker-compose.prod.yml up -d` |
+| Stop (Docker) | `docker-compose -p easysale -f docker-compose.prod.yml down` |
 | View logs | `docker logs EasySale-backend -f` |
 | Health check | `curl http://localhost:8923/health` |
 | Run tests | `cargo test && npm run test:run` |

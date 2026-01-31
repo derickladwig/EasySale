@@ -21,13 +21,13 @@ pub struct SalesSummary {
 }
 
 /// GET /api/reports/sales
-/// Generate sales report with aggregations
+/// Generate sales report with aggregations and period comparison
 #[get("/api/reports/sales")]
 pub async fn get_sales_report(
     pool: web::Data<SqlitePool>,
     query: web::Query<SalesReportParams>,
 ) -> impl Responder {
-    tracing::info!("Generating sales report");
+    tracing::info!("Generating sales report with period comparison");
 
     // Validate date inputs
     let date_range = match ValidatedDateRange::new(
@@ -42,7 +42,7 @@ pub async fn get_sales_report(
         }
     };
 
-    // Build secure parameterized query
+    // Build secure parameterized query for current period
     let mut query_builder = QueryBuilder::new(
         "SELECT 
         COALESCE(SUM(total_amount), 0.0) as total_sales,
@@ -53,10 +53,10 @@ pub async fn get_sales_report(
         WHERE 1=1"
     );
 
-    if let Some(start_date) = date_range.start_date {
+    if let Some(ref start_date) = date_range.start_date {
         query_builder.push(" AND created_at >= ").push_bind(start_date.to_string());
     }
-    if let Some(end_date) = date_range.end_date {
+    if let Some(ref end_date) = date_range.end_date {
         query_builder.push(" AND created_at <= ").push_bind(end_date.to_string());
     }
 
@@ -64,10 +64,61 @@ pub async fn get_sales_report(
         .fetch_one(pool.get_ref())
         .await;
 
+    // Calculate previous period for comparison
+    let (prev_start, prev_end) = calculate_previous_period(
+        date_range.start_date.as_deref(),
+        date_range.end_date.as_deref(),
+    );
+
+    // Query previous period
+    let prev_result = if prev_start.is_some() && prev_end.is_some() {
+        let mut prev_query = QueryBuilder::new(
+            "SELECT 
+            COALESCE(SUM(total_amount), 0.0) as total_sales,
+            COUNT(DISTINCT id) as total_transactions,
+            COALESCE(AVG(total_amount), 0.0) as average_transaction,
+            COALESCE(SUM(items_count), 0) as total_items_sold
+            FROM sales_transactions
+            WHERE created_at >= "
+        );
+        prev_query.push_bind(prev_start.clone().unwrap());
+        prev_query.push(" AND created_at <= ");
+        prev_query.push_bind(prev_end.clone().unwrap());
+        
+        prev_query.build_query_as::<SalesSummary>()
+            .fetch_one(pool.get_ref())
+            .await
+            .ok()
+    } else {
+        None
+    };
+
     match result {
         Ok(summary) => {
+            // Calculate change percentages
+            let changes = if let Some(prev) = prev_result {
+                serde_json::json!({
+                    "sales_change": calculate_percentage_change(summary.total_sales, prev.total_sales),
+                    "transactions_change": calculate_percentage_change(summary.total_transactions as f64, prev.total_transactions as f64),
+                    "average_change": calculate_percentage_change(summary.average_transaction, prev.average_transaction),
+                    "items_change": calculate_percentage_change(summary.total_items_sold as f64, prev.total_items_sold as f64),
+                })
+            } else {
+                serde_json::json!({
+                    "sales_change": 0.0,
+                    "transactions_change": 0.0,
+                    "average_change": 0.0,
+                    "items_change": 0.0,
+                })
+            };
+
             HttpResponse::Ok().json(serde_json::json!({
                 "summary": summary,
+                "changes": changes,
+                "previous_period": {
+                    "start": prev_start,
+                    "end": prev_end,
+                },
                 "status": "success"
             }))
         }
@@ -77,6 +128,57 @@ pub async fn get_sales_report(
                 "error": "Failed to generate sales report"
             }))
         }
+    }
+}
+
+/// Calculate the previous period dates based on current period
+fn calculate_previous_period(start: Option<&str>, end: Option<&str>) -> (Option<String>, Option<String>) {
+    use chrono::{NaiveDate, Duration};
+    
+    match (start, end) {
+        (Some(start_str), Some(end_str)) => {
+            let start_date = NaiveDate::parse_from_str(start_str, "%Y-%m-%d").ok();
+            let end_date = NaiveDate::parse_from_str(end_str, "%Y-%m-%d").ok();
+            
+            match (start_date, end_date) {
+                (Some(s), Some(e)) => {
+                    let duration = e.signed_duration_since(s);
+                    let prev_end = s - Duration::days(1);
+                    let prev_start = prev_end - duration;
+                    
+                    (
+                        Some(prev_start.format("%Y-%m-%d").to_string()),
+                        Some(prev_end.format("%Y-%m-%d").to_string()),
+                    )
+                }
+                _ => (None, None),
+            }
+        }
+        _ => {
+            // Default to comparing with previous 30 days
+            use chrono::Utc;
+            let today = Utc::now().date_naive();
+            let thirty_days_ago = today - Duration::days(30);
+            let sixty_days_ago = today - Duration::days(60);
+            
+            (
+                Some(sixty_days_ago.format("%Y-%m-%d").to_string()),
+                Some((thirty_days_ago - Duration::days(1)).format("%Y-%m-%d").to_string()),
+            )
+        }
+    }
+}
+
+/// Calculate percentage change between current and previous values
+fn calculate_percentage_change(current: f64, previous: f64) -> f64 {
+    if previous == 0.0 {
+        if current > 0.0 {
+            100.0 // 100% increase from zero
+        } else {
+            0.0
+        }
+    } else {
+        ((current - previous) / previous) * 100.0
     }
 }
 

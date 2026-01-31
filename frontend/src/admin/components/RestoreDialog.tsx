@@ -198,12 +198,12 @@ export function RestoreDialog({ backup, isOpen, onClose, onSuccess }: RestoreDia
 
           {/* Error Message */}
           {restoreJob.error_message && (
-            <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
+            <div className="bg-error-900/20 border border-error-700 rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-error-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-red-400 mb-1">Error Details</h4>
-                  <p className="text-sm text-red-300">{restoreJob.error_message}</p>
+                  <h4 className="text-sm font-semibold text-error-400 mb-1">Error Details</h4>
+                  <p className="text-sm text-error-300">{restoreJob.error_message}</p>
                 </div>
               </div>
             </div>
@@ -211,14 +211,14 @@ export function RestoreDialog({ backup, isOpen, onClose, onSuccess }: RestoreDia
 
           {/* Rollback Instructions */}
           {rollbackInstructions && (
-            <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4">
+            <div className="bg-warning-900/20 border border-warning-700 rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                <Info className="w-5 h-5 text-warning-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-yellow-400 mb-2">
+                  <h4 className="text-sm font-semibold text-warning-400 mb-2">
                     Rollback Instructions
                   </h4>
-                  <pre className="text-xs text-yellow-300 whitespace-pre-wrap font-mono">
+                  <pre className="text-xs text-warning-300 whitespace-pre-wrap font-mono">
                     {rollbackInstructions.instructions}
                   </pre>
                 </div>
@@ -246,14 +246,14 @@ export function RestoreDialog({ backup, isOpen, onClose, onSuccess }: RestoreDia
     <Modal isOpen={isOpen} onClose={onClose} title="Restore Backup">
       <div className="space-y-6">
         {/* Warning Banner */}
-        <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4">
+        <div className="bg-warning-900/20 border border-warning-700 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-warning-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h4 className="text-sm font-semibold text-yellow-400 mb-1">
+              <h4 className="text-sm font-semibold text-warning-400 mb-1">
                 Warning: Data Will Be Replaced
               </h4>
-              <p className="text-sm text-yellow-300">
+              <p className="text-sm text-warning-300">
                 This operation will replace your current database and files with the backup data.
                 All changes made after the backup was created will be lost.
               </p>

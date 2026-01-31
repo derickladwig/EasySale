@@ -167,26 +167,19 @@ docker-data/
 volumes/
 
 # ====================
-# INTERNAL DEVELOPMENT FILES
+# INTERNAL DEVELOPMENT FILES (Exclude from production repo)
 # ====================
-# NOTE: archive/, blog/, memory-bank/ are INCLUDED for hackathon submission
-# to show the development process and journey
 
-# Internal folders (excluded)
-# audit/      <- INCLUDED for hackathon (shows audit process)
+# Internal folders (archive/ is NOT ignored per ARCHIVE_POLICY.md)
+audit/
 sync/
 # backup/ - REMOVED: Python backup service deleted, Rust backend handles backups
+blog/
+memory-bank/
+.kiro/
 .agents/
 runtime/
 mcps/
-
-# Hackathon required folders (INCLUDED - do not ignore)
-# .kiro/        <- INCLUDED for hackathon (required)
-
-# Hackathon folders (INCLUDED - do not ignore)
-# archive/    <- INCLUDED for hackathon
-# blog/       <- INCLUDED for hackathon  
-# memory-bank/ <- INCLUDED for hackathon
 
 # Internal status/summary markdown files at root
 BACKEND_SETTINGS_API_INVENTORY.md

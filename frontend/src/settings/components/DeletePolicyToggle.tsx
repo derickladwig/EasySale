@@ -243,8 +243,8 @@ export const DeletePolicyToggle: React.FC<DeletePolicyToggleProps> = ({
 
       {/* Warning Modal for Destructive Option */}
       {showWarning && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-surface-elevated rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+          <div className="bg-surface-elevated rounded-lg p-6 max-w-md mx-4" style={{ boxShadow: 'var(--shadow-modal)' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-error-500/20 rounded-full">
                 <AlertTriangle className="w-6 h-6 text-error-400" />

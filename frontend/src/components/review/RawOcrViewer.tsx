@@ -69,11 +69,11 @@ export const RawOcrViewer: React.FC<RawOcrViewerProps> = ({ caseId }) => {
       {/* Filters */}
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div>
-          <label className="text-xs text-gray-600">Variant:</label>
+          <label className="text-xs text-text-secondary">Variant:</label>
           <select
             value={filterVariant}
             onChange={(e) => setFilterVariant(e.target.value)}
-            className="w-full p-1 text-sm border rounded"
+            className="w-full p-1 text-sm border border-border rounded bg-surface-base"
           >
             <option value="all">All Variants</option>
             <option value="grayscale">Grayscale</option>
@@ -82,11 +82,11 @@ export const RawOcrViewer: React.FC<RawOcrViewerProps> = ({ caseId }) => {
           </select>
         </div>
         <div>
-          <label className="text-xs text-gray-600">Zone:</label>
+          <label className="text-xs text-text-secondary">Zone:</label>
           <select
             value={filterZone}
             onChange={(e) => setFilterZone(e.target.value)}
-            className="w-full p-1 text-sm border rounded"
+            className="w-full p-1 text-sm border border-border rounded bg-surface-base"
           >
             <option value="all">All Zones</option>
             <option value="HeaderFields">Header</option>
@@ -104,7 +104,7 @@ export const RawOcrViewer: React.FC<RawOcrViewerProps> = ({ caseId }) => {
             className={`p-2 rounded border cursor-pointer ${
               selectedArtifact === artifact.id
                 ? 'border-accent bg-info-50'
-                : 'border-gray-200 hover:bg-gray-50'
+                : 'border-border-light hover:bg-surface-base'
             }`}
             onClick={() => setSelectedArtifact(artifact.id)}
           >
@@ -112,9 +112,9 @@ export const RawOcrViewer: React.FC<RawOcrViewerProps> = ({ caseId }) => {
               <span className="text-sm font-medium">
                 {artifact.variant} / {artifact.zone}
               </span>
-              <span className="text-xs text-gray-600">{artifact.confidence}%</span>
+              <span className="text-xs text-text-secondary">{artifact.confidence}%</span>
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-text-tertiary">
               Profile: {artifact.profile} | Words: {artifact.word_count}
             </div>
           </div>
@@ -123,7 +123,7 @@ export const RawOcrViewer: React.FC<RawOcrViewerProps> = ({ caseId }) => {
 
       {/* Selected Artifact Details */}
       {selectedArtifactData && (
-        <div className="bg-gray-50 p-3 rounded border">
+        <div className="bg-surface-base p-3 rounded border border-border">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold">OCR Output</h4>
             <button
@@ -133,10 +133,10 @@ export const RawOcrViewer: React.FC<RawOcrViewerProps> = ({ caseId }) => {
               Copy
             </button>
           </div>
-          <pre className="text-xs font-mono whitespace-pre-wrap bg-white p-2 rounded border">
+          <pre className="text-xs font-mono whitespace-pre-wrap bg-background-primary p-2 rounded border border-border">
             {selectedArtifactData.text}
           </pre>
-          <div className="mt-2 text-xs text-gray-600">
+          <div className="mt-2 text-xs text-text-secondary">
             <p>Variant: {selectedArtifactData.variant}</p>
             <p>Zone: {selectedArtifactData.zone}</p>
             <p>Profile: {selectedArtifactData.profile}</p>

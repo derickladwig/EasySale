@@ -27,7 +27,7 @@ use sqlx::SqlitePool;
 use uuid::Uuid;
 use chrono::Utc;
 
-use EasySale_server::models::{WorkOrder, WorkOrderStatus};
+use easysale_server::models::{WorkOrder, WorkOrderStatus};
 
 // ============================================================================
 // Test Database Setup

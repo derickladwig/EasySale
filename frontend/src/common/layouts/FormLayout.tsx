@@ -35,8 +35,8 @@ export function FormSection({
   return (
     <div className={`col-span-full ${className}`.trim()} {...props}>
       <div className="mb-4">
-        <h3 className="text-base sm:text-lg font-semibold text-secondary-900">{title}</h3>
-        {description && <p className="mt-1 text-sm text-secondary-600">{description}</p>}
+        <h3 className="text-base sm:text-lg font-semibold text-text-primary">{title}</h3>
+        {description && <p className="mt-1 text-sm text-text-secondary">{description}</p>}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">{children}</div>
     </div>

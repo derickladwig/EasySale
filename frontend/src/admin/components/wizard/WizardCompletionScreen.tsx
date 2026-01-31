@@ -11,6 +11,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, ShoppingCart } from 'lucide-react';
 import { Button } from '@common/components/atoms/Button';
+import { useConfig } from '../../../config/ConfigProvider';
 
 interface WizardCompletionScreenProps {
   /** Store name to display */
@@ -27,6 +28,8 @@ export function WizardCompletionScreen({
   isFirstRun = false,
 }: WizardCompletionScreenProps) {
   const navigate = useNavigate();
+  const { brandConfig } = useConfig();
+  const appName = brandConfig?.appName || brandConfig?.company?.name || 'Your Store';
 
   const handleGoToSell = () => {
     if (onGoToSell) {
@@ -47,7 +50,7 @@ export function WizardCompletionScreen({
 
         {/* Main Message */}
         <h1 className="text-3xl font-bold text-white mb-3">
-          {isFirstRun ? 'Welcome to EasySale!' : 'Setup Complete!'}
+          {isFirstRun ? `Welcome to ${appName}!` : 'Setup Complete!'}
         </h1>
         <p className="text-xl text-text-secondary mb-2">
           <span className="text-primary-400 font-semibold">{storeName}</span> is ready

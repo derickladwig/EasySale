@@ -175,10 +175,16 @@ export const PageTabs: React.FC<PageTabsProps> = ({
                 )}
               </button>
 
-              {/* Tooltip for coming soon */}
+              {/* Tooltip for coming soon - uses tooltip z-index token */}
               {showTooltip && item.hint && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50">
-                  <div className="bg-surface-elevated border border-border rounded-lg shadow-lg px-3 py-2 text-sm text-text-secondary whitespace-nowrap">
+                <div 
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2"
+                  style={{ zIndex: 'var(--z-tooltip)' }}
+                >
+                  <div 
+                    className="bg-surface-elevated border border-border rounded-lg px-3 py-2 text-sm text-text-secondary whitespace-nowrap"
+                    style={{ boxShadow: 'var(--shadow-dropdown)' }}
+                  >
                     {item.hint}
                   </div>
                 </div>
