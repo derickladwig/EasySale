@@ -102,13 +102,15 @@ export function SellPage() {
       setSelectedCustomer({
         id: state.customerId,
         name: state.customerName,
-        email: '',
-        phone: '',
-        type: 'individual',
-        tier: 'standard',
-        totalSpent: 0,
-        orderCount: 0,
-        lastOrder: new Date().toISOString(),
+        email: null,
+        phone: null,
+        pricing_tier: 'retail',
+        loyalty_points: 0,
+        store_credit: 0,
+        credit_limit: null,
+        credit_balance: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
     }
   }, [location.state]);

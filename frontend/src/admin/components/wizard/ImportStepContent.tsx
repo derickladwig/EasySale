@@ -108,7 +108,7 @@ function generateCSVContent(type: 'products' | 'customers' | 'vendors'): string 
 }
 
 // Download a template file
-function downloadTemplate(type: 'products' | 'customers' | 'vendors', format: 'csv') {
+function downloadTemplate(type: 'products' | 'customers' | 'vendors', _format: 'csv') {
   // Only CSV is supported - Excel requires a proper library
   const content = generateCSVContent(type);
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });

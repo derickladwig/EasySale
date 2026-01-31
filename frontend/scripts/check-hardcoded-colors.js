@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global process, console */
 /**
  * CI Script: Check for Hardcoded Colors
  * 

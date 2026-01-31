@@ -395,7 +395,7 @@ export function InventoryPage() {
       for (const adj of adjustments) {
         await updateProduct.mutateAsync({
           id: adj.id,
-          updates: { quantity_on_hand: adj.newStock }
+          updates: { quantityOnHand: adj.newStock }
         });
       }
       toast.success(`Adjusted stock for ${adjustments.length} items`);

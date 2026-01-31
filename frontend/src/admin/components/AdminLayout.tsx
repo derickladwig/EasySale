@@ -11,7 +11,7 @@
 
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@common/utils/classNames';
-import { usePermissions, Permission } from '@common/contexts/PermissionsContext';
+import { usePermissions } from '@common/contexts/PermissionsContext';
 import { useCapabilities } from '@common/contexts/CapabilitiesContext';
 import { adminSubNavItems, filterNavigationByPermissions, NavigationItem } from '../../config/navigation';
 import { DynamicIcon } from '../../config';

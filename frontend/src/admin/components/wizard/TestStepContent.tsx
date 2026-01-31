@@ -69,7 +69,7 @@ async function detectHardware(): Promise<HardwareDetectionResult> {
         type: 'USB HID',
       },
     };
-  } catch (error) {
+  } catch (_error) {
     // If API fails, return not detected
     return {
       printer: { detected: false, error: 'Could not connect to backend to detect hardware' },
@@ -98,22 +98,23 @@ async function testPrinter(): Promise<{ success: boolean; message: string }> {
         port: hardware.printer.port,
       });
       return { success: true, message: 'Test receipt printed successfully' };
-    } catch (printError) {
+    } catch (_printError) {
       // Backend doesn't have this endpoint yet - provide helpful message
       return {
         success: false,
         message: `Printer "${hardware.printer.name}" is configured but test print API is not available. Verify printer connection manually.`,
       };
     }
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Printer test failed',
+      message: _error instanceof Error ? _error.message : 'Printer test failed',
     };
   }
 }
 
-async function testScanner(): Promise<{ success: boolean; message: string }> {
+// Scanner test function - currently returns guidance since USB HID scanners work as keyboard input
+async function _testScanner(): Promise<{ success: boolean; message: string }> {
   try {
     const hardware = await detectHardware();
     

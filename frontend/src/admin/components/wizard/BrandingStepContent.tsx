@@ -26,7 +26,7 @@ function getApiBaseUrl(): string {
 
 // Default accent color - teal to match tokens.css source of truth
 const DEFAULT_ACCENT_COLOR = '#14b8a6';
-const DEFAULT_ACCENT_600 = '#0d9488';
+const _DEFAULT_ACCENT_600 = '#0d9488'; // Available for future use
 const DEFAULT_ACCENT_PRESET = 'teal';
 
 // Neutral color for custom preset placeholder

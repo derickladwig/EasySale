@@ -21,18 +21,18 @@ export function FirstRunSetupPage() {
   const navigate = useNavigate();
   const { markSetupComplete, isConfigured } = useTenantSetup();
 
-  // If already configured, redirect to home
-  if (isConfigured) {
-    navigate('/', { replace: true });
-    return null;
-  }
-
   const handleComplete = useCallback(() => {
     // Mark setup as complete in context
     markSetupComplete();
     // Navigate to home page
     navigate('/', { replace: true });
   }, [markSetupComplete, navigate]);
+
+  // If already configured, redirect to home
+  if (isConfigured) {
+    navigate('/', { replace: true });
+    return null;
+  }
 
   return (
     <SetupWizardPage

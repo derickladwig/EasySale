@@ -47,7 +47,6 @@ import {
   LazyHardwarePage,
   LazyNetworkPage,
   LazyNetworkSettingsPage,
-  LazyBrandingSettingsPage,
   LazyPerformancePage,
   LazyFeatureFlagsPage,
   LazyLocalizationPage,
