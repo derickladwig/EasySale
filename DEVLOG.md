@@ -61,11 +61,44 @@ Each feature was specified in `.kiro/specs/` with clear requirements, design dec
 
 ### AI-Assisted Workflow
 
+The development leveraged multiple AI tools, each with a specific role:
+
+| Tool | Role | When Used |
+|------|------|-----------|
+| **Kiro (Claude Sonnet 4)** | Primary development | Spec phases, structured task execution, code generation |
+| **ChatGPT** | Planning & refinement | Scope consolidation, idea refinement, documentation review |
+| **Cursor** | Late-stage polish | Code review, cleanup, repository management |
+
 The Kiro AI + Claude workflow enabled:
 - Define specifications and let AI execute implementation
 - Iterate rapidly through design refinements
 - Maintain consistency across a large codebase
 - Document everything as development progressed
+
+### Memory Bank System
+
+The project uses a **Memory Bank** workflow (inspired by [Jordan Hindo](https://github.com/jordanhindo)) for AI context persistence across sessions:
+
+```
+memory-bank/
+├── MEMORY_SYSTEM.md      # Operating instructions for AI
+├── project_brief.md      # Static project context
+├── active-state.md       # Current session state
+├── system_patterns.md    # Patterns and gotchas
+└── adr/                  # Architecture Decision Records
+```
+
+Core principle: *"Files, not chat. Documents, not memory. Receipts, not vibes."*
+
+At session start, the AI reads context files. At session end, it updates `active-state.md` with progress. This ensures continuity across sessions without relying on chat history.
+
+### Demo & Documentation Tools
+
+| Tool | Purpose |
+|------|---------|
+| **OpenAI Sora** | Video generation for demos |
+| **Loom** | Screen recording and walkthroughs |
+| **Guidde** | Interactive documentation |
 
 ### Kiro Configuration
 

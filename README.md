@@ -363,6 +363,99 @@ EasySale/
 
 ---
 
+## Development Story — Kiro AI Hackathon 2026
+
+EasySale was built for the **Kiro AI Hackathon 2026** using a spec-driven, AI-assisted workflow. This section documents the development process and tools used.
+
+### AI-Assisted Development Workflow
+
+| Tool | Role | Usage |
+|------|------|-------|
+| **Kiro (Claude Sonnet 4)** | Primary development | Spec phases, structured task execution, code generation |
+| **ChatGPT** | Planning & refinement | Scope consolidation, idea refinement, documentation review |
+| **Cursor** | Late-stage polish | Code review, cleanup, repository management |
+
+### The Spec-Driven Process
+
+The entire project was built using Kiro's spec-driven approach:
+
+1. **Requirements** → Define what to build in `spec/req.md`
+2. **Design** → Architecture decisions in `spec/design.md`
+3. **Tasks** → Break down into executable tasks in `.kiro/specs/*/tasks.md`
+4. **Execute** → Let Kiro implement each task systematically
+5. **Iterate** → Refine based on results
+
+This process is documented in detail in:
+- [`.kiro/DEVELOPMENT_LOG.md`](.kiro/DEVELOPMENT_LOG.md) — Comprehensive development timeline
+- [`docs/consolidated/05_KIRO_PROCESS.md`](docs/consolidated/05_KIRO_PROCESS.md) — Kiro workflow documentation
+- [`blog/`](blog/) — 72+ development blog posts
+
+### Memory Bank System
+
+The project uses a **Memory Bank** workflow (inspired by [Jordan Hindo](https://github.com/jordanhindo)) for AI context persistence:
+
+```
+memory-bank/
+├── MEMORY_SYSTEM.md      # Operating instructions for AI
+├── project_brief.md      # Static project context
+├── active-state.md       # Current session state
+├── system_patterns.md    # Patterns and gotchas
+└── adr/                  # Architecture Decision Records
+```
+
+Core principle: *"Files, not chat. Documents, not memory. Receipts, not vibes."*
+
+### Demo & Documentation Tools
+
+| Tool | Purpose |
+|------|---------|
+| **OpenAI Sora** | Video generation for demos |
+| **Loom** | Screen recording and walkthroughs |
+| **Guidde** | Interactive documentation |
+
+### Development Timeline Highlights
+
+| Phase | Dates | Focus |
+|-------|-------|-------|
+| Foundation | Jan 9-10 | React + Rust + SQLite setup |
+| Design System | Jan 10-11 | White-label theming |
+| Multi-Tenant | Jan 11-12 | Tenant isolation |
+| Documentation | Jan 13-14 | Spec alignment |
+| Data Sync | Jan 15-17 | Universal sync engine |
+| Backend Complete | Jan 18 | 150+ API endpoints |
+| Production Polish | Jan 27-29 | Build variants, cleanup |
+| Hackathon Prep | Jan 30 | Documentation, demo |
+
+### Documentation Structure
+
+```
+EasySale/
+├── .kiro/                  # Kiro AI configuration
+│   ├── steering/           # Product/tech/structure docs
+│   ├── specs/              # 26 feature specifications
+│   ├── prompts/            # Reusable AI prompts
+│   └── DEVELOPMENT_LOG.md  # Main development log
+├── blog/                   # 72+ development blog posts
+├── docs/consolidated/      # 8 canonical documentation files
+├── memory-bank/            # AI memory system with ADRs
+├── archive/                # 300+ historical status reports
+└── audit/                  # Truth-sync and quality audits
+```
+
+### Key Metrics
+
+- **23 days** of development
+- **26 feature specs** in `.kiro/specs/`
+- **72+ blog posts** documenting progress
+- **300+ status reports** in archive
+- **150+ API endpoints** implemented
+- **50+ database tables**
+- **0 TypeScript errors**, **0 Rust warnings**
+
+For the complete development story, see [`.kiro/DEVELOPMENT_LOG.md`](.kiro/DEVELOPMENT_LOG.md).
+
+---
+
 ## Contributing
 
 1. Fork the repository
