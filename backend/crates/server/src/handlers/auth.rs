@@ -407,7 +407,7 @@ pub async fn get_current_user(
 
     // Fetch user from database
     let user_result = sqlx::query_as::<_, User>(
-        "SELECT id, tenant_id, username, email, password_hash, role, first_name, last_name, 
+        "SELECT id, tenant_id, username, email, password_hash, display_name, role, first_name, last_name, 
          store_id, station_policy, station_id, is_active, created_at, updated_at 
          FROM users 
          WHERE id = ? AND is_active = 1 AND tenant_id = ?"
