@@ -317,6 +317,16 @@ STRIPE_SECRET_KEY=sk_live_xxx
   - CleanupShieldTool: Preserved drawing handlers for document annotation
   - CleanupTab: Preserved page target label function for UI display
 
+### Phase 15: Login Page Polish (Jan 30, 2026)
+- **Login Page Header Fix**:
+  - Reduced oversized logo in header (was taking up too much space)
+  - Removed redundant company name text when logo already contains it
+  - Logo now constrained to `h-10 max-w-[200px]` for cleaner appearance
+- **Backend Cleanup**:
+  - Removed unused `QueryBuilder` import from layaway handler
+- **README Update**:
+  - Updated latest features section to v1.2.3
+
 ---
 
 ## Architecture
