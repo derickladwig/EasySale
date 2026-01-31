@@ -149,7 +149,7 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
   const {
     state,
     isLoading,
-    isReady,
+    isReady: _isReady, // TODO: Use to show loading state before document is ready
     isSaving,
     isRerunning,
     hasError,
@@ -175,8 +175,8 @@ export const CleanupShieldTool: React.FC<CleanupShieldToolProps> = ({
     loadCase();
   }, [loadCase]);
 
-  // Handle drawing completion
-  const handleDrawComplete = useCallback(
+  // Handle drawing completion - TODO: Wire up to canvas/document interaction
+  const _handleDrawComplete = useCallback(
     (bbox: { x: number; y: number; width: number; height: number }) => {
       const newShield: CleanupShield = {
         id: `shield-${Date.now()}`,

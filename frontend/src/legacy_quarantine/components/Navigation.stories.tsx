@@ -56,8 +56,8 @@ Navigation component with active state indicators using design tokens.
   },
   decorators: [
     (Story) => {
-      // Mock permissions context
-      const mockPermissions = {
+      // Mock permissions context - defined for documentation purposes
+      const _mockPermissions = {
         permissions: new Set(['access_sell', 'access_warehouse', 'access_admin']),
         hasPermission: () => true,
         hasAnyPermission: () => true,

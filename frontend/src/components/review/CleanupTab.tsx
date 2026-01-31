@@ -107,7 +107,8 @@ const ShieldCard: React.FC<ShieldCardProps> = ({
     return `${baseClass} bg-secondary-100 dark:bg-secondary-800 text-text-secondary hover:bg-secondary-200 dark:hover:bg-secondary-700`;
   };
 
-  const getPageTargetLabel = (target: PageTarget): string => {
+  // Helper to get human-readable page target label (for future use in summary views)
+  const _getPageTargetLabel = (target: PageTarget): string => {
     switch (target.type) {
       case 'All': return 'All Pages';
       case 'First': return 'First Page';

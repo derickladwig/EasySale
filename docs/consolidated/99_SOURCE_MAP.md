@@ -637,7 +637,7 @@ Doc	2026-01-29	docs/split-build/DESIGN.md	EasySale Split Build Architecture — 
 Doc	2026-01-29	docs/split-build/MASTER_PLAN.md	EasySale Split Build Architecture — Master Plan
 Doc	2026-01-29	docs/split-build/RECOMMENDATIONS_B.md	Recommendations: Build Targets, Profiles, Feature Flags, and Commands
 Doc	2026-01-29	docs/split-build/TASKS.md	EasySale Split Build — Implementation Tasks
-Doc		data/easysale_asset_pack/README.md	EasySale Brand Asset Pack (v2)
+Doc		assets/README.md	EasySale Brand Asset Pack (v2)
 Doc		docs/DATA_SOURCES_REFERENCE.md	Data Sources Reference
 Doc		docs/MODULE_BOUNDARIES_QUICK_REFERENCE.md	Module Boundaries Quick Reference
 Doc		docs/REPO_HYGIENE_RECOMMENDATIONS.md	Repository Hygiene Recommendations
