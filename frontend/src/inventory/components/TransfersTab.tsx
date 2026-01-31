@@ -2,9 +2,10 @@
  * TransfersTab Component
  * 
  * Stock transfer interface for moving inventory between locations.
+ * Uses the stock adjustment API for actual transfers.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowUpDown,
   ArrowRight,
@@ -19,14 +20,20 @@ import { useProductsQuery, Product } from '@domains/product';
 import { Button } from '@common/components/atoms/Button';
 import { EmptyState } from '@common/components/molecules/EmptyState';
 import { toast } from '@common/utils/toast';
+import { apiClient } from '@common/utils/apiClient';
 
 interface TransferItem {
   product: Product;
   quantity: number;
 }
 
-// Mock locations - in production these would come from API
-const LOCATIONS = [
+interface Location {
+  id: string;
+  name: string;
+}
+
+// Default locations - will be replaced by API data when available
+const DEFAULT_LOCATIONS: Location[] = [
   { id: 'main', name: 'Main Store' },
   { id: 'warehouse', name: 'Warehouse' },
   { id: 'backroom', name: 'Back Room' },
@@ -38,10 +45,32 @@ export function TransfersTab() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [transferItems, setTransferItems] = useState<TransferItem[]>([]);
-  const [fromLocation, setFromLocation] = useState(LOCATIONS[0].id);
-  const [toLocation, setToLocation] = useState(LOCATIONS[1].id);
+  const [locations, setLocations] = useState<Location[]>(DEFAULT_LOCATIONS);
+  const [fromLocation, setFromLocation] = useState(DEFAULT_LOCATIONS[0].id);
+  const [toLocation, setToLocation] = useState(DEFAULT_LOCATIONS[1].id);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState('');
+
+  // Load locations from settings/stores API
+  useEffect(() => {
+    const loadLocations = async () => {
+      try {
+        // Try to fetch stores/locations from API
+        const response = await apiClient.get<{ stores?: Location[]; locations?: Location[] }>('/api/stores');
+        if (response.stores && response.stores.length > 0) {
+          setLocations(response.stores);
+          setFromLocation(response.stores[0].id);
+          if (response.stores.length > 1) {
+            setToLocation(response.stores[1].id);
+          }
+        }
+      } catch {
+        // Use default locations if API not available
+        console.log('Using default locations - stores API not available');
+      }
+    };
+    loadLocations();
+  }, []);
 
   // Filter products for search
   const filteredProducts = products.filter(
@@ -86,18 +115,40 @@ export function TransfersTab() {
 
     setIsSubmitting(true);
     try {
-      // In production, this would call a transfer API
-      // For now, simulate success
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Process each transfer item using stock adjustment API
+      const transferPromises = transferItems.map(async (item) => {
+        // Decrease from source location
+        await apiClient.post(`/api/products/${item.product.id}/stock/adjust`, {
+          adjustment_type: 'transfer_out',
+          quantity_change: -item.quantity,
+          reason: `Transfer to ${locations.find(l => l.id === toLocation)?.name}`,
+          notes: notes || undefined,
+          store_id: fromLocation,
+          location_id: fromLocation,
+        });
+        
+        // Increase at destination location
+        await apiClient.post(`/api/products/${item.product.id}/stock/adjust`, {
+          adjustment_type: 'transfer_in',
+          quantity_change: item.quantity,
+          reason: `Transfer from ${locations.find(l => l.id === fromLocation)?.name}`,
+          notes: notes || undefined,
+          store_id: toLocation,
+          location_id: toLocation,
+        });
+      });
 
-      const fromName = LOCATIONS.find((l) => l.id === fromLocation)?.name;
-      const toName = LOCATIONS.find((l) => l.id === toLocation)?.name;
+      await Promise.all(transferPromises);
+
+      const fromName = locations.find((l) => l.id === fromLocation)?.name;
+      const toName = locations.find((l) => l.id === toLocation)?.name;
       
       toast.success(`Transferred ${transferItems.length} item(s) from ${fromName} to ${toName}`);
       setTransferItems([]);
       setNotes('');
-    } catch {
-      toast.error('Failed to process transfer');
+    } catch (error) {
+      console.error('Transfer failed:', error);
+      toast.error('Failed to process transfer. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -187,7 +238,7 @@ export function TransfersTab() {
                 onChange={(e) => setFromLocation(e.target.value)}
                 className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-md text-text-primary"
               >
-                {LOCATIONS.map((loc) => (
+                {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>{loc.name}</option>
                 ))}
               </select>
@@ -200,7 +251,7 @@ export function TransfersTab() {
                 onChange={(e) => setToLocation(e.target.value)}
                 className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-md text-text-primary"
               >
-                {LOCATIONS.map((loc) => (
+                {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>{loc.name}</option>
                 ))}
               </select>

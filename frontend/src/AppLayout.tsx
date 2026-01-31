@@ -141,7 +141,7 @@ export function AppLayout() {
             className={cn(
               'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium',
               syncStatus === 'online' && 'bg-success-500/20 text-success-400',
-              syncStatus === 'syncing' && 'bg-primary-500/20 text-primary-400',
+              syncStatus === 'syncing' && 'bg-accent/20 text-accent',
               syncStatus === 'offline' && 'bg-error-500/20 text-error-400'
             )}
           >
@@ -209,7 +209,7 @@ export function AppLayout() {
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-sm relative',
                     'active:scale-95 active:shadow-sm',
                     isActive
-                      ? 'bg-primary-600 text-text-inverse shadow-md'
+                      ? 'bg-accent text-text-inverse shadow-md'
                       : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
                     // Center icon when collapsed
                     isSidebarCollapsed && 'justify-center'
@@ -222,7 +222,7 @@ export function AppLayout() {
                     <>
                       <span className="font-medium flex-1">{item.label}</span>
                       {item.badge && (
-                        <span className="ml-auto px-2 py-0.5 bg-primary-500 text-text-inverse text-xs rounded-full">
+                        <span className="ml-auto px-2 py-0.5 bg-accent text-text-inverse text-xs rounded-full">
                           {item.badge}
                         </span>
                       )}

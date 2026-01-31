@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export type TextSize = 'small' | 'medium' | 'large' | 'extra-large';
 export type Density = 'compact' | 'comfortable' | 'spacious';
@@ -175,13 +175,36 @@ function loadSettings(): DisplaySettings {
 }
 
 /**
- * Save settings to localStorage
+ * Save settings to localStorage and optionally sync to backend
  */
-function saveSettings(settings: DisplaySettings): void {
+function saveSettings(settings: DisplaySettings, syncToBackend = true): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    
+    // Sync theme to backend preferences (non-blocking)
+    if (syncToBackend) {
+      syncThemeToBackend(settings.theme).catch(() => {
+        // Ignore errors - backend sync is optional
+      });
+    }
   } catch (error) {
     console.error('Failed to save display settings:', error);
+  }
+}
+
+/**
+ * Sync theme preference to backend
+ */
+async function syncThemeToBackend(theme: Theme): Promise<void> {
+  try {
+    await fetch('/api/settings/preferences', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ theme }),
+    });
+  } catch {
+    // Silent fail - localStorage is the primary source
   }
 }
 

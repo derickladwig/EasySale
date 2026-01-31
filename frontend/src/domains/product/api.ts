@@ -1,5 +1,6 @@
-// Product API client
+// Product API client - uses centralized apiClient for consistent error handling
 
+import { apiClient } from '@common/utils/apiClient';
 import {
   Product,
   ProductSearchRequest,
@@ -32,107 +33,56 @@ export const productApi = {
     if (params?.sortBy) queryParams.set('sort_by', params.sortBy);
     if (params?.sortOrder) queryParams.set('sort_order', params.sortOrder);
 
-    const response = await fetch(`${API_BASE}?${queryParams}`);
-    if (!response.ok) {
-      throw new Error(`Failed to list products: ${response.statusText}`);
-    }
-    return response.json();
+    return apiClient.get<ProductSearchResponse>(`${API_BASE}?${queryParams}`);
   },
 
   /**
    * Get a single product by ID
    */
   async getProduct(id: string): Promise<Product> {
-    const response = await fetch(`${API_BASE}/${id}`);
-    if (!response.ok) {
-      throw new Error(`Failed to get product: ${response.statusText}`);
-    }
-    return response.json();
+    return apiClient.get<Product>(`${API_BASE}/${id}`);
   },
 
   /**
    * Create a new product
    */
   async createProduct(product: CreateProductRequest): Promise<Product> {
-    const response = await fetch(API_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(product),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.errors?.[0]?.message || 'Failed to create product');
-    }
-    return response.json();
+    return apiClient.post<Product>(API_BASE, product);
   },
 
   /**
    * Update an existing product
    */
   async updateProduct(id: string, updates: UpdateProductRequest): Promise<Product> {
-    const response = await fetch(`${API_BASE}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.errors?.[0]?.message || 'Failed to update product');
-    }
-    return response.json();
+    return apiClient.put<Product>(`${API_BASE}/${id}`, updates);
   },
 
   /**
    * Delete a product (soft delete)
    */
   async deleteProduct(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to delete product: ${response.statusText}`);
-    }
+    await apiClient.delete(`${API_BASE}/${id}`);
   },
 
   /**
    * Search products with advanced filters
    */
   async searchProducts(request: ProductSearchRequest): Promise<ProductSearchResponse> {
-    const response = await fetch(`${API_BASE}/search`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to search products: ${response.statusText}`);
-    }
-    return response.json();
+    return apiClient.post<ProductSearchResponse>(`${API_BASE}/search`, request);
   },
 
   /**
    * Bulk operations (update, delete, import, export)
    */
-  async bulkOperation(request: BulkOperationRequest): Promise<any> {
-    const response = await fetch(`${API_BASE}/bulk`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to perform bulk operation: ${response.statusText}`);
-    }
-    return response.json();
+  async bulkOperation(request: BulkOperationRequest): Promise<unknown> {
+    return apiClient.post(`${API_BASE}/bulk`, request);
   },
 
   /**
    * Get all categories from configuration
    */
   async getCategories(): Promise<CategoryConfig[]> {
-    const response = await fetch(`${API_BASE}/categories`);
-    if (!response.ok) {
-      throw new Error(`Failed to get categories: ${response.statusText}`);
-    }
-    return response.json();
+    return apiClient.get<CategoryConfig[]>(`${API_BASE}/categories`);
   },
 
   /**
@@ -143,52 +93,36 @@ export const productApi = {
     if (category) queryParams.set('category', category);
     if (limit) queryParams.set('limit', limit.toString());
 
-    const response = await fetch(`${API_BASE}/autocomplete?${queryParams}`);
-    if (!response.ok) {
-      throw new Error(`Failed to get autocomplete: ${response.statusText}`);
-    }
-    return response.json();
+    return apiClient.get<string[]>(`${API_BASE}/autocomplete?${queryParams}`);
   },
 
   /**
    * Lookup product by barcode
    */
   async lookupByBarcode(barcode: string): Promise<Product | null> {
-    const response = await fetch(`${API_BASE}/barcode/${encodeURIComponent(barcode)}`);
-    if (response.status === 404) {
-      return null;
+    try {
+      return await apiClient.get<Product>(`${API_BASE}/barcode/${encodeURIComponent(barcode)}`);
+    } catch (error) {
+      // Return null for 404 (product not found)
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
+      throw error;
     }
-    if (!response.ok) {
-      throw new Error(`Failed to lookup barcode: ${response.statusText}`);
-    }
-    return response.json();
   },
 
   /**
    * Get all variants for a product
    */
   async getVariants(productId: string): Promise<ProductVariant[]> {
-    const response = await fetch(`${API_BASE}/${productId}/variants`);
-    if (!response.ok) {
-      throw new Error(`Failed to get variants: ${response.statusText}`);
-    }
-    return response.json();
+    return apiClient.get<ProductVariant[]>(`${API_BASE}/${productId}/variants`);
   },
 
   /**
    * Create a product variant
    */
   async createVariant(request: CreateProductVariantRequest): Promise<ProductVariant> {
-    const response = await fetch(`${API_BASE}/variants`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.errors?.[0]?.message || 'Failed to create variant');
-    }
-    return response.json();
+    return apiClient.post<ProductVariant>(`${API_BASE}/variants`, request);
   },
 };
 

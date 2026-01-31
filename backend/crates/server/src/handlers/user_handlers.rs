@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Result};
+use actix_web::{web, HttpResponse, Result, HttpMessage};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use chrono::Utc;
@@ -647,4 +647,88 @@ pub async fn create_first_admin(
             }
         }
     }
+}
+
+/// Request body for password change
+#[derive(Debug, Deserialize)]
+pub struct PasswordChangeRequest {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+/// PUT /api/users/password
+/// Change the current user's password
+pub async fn change_password(
+    pool: web::Data<SqlitePool>,
+    req: actix_web::HttpRequest,
+    body: web::Json<PasswordChangeRequest>,
+) -> Result<HttpResponse> {
+    // Get current user from context
+    let user_ctx = req.extensions()
+        .get::<crate::models::UserContext>()
+        .cloned();
+    
+    let user_id = match user_ctx {
+        Some(ctx) => ctx.user_id,
+        None => {
+            return Ok(HttpResponse::Unauthorized().json(serde_json::json!({
+                "error": "Not authenticated"
+            })));
+        }
+    };
+
+    // Validate new password
+    if body.new_password.len() < 8 {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "New password must be at least 8 characters"
+        })));
+    }
+
+    // Get current password hash
+    let user: Option<(String,)> = sqlx::query_as(
+        "SELECT password_hash FROM users WHERE id = ?"
+    )
+    .bind(&user_id)
+    .fetch_optional(pool.get_ref())
+    .await
+    .map_err(|e| ApiError::internal(format!("Database error: {}", e)))?;
+
+    let current_hash = match user {
+        Some((hash,)) => hash,
+        None => {
+            return Ok(HttpResponse::NotFound().json(serde_json::json!({
+                "error": "User not found"
+            })));
+        }
+    };
+
+    // Verify current password
+    let is_valid = crate::services::PasswordService::verify_password(&body.current_password, &current_hash)
+        .unwrap_or(false);
+
+    if !is_valid {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Current password is incorrect"
+        })));
+    }
+
+    // Hash new password
+    let new_hash = crate::services::PasswordService::hash_password(&body.new_password)
+        .map_err(|_| ApiError::internal("Password hashing failed"))?;
+
+    // Update password
+    let now = Utc::now().to_rfc3339();
+    sqlx::query("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?")
+        .bind(&new_hash)
+        .bind(&now)
+        .bind(&user_id)
+        .execute(pool.get_ref())
+        .await
+        .map_err(|e| ApiError::internal(format!("Failed to update password: {}", e)))?;
+
+    tracing::info!("Password changed for user: {}", user_id);
+    
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "message": "Password changed successfully"
+    })))
 }

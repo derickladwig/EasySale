@@ -151,30 +151,7 @@ function ImportSection({
   onImport,
 }: ImportSectionProps) {
   return (
-    <div className="bg-surface-base border border-border rounded-xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Icon className="w-6 h-6 text-primary-400" />
-          <div>
-            <h3 className="font-medium text-white">{title}</h3>
-            <p className="text-sm text-text-tertiary">{description}</p>
-          </div>
-        </div>
-        {/* Template Download Button */}
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => downloadTemplate(type, 'csv')}
-            leftIcon={<Download className="w-3 h-3" />}
-            className="text-xs"
-          >
-            Download Template
-          </Button>
-        </div>
-      </div>
-
+    <div className="bg-surface-base border border-border rounded-lg p-3">
       <input
         ref={fileRef}
         type="file"
@@ -183,59 +160,83 @@ function ImportSection({
         className="hidden"
       />
 
-      {status === 'done' ? (
-        <div className="flex items-center gap-2 text-success-400">
-          <CheckCircle2 className="w-5 h-5" />
-          <span>{count} {type} imported</span>
-        </div>
-      ) : status === 'error' ? (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-error-400">
-            <AlertCircle className="w-5 h-5" />
-            <span className="text-sm">{error || 'Import failed'}</span>
+      <div className="flex items-center gap-3">
+        {/* Icon and Title */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${
+            status === 'done' ? 'bg-success-500/20' : status === 'error' ? 'bg-error-500/20' : 'bg-accent/10'
+          }`}>
+            {status === 'done' ? (
+              <CheckCircle2 className="w-4 h-4 text-success-400" />
+            ) : status === 'error' ? (
+              <AlertCircle className="w-4 h-4 text-error-400" />
+            ) : (
+              <Icon className="w-4 h-4 text-accent" />
+            )}
           </div>
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileRef.current?.click()}
-              leftIcon={<FileSpreadsheet className="w-4 h-4" />}
-            >
-              {file ? file.name : 'Select File'}
-            </Button>
-            {file && (
-              <Button
-                type="button"
-                variant="primary"
-                onClick={() => onImport(type)}
-              >
-                Retry Import
-              </Button>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-white">{title}</h3>
+              {status === 'done' && (
+                <span className="text-xs text-success-400">({count} imported)</span>
+              )}
+            </div>
+            {status === 'error' ? (
+              <p className="text-xs text-error-400 truncate" title={error}>{error || 'Import failed'}</p>
+            ) : (
+              <p className="text-xs text-text-tertiary">{description}</p>
             )}
           </div>
         </div>
-      ) : (
-        <div className="flex items-center gap-3">
-          <Button
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
             type="button"
-            variant="outline"
-            onClick={() => fileRef.current?.click()}
-            leftIcon={<FileSpreadsheet className="w-4 h-4" />}
+            onClick={() => downloadTemplate(type, 'csv')}
+            className="text-xs text-text-tertiary hover:text-accent flex items-center gap-1 transition-colors"
+            title="Download CSV template"
           >
-            {file ? file.name : 'Select File'}
-          </Button>
-          {file && (
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => onImport(type)}
-              loading={status === 'importing'}
-            >
-              Import
-            </Button>
+            <Download className="w-3 h-3" />
+            <span className="hidden sm:inline">Template</span>
+          </button>
+          
+          {status === 'done' ? (
+            <span className="text-xs text-success-400 px-2 py-1 bg-success-500/10 rounded">Done</span>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileRef.current?.click()}
+                className="text-xs h-7 px-2"
+              >
+                {file ? (
+                  <span className="max-w-[80px] truncate">{file.name}</span>
+                ) : (
+                  <>
+                    <FileSpreadsheet className="w-3 h-3 mr-1" />
+                    Select
+                  </>
+                )}
+              </Button>
+              {file && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onImport(type)}
+                  loading={status === 'importing'}
+                  className="text-xs h-7 px-3"
+                >
+                  {status === 'error' ? 'Retry' : 'Import'}
+                </Button>
+              )}
+            </>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -365,56 +366,67 @@ export function ImportStepContent({
   }
 
   return (
-    <div className="space-y-6">
-      <p className="text-text-tertiary text-sm">
-        Import your existing data from CSV or Excel files. Download templates to see the required format.
-        You can also do this later from Admin → Data & Imports.
+    <div className="space-y-3">
+      <p className="text-text-tertiary text-xs mb-2">
+        Import existing data from CSV files. Download templates for the correct format.
+        <span className="text-text-muted"> (Can also be done later from Admin → Data)</span>
       </p>
 
-      {/* Products Import */}
-      <ImportSection
-        type="products"
-        icon={Package}
-        title="Products"
-        description="Import your product catalog"
-        file={productsFile}
-        fileRef={productsRef}
-        status={importStatus.products}
-        count={importCounts.products}
-        error={importErrors.products}
-        onFileSelect={handleFileSelect}
-        onImport={handleImport}
-      />
+      {/* Import Sections - Compact Stack */}
+      <div className="space-y-2">
+        <ImportSection
+          type="products"
+          icon={Package}
+          title="Products"
+          description="Product catalog"
+          file={productsFile}
+          fileRef={productsRef}
+          status={importStatus.products}
+          count={importCounts.products}
+          error={importErrors.products}
+          onFileSelect={handleFileSelect}
+          onImport={handleImport}
+        />
 
-      {/* Customers Import */}
-      <ImportSection
-        type="customers"
-        icon={Users}
-        title="Customers"
-        description="Import your customer list"
-        file={customersFile}
-        fileRef={customersRef}
-        status={importStatus.customers}
-        count={importCounts.customers}
-        error={importErrors.customers}
-        onFileSelect={handleFileSelect}
-        onImport={handleImport}
-      />
+        <ImportSection
+          type="customers"
+          icon={Users}
+          title="Customers"
+          description="Customer list"
+          file={customersFile}
+          fileRef={customersRef}
+          status={importStatus.customers}
+          count={importCounts.customers}
+          error={importErrors.customers}
+          onFileSelect={handleFileSelect}
+          onImport={handleImport}
+        />
 
-      {/* Vendors Import */}
-      <ImportSection
-        type="vendors"
-        icon={Building2}
-        title="Vendors"
-        description="Import your supplier/vendor list"
-        file={vendorsFile}
-        fileRef={vendorsRef}
-        status={importStatus.vendors}
-        count={importCounts.vendors}
-        error={importErrors.vendors}
-        onFileSelect={handleFileSelect}
-        onImport={handleImport}
-      />
+        <ImportSection
+          type="vendors"
+          icon={Building2}
+          title="Vendors"
+          description="Supplier list"
+          file={vendorsFile}
+          fileRef={vendorsRef}
+          status={importStatus.vendors}
+          count={importCounts.vendors}
+          error={importErrors.vendors}
+          onFileSelect={handleFileSelect}
+          onImport={handleImport}
+        />
+      </div>
+
+      {/* Summary if any imports done */}
+      {(importCounts.products > 0 || importCounts.customers > 0 || importCounts.vendors > 0) && (
+        <div className="text-xs text-text-tertiary text-center py-2 border-t border-border">
+          Imported: {importCounts.products > 0 && `${importCounts.products} products`}
+          {importCounts.products > 0 && importCounts.customers > 0 && ', '}
+          {importCounts.customers > 0 && `${importCounts.customers} customers`}
+          {(importCounts.products > 0 || importCounts.customers > 0) && importCounts.vendors > 0 && ', '}
+          {importCounts.vendors > 0 && `${importCounts.vendors} vendors`}
+        </div>
+      )}
 
       <Button
         type="button"

@@ -107,16 +107,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left',
                 'min-h-[44px] transition-all duration-200 text-sm relative',
                 // Focus state for keyboard navigation
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-inset',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
                 // Active press feedback
                 'active:scale-[0.98]',
                 
                 // Active state - filled pill with left accent
                 isActive && [
-                  'bg-primary-600/15 text-primary-400',
+                  'bg-accent/15 text-accent',
                   // Left accent bar
                   'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2',
-                  'before:w-1 before:h-6 before:bg-primary-500 before:rounded-r-full',
+                  'before:w-1 before:h-6 before:bg-accent before:rounded-r-full',
                 ],
                 
                 // Inactive state
@@ -134,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 size={20} 
                 className={cn(
                   'flex-shrink-0 transition-colors duration-200',
-                  isActive ? 'text-primary-400' : 'text-text-tertiary group-hover:text-text-secondary'
+                  isActive ? 'text-accent' : 'text-text-tertiary group-hover:text-text-secondary'
                 )} 
               />
               {!isCollapsed && (

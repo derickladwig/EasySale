@@ -307,6 +307,11 @@ async fn main() -> std::io::Result<()> {
                     .route(web::delete().to(handlers::user_handlers::delete_user))
                     .wrap(require_permission("manage_settings"))
             )
+            // Password change endpoint (user can change their own password)
+            .service(
+                web::resource("/api/users/password")
+                    .route(web::put().to(handlers::user_handlers::change_password))
+            )
             // Customer management endpoints
             .service(handlers::customer::create_customer)
             .service(handlers::customer::get_customer)
@@ -414,6 +419,16 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::promotion::create_group_markdown)
             .service(handlers::promotion::list_group_markdowns)
             .service(handlers::promotion::deactivate_group_markdown)
+            // Company info endpoints
+            .service(
+                web::resource("/api/company/info")
+                    .route(web::get().to(handlers::company::get_company_info))
+                    .route(web::put().to(handlers::company::update_company_info))
+            )
+            .service(
+                web::resource("/api/company/logo")
+                    .route(web::post().to(handlers::company::upload_company_logo))
+            )
             // Store and station endpoints (protected with manage_settings permission)
             .service(
                 web::resource("/api/stores")

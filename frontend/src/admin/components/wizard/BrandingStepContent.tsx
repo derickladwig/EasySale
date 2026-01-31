@@ -298,19 +298,17 @@ export function BrandingStepContent({
 
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Logo Upload */}
-      <div className="bg-surface-base border border-border rounded-xl p-6">
-        <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-          <Image className="w-5 h-5 text-primary-400" />
-          Logo
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Logo Upload - Compact Design */}
+      <div className="bg-surface-base border border-border rounded-lg p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Image className="w-4 h-4 text-accent" />
+          <h3 className="text-sm font-medium text-white">Logo</h3>
+          <span className="text-xs text-text-tertiary">(optional)</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
           {/* Light Logo */}
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Light Theme Logo
-            </label>
             <input
               ref={lightLogoRef}
               type="file"
@@ -321,22 +319,22 @@ export function BrandingStepContent({
             <div
               onClick={() => lightLogoRef.current?.click()}
               className={cn(
-                'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors',
+                'border border-dashed rounded-lg p-3 text-center cursor-pointer transition-all hover:bg-surface-elevated',
                 formData.logoLight
-                  ? 'border-primary-500/50 bg-primary-500/5'
-                  : 'border-border hover:border-border'
+                  ? 'border-accent/50 bg-accent/5'
+                  : 'border-border'
               )}
             >
               {formData.logoLight ? (
                 <img
                   src={formData.logoLight}
-                  alt="Light logo preview"
-                  className="max-h-16 mx-auto"
+                  alt="Light logo"
+                  className="max-h-10 mx-auto"
                 />
               ) : (
                 <div className="text-text-tertiary">
-                  <Upload className="w-8 h-8 mx-auto mb-2" />
-                  <p className="text-sm">Click to upload</p>
+                  <Upload className="w-5 h-5 mx-auto mb-1" />
+                  <p className="text-xs">Light theme</p>
                 </div>
               )}
             </div>
@@ -344,9 +342,6 @@ export function BrandingStepContent({
 
           {/* Dark Logo */}
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Dark Theme Logo
-            </label>
             <input
               ref={darkLogoRef}
               type="file"
@@ -357,22 +352,22 @@ export function BrandingStepContent({
             <div
               onClick={() => darkLogoRef.current?.click()}
               className={cn(
-                'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors bg-background-primary',
+                'border border-dashed rounded-lg p-3 text-center cursor-pointer transition-all bg-background-primary hover:bg-surface-base',
                 formData.logoDark
-                  ? 'border-primary-500/50'
-                  : 'border-border hover:border-border'
+                  ? 'border-accent/50'
+                  : 'border-border'
               )}
             >
               {formData.logoDark ? (
                 <img
                   src={formData.logoDark}
-                  alt="Dark logo preview"
-                  className="max-h-16 mx-auto"
+                  alt="Dark logo"
+                  className="max-h-10 mx-auto"
                 />
               ) : (
                 <div className="text-text-tertiary">
-                  <Upload className="w-8 h-8 mx-auto mb-2" />
-                  <p className="text-sm">Click to upload</p>
+                  <Upload className="w-5 h-5 mx-auto mb-1" />
+                  <p className="text-xs">Dark theme</p>
                 </div>
               )}
             </div>
@@ -380,83 +375,75 @@ export function BrandingStepContent({
         </div>
       </div>
 
-
-      {/* Theme Preset */}
-      <div className="bg-surface-base border border-border rounded-xl p-6">
-        <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-          <Palette className="w-5 h-5 text-primary-400" />
-          Accent Color
-        </h3>
+      {/* Theme Preset - Compact Design */}
+      <div className="bg-surface-base border border-border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Palette className="w-4 h-4 text-accent" />
+            <h3 className="text-sm font-medium text-white">Accent Color</h3>
+          </div>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: formData.accentColor + '20', color: formData.accentColor }}>
+            {formData.themePreset === 'custom' ? customHex : THEME_PRESETS.find(p => p.id === formData.themePreset)?.name}
+          </span>
+        </div>
         
-        {/* Color Grid */}
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-4">
+        {/* Color Grid - More compact */}
+        <div className="grid grid-cols-8 gap-1.5 mb-3">
           {THEME_PRESETS.filter(p => p.id !== 'custom').map((preset) => (
             <button
               key={preset.id}
               type="button"
               onClick={() => handlePresetSelect(preset)}
               className={cn(
-                'aspect-square rounded-lg border-2 transition-all cursor-pointer relative group',
+                'aspect-square rounded-md border transition-all cursor-pointer relative',
                 formData.themePreset === preset.id
-                  ? 'border-white ring-2 ring-white/30 scale-110 z-10'
-                  : 'border-transparent hover:border-white/50 hover:scale-105'
+                  ? 'border-white ring-1 ring-white/40 scale-110 z-10'
+                  : 'border-transparent hover:scale-105'
               )}
               style={{ backgroundColor: preset.color }}
               title={preset.name}
             >
               {formData.themePreset === preset.id && (
-                <CheckCircle2 className="w-4 h-4 text-white absolute inset-0 m-auto drop-shadow-lg" />
+                <CheckCircle2 className="w-3 h-3 text-white absolute inset-0 m-auto drop-shadow-lg" />
               )}
-              <span className="sr-only">{preset.name}</span>
             </button>
           ))}
         </div>
         
-        {/* Custom Hex Input */}
-        <div className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
+        {/* Custom Hex Input - Inline compact */}
+        <div className="flex items-center gap-2 p-2 bg-surface-elevated rounded-md border border-border">
           <div 
-            className="w-10 h-10 rounded-lg border-2 border-white/20 flex-shrink-0"
+            className="w-7 h-7 rounded border border-white/20 flex-shrink-0"
             style={{ backgroundColor: isValidHex(customHex) ? customHex : NEUTRAL_COLOR }}
           />
-          <div className="flex-1">
-            <label className="block text-xs text-text-tertiary mb-1">Custom Hex Color</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={customHex}
-                onChange={(e) => handleCustomHexChange(e.target.value)}
-                placeholder="#14b8a6"
-                className={cn(
-                  "flex-1 bg-surface-base border rounded px-3 py-1.5 text-sm font-mono",
-                  isValidHex(customHex) ? "border-border text-white" : "border-error-500/50 text-error-400"
-                )}
-                maxLength={7}
-              />
-              <input
-                type="color"
-                value={isValidHex(customHex) ? customHex : NEUTRAL_COLOR}
-                onChange={(e) => handleCustomHexChange(e.target.value)}
-                className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                title="Pick a color"
-              />
-            </div>
-          </div>
+          <input
+            type="text"
+            value={customHex}
+            onChange={(e) => handleCustomHexChange(e.target.value)}
+            placeholder="#14b8a6"
+            className={cn(
+              "flex-1 bg-transparent border-0 text-xs font-mono focus:outline-none",
+              isValidHex(customHex) ? "text-white" : "text-error-400"
+            )}
+            maxLength={7}
+          />
+          <input
+            type="color"
+            value={isValidHex(customHex) ? customHex : NEUTRAL_COLOR}
+            onChange={(e) => handleCustomHexChange(e.target.value)}
+            className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+          />
           <Button
             type="button"
-            variant={formData.themePreset === 'custom' ? 'primary' : 'secondary'}
+            variant={formData.themePreset === 'custom' ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => handlePresetSelect(THEME_PRESETS.find(p => p.id === 'custom')!)}
             disabled={!isValidHex(customHex)}
+            className="text-xs px-2 py-1 h-auto"
           >
-            Use Custom
+            Apply
           </Button>
         </div>
-        
-        <p className="text-sm text-text-tertiary mt-3">
-          Selected: <span className="text-white font-medium" style={{ color: formData.accentColor }}>
-            {formData.themePreset === 'custom' ? `Custom (${formData.accentColor})` : THEME_PRESETS.find(p => p.id === formData.themePreset)?.name}
-          </span>
-        </p>
       </div>
 
       <Button

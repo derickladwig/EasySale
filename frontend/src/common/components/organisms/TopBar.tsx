@@ -84,7 +84,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* Logo */}
       {logo || (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">CP</span>
           </div>
           <span className="text-lg font-bold text-white hidden sm:block">{storeName}</span>
@@ -100,7 +100,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               type="search"
               placeholder={searchPlaceholder}
               onChange={(e) => onSearchChange?.(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-surface-elevated border border-border rounded-lg text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-surface-elevated border border-border rounded-lg text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
         </div>
@@ -113,7 +113,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           className={cn(
             'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium',
             syncStatus === 'online' && 'bg-success-500/20 text-success-400',
-            syncStatus === 'syncing' && 'bg-primary-500/20 text-primary-400',
+            syncStatus === 'syncing' && 'bg-accent/20 text-accent',
             syncStatus === 'offline' && 'bg-error-500/20 text-error-400'
           )}
         >

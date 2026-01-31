@@ -937,17 +937,17 @@ export const IntegrationsPage: React.FC = () => {
             const getIntegrationIcon = () => {
               switch (integration.id) {
                 case 'woocommerce':
-                  return <ShoppingBag className="w-5 h-5 text-primary-400" />;
+                  return <ShoppingBag className="w-5 h-5 text-accent" />;
                 case 'quickbooks':
                   return <DollarSign className="w-5 h-5 text-success-400" />;
                 case 'stripe':
-                  return <CreditCard className="w-5 h-5 text-primary-400" />;
+                  return <CreditCard className="w-5 h-5 text-accent" />;
                 case 'square':
                   return <CreditCard className="w-5 h-5 text-text-secondary" />;
                 case 'clover':
                   return <CreditCard className="w-5 h-5 text-success-400" />;
                 case 'supabase':
-                  return <Cloud className="w-5 h-5 text-primary-400" />;
+                  return <Cloud className="w-5 h-5 text-accent" />;
                 default:
                   return <Plug className="w-5 h-5 text-text-disabled" />;
               }
@@ -975,7 +975,7 @@ export const IntegrationsPage: React.FC = () => {
                         </ol>
                         <button
                           onClick={() => window.open('/docs/guides/EasySale_Provider_Setup_Checklist_Pack/EasySale_Provider_Setup_Checklist.md', '_blank')}
-                          className="text-xs text-primary-400 hover:text-primary-300 mt-2 inline-flex items-center gap-1"
+                          className="text-xs text-accent hover:text-accent/80 mt-2 inline-flex items-center gap-1"
                         >
                           View Setup Guide →
                         </button>
@@ -1446,7 +1446,7 @@ export const IntegrationsPage: React.FC = () => {
         <Card>
           <div className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <Plug className="w-5 h-5 text-primary-400" />
+              <Plug className="w-5 h-5 text-accent" />
               <h2 className="text-xl font-semibold text-text-primary">Integration Notes</h2>
             </div>
 
@@ -1486,7 +1486,7 @@ export const IntegrationsPage: React.FC = () => {
                       // Open Stripe setup guide
                       window.open('/docs/guides/EasySale_Stripe_Connect_OAuth_Setup_Pack/stripe-connect-setup.md', '_blank');
                     }}
-                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-primary-400 hover:text-primary-300 inline-flex items-center gap-1"
+                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-accent hover:text-accent/80 inline-flex items-center gap-1"
                   >
                     Stripe Setup <ExternalLink className="w-3 h-3" />
                   </button>
@@ -1495,7 +1495,7 @@ export const IntegrationsPage: React.FC = () => {
                       // Open Provider setup checklist
                       window.open('/docs/guides/EasySale_Provider_Setup_Checklist_Pack/EasySale_Provider_Setup_Checklist.md', '_blank');
                     }}
-                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-primary-400 hover:text-primary-300 inline-flex items-center gap-1"
+                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-accent hover:text-accent/80 inline-flex items-center gap-1"
                   >
                     Provider Checklist <ExternalLink className="w-3 h-3" />
                   </button>
@@ -1503,7 +1503,7 @@ export const IntegrationsPage: React.FC = () => {
                     onClick={() => {
                       window.open('/docs/integrations/payments.md', '_blank');
                     }}
-                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-primary-400 hover:text-primary-300 inline-flex items-center gap-1"
+                    className="text-xs px-2 py-1 bg-surface-elevated hover:bg-surface-secondary rounded text-accent hover:text-accent/80 inline-flex items-center gap-1"
                   >
                     Payment Docs <ExternalLink className="w-3 h-3" />
                   </button>

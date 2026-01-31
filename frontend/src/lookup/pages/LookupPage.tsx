@@ -58,7 +58,7 @@ export function LookupPage() {
     return (
       <div className="h-full flex items-center justify-center bg-background-primary">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
           <p className="text-text-tertiary">Loading products...</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ export function LookupPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, SKU, brand, or part number..."
-                className="w-full pl-10 pr-4 py-3 bg-surface-base border border-border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-10 pr-4 py-3 bg-surface-base border border-border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <Button
@@ -162,7 +162,7 @@ export function LookupPage() {
                   className={cn(
                     'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2',
                     selectedCategory === categoryId
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-accent text-white'
                       : 'bg-surface-base text-text-secondary hover:bg-surface-elevated'
                   )}
                 >
@@ -176,7 +176,7 @@ export function LookupPage() {
           {/* Advanced filters */}
           {showFilters && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent">
                 <option>All Brands</option>
                 {/* Brand options derived from actual product data */}
                 {Array.from(new Set(products.map(p => p.attributes?.brand).filter(Boolean)))
@@ -185,20 +185,20 @@ export function LookupPage() {
                     <option key={String(brand)} value={String(brand)}>{String(brand)}</option>
                   ))}
               </select>
-              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent">
                 <option>All Stock Levels</option>
                 <option>In Stock</option>
                 <option>Low Stock</option>
                 <option>Out of Stock</option>
               </select>
-              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent">
                 <option>Price: Any</option>
                 <option>Under $25</option>
                 <option>$25 - $50</option>
                 <option>$50 - $100</option>
                 <option>Over $100</option>
               </select>
-              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <select className="px-3 py-2 bg-surface-base border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent">
                 <option>Sort: Relevance</option>
                 <option>Price: Low to High</option>
                 <option>Price: High to Low</option>
@@ -260,7 +260,7 @@ export function LookupPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-sm">
-                      <span className="text-primary-400 font-semibold">
+                      <span className="text-accent font-semibold">
                         {formatCurrency(price)}
                       </span>
                       <span
@@ -320,7 +320,7 @@ export function LookupPage() {
                       )}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-3xl font-bold text-primary-400">
+                      <span className="text-3xl font-bold text-accent">
                         {formatCurrency(price)}
                       </span>
                       <span

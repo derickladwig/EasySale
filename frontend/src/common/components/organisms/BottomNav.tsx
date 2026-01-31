@@ -64,7 +64,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         className={`
           flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-all duration-200
           active:scale-95 active:bg-surface-base
-          ${isActive ? 'text-primary-400' : 'text-text-secondary hover:text-primary-400 hover:bg-surface-base'}
+          ${isActive ? 'text-accent' : 'text-text-secondary hover:text-accent hover:bg-surface-base'}
         `}
         aria-current={isActive ? 'page' : undefined}
         aria-label={item.label}
@@ -98,7 +98,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         {hasOverflow && (
           <button
             onClick={onMoreClick}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-text-secondary transition-all duration-200 hover:text-primary-400 hover:bg-surface-base active:scale-95 active:bg-surface-base"
+            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-text-secondary transition-all duration-200 hover:text-accent hover:bg-surface-base active:scale-95 active:bg-surface-base"
             aria-label="More options"
           >
             <MoreHorizontal size={24} className="flex-shrink-0" />

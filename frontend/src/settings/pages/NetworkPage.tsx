@@ -56,10 +56,13 @@ export const NetworkPage: React.FC = () => {
       const response = await fetch('/api/settings/network', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ 
           sync_enabled: syncEnabled,
-          sync_interval: syncInterval,
-          auto_resolve_conflicts: autoResolveConflicts
+          sync_interval: parseInt(syncInterval, 10),
+          auto_resolve_conflicts: autoResolveConflicts,
+          offline_mode_enabled: offlineModeEnabled,
+          max_queue_size: parseInt(maxQueueSize, 10)
         })
       });
       if (!response.ok) throw new Error('Failed to update sync settings');
@@ -246,7 +249,7 @@ export const NetworkPage: React.FC = () => {
         <Card>
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <RefreshCw className="w-5 h-5 text-primary-400" />
+              <RefreshCw className="w-5 h-5 text-accent" />
               <h2 className="text-xl font-semibold text-text-primary">Sync Settings</h2>
             </div>
 
@@ -310,7 +313,7 @@ export const NetworkPage: React.FC = () => {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <Server className="w-5 h-5 text-primary-400" />
+                <Server className="w-5 h-5 text-accent" />
                 <h2 className="text-xl font-semibold text-text-primary">Remote Stores</h2>
               </div>
               <Button
@@ -412,7 +415,7 @@ export const NetworkPage: React.FC = () => {
         <Card>
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <WifiOff className="w-5 h-5 text-primary-400" />
+              <WifiOff className="w-5 h-5 text-accent" />
               <h2 className="text-xl font-semibold text-text-primary">Offline Mode</h2>
             </div>
 
@@ -445,7 +448,7 @@ export const NetworkPage: React.FC = () => {
               <div className="p-4 bg-background-secondary rounded-lg border border-border-light">
                 <div className="flex items-center justify-between mb-2">
                   <div className="font-medium text-text-primary">Pending Operations</div>
-                  <span className="text-2xl font-bold text-primary-400">{pendingOperations}</span>
+                  <span className="text-2xl font-bold text-accent">{pendingOperations}</span>
                 </div>
                 <div className="text-sm text-text-tertiary mb-4">
                   Operations waiting to be synchronized

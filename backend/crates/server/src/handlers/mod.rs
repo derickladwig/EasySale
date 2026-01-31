@@ -19,6 +19,7 @@ pub mod barcodes;
 pub mod cache;
 pub mod capabilities;
 pub mod commission;
+pub mod company;
 pub mod config;
 pub mod conflicts;
 pub mod credit;

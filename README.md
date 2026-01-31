@@ -99,9 +99,11 @@ start-dev.bat            # Windows
 | Backend API | http://localhost:8923 |
 | Health Check | http://localhost:8923/health |
 
-**First-Time Setup**: On first launch, you'll be prompted to create an admin account with your own secure password (minimum 8 characters).
+**Default Login Credentials**:
+- **Username**: `admin`
+- **Password**: `admin123`
 
-> **Security**: No default passwords are used. You set your credentials during initial setup.
+> **Important**: Change the default password immediately after first login via **Settings → My Preferences → Security**. The Setup Wizard will guide you through initial store configuration.
 
 ---
 

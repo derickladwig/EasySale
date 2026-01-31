@@ -357,7 +357,7 @@ export function ProductImportPage() {
 
         {/* Cross-Link Fields */}
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-primary-400 mb-2 flex items-center gap-2">
+          <h3 className="text-sm font-medium text-accent mb-2 flex items-center gap-2">
             <Link2 className="w-4 h-4" />
             Cross-Linked SKUs (for lookups)
           </h3>
@@ -438,7 +438,7 @@ export function ProductImportPage() {
         <p className="text-text-secondary">Select a CSV file containing your product data</p>
       </div>
 
-      <div className="border-2 border-dashed border-border rounded-xl p-12 text-center hover:border-primary-500/50 transition-colors">
+      <div className="border-2 border-dashed border-border rounded-xl p-12 text-center hover:border-accent/50 transition-colors">
         <Upload className="w-12 h-12 text-text-disabled mx-auto mb-4" />
         <p className="text-text-secondary mb-4">
           {file ? file.name : 'Drag and drop or click to select'}
@@ -575,7 +575,7 @@ export function ProductImportPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {isProcessing ? (
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
           <p className="text-text-secondary">Validating data...</p>
         </div>
       ) : validationResult && (
@@ -633,7 +633,7 @@ export function ProductImportPage() {
   // Render import step
   const renderImport = () => (
     <div className="max-w-md mx-auto text-center py-12">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
       <p className="text-text-secondary">Importing products...</p>
       <p className="text-sm text-text-disabled mt-2">This may take a few moments</p>
     </div>
@@ -681,7 +681,7 @@ export function ProductImportPage() {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step === s
-                    ? 'bg-primary-500 text-white'
+                    ? 'bg-accent text-white'
                     : ['guide', 'upload', 'mapping', 'validate', 'import', 'complete'].indexOf(step) > idx
                     ? 'bg-success-500 text-white'
                     : 'bg-surface-elevated text-text-tertiary'
@@ -702,7 +702,7 @@ export function ProductImportPage() {
       {/* Help button */}
       <button
         onClick={() => setShowHelp(!showHelp)}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-primary-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary-600 transition-colors"
+        className="fixed bottom-6 right-6 w-12 h-12 bg-accent text-white rounded-full shadow-lg flex items-center justify-center hover:bg-accent-hover transition-colors"
       >
         <HelpCircle className="w-6 h-6" />
       </button>
@@ -713,19 +713,19 @@ export function ProductImportPage() {
           <h3 className="font-medium text-text-primary mb-2">Need Help?</h3>
           <ul className="text-sm text-text-secondary space-y-2">
             <li className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
+              <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
               <span>Required fields are marked with * in the template</span>
             </li>
             <li className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
+              <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
               <span>Cross-linked SKUs allow finding products by multiple identifiers</span>
             </li>
             <li className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
+              <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
               <span>Custom attributes use the format: attr_name</span>
             </li>
           </ul>
-          <a href="/docs/features/product-import.md" className="text-primary-400 text-sm mt-3 block hover:underline">
+          <a href="/docs/features/product-import.md" className="text-accent text-sm mt-3 block hover:underline">
             View Full Documentation →
           </a>
         </div>
@@ -746,7 +746,7 @@ export function ProductImportPage() {
 function FeatureCard({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
     <div className="bg-surface-base border border-border rounded-xl p-4">
-      <Icon className="w-8 h-8 text-primary-400 mb-3" />
+      <Icon className="w-8 h-8 text-accent mb-3" />
       <h3 className="font-medium text-text-primary mb-1">{title}</h3>
       <p className="text-sm text-text-tertiary">{description}</p>
     </div>
@@ -756,7 +756,7 @@ function FeatureCard({ icon: Icon, title, description }: { icon: React.ElementTy
 function StepCard({ number, title, description }: { number: number; title: string; description: string }) {
   return (
     <div className="text-center">
-      <div className="w-10 h-10 bg-primary-500/10 text-primary-400 rounded-full flex items-center justify-center mx-auto mb-2 font-bold">
+      <div className="w-10 h-10 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-2 font-bold">
         {number}
       </div>
       <h4 className="font-medium text-text-primary text-sm">{title}</h4>

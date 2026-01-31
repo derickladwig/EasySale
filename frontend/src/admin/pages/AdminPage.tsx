@@ -370,7 +370,7 @@ export function AdminPage() {
                 className={cn(
                   'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors mb-1',
                   activeSection === section.id
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-accent text-white'
                     : 'text-text-secondary hover:bg-surface-elevated hover:text-white'
                 )}
               >
@@ -409,7 +409,7 @@ export function AdminPage() {
                   className={cn(
                     'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors',
                     activeSection === section.id
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-accent text-white'
                       : 'text-text-secondary hover:bg-surface-elevated hover:text-white'
                   )}
                 >
@@ -448,74 +448,7 @@ export function AdminPage() {
 
         <div className="p-4 md:p-6">
           {activeSection === 'general' && (
-            <div className="max-w-2xl space-y-6">
-              <div>
-                <h2 className="text-xl font-bold text-white mb-1">General Settings</h2>
-                <p className="text-text-tertiary text-sm">Configure basic system preferences</p>
-              </div>
-
-              <div className="bg-surface-base border border-border rounded-xl divide-y divide-border">
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Globe className="text-text-tertiary" size={20} />
-                    <div>
-                      <div className="font-medium text-text-primary">Language</div>
-                      <div className="text-sm text-text-tertiary">System display language</div>
-                    </div>
-                  </div>
-                  <select className="px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option>English (US)</option>
-                    <option>Spanish</option>
-                    <option>French</option>
-                  </select>
-                </div>
-
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Palette className="text-text-tertiary" size={20} />
-                    <div>
-                      <div className="font-medium text-text-primary">Theme</div>
-                      <div className="text-sm text-text-tertiary">Application appearance</div>
-                    </div>
-                  </div>
-                  <select className="px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option>Dark</option>
-                    <option>Light</option>
-                    <option>System</option>
-                  </select>
-                </div>
-
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Settings className="text-text-tertiary" size={20} />
-                    <div>
-                      <div className="font-medium text-text-primary">Currency</div>
-                      <div className="text-sm text-text-tertiary">Default currency for prices</div>
-                    </div>
-                  </div>
-                  <select className="px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option>USD ($)</option>
-                    <option>CAD ($)</option>
-                    <option>EUR (€)</option>
-                  </select>
-                </div>
-
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Settings className="text-text-tertiary" size={20} />
-                    <div>
-                      <div className="font-medium text-text-primary">Date Format</div>
-                      <div className="text-sm text-text-tertiary">How dates are displayed</div>
-                    </div>
-                  </div>
-                  <select className="px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option>MM/DD/YYYY</option>
-                    <option>DD/MM/YYYY</option>
-                    <option>YYYY-MM-DD</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <LocalizationPage />
           )}
 
           {activeSection === 'display' && <DisplaySettings />}
@@ -540,7 +473,7 @@ export function AdminPage() {
               {usersLoading && (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-text-tertiary">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
                     <p>Loading users...</p>
                   </div>
                 </div>
@@ -684,7 +617,7 @@ export function AdminPage() {
                       type="text"
                       value={storeFormData.name}
                       onChange={(e) => setStoreFormData({ ...storeFormData, name: e.target.value })}
-                      className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
                   <div>
@@ -714,7 +647,7 @@ export function AdminPage() {
                         value={storeFormData.phone}
                         onChange={(e) => setStoreFormData({ ...storeFormData, phone: e.target.value })}
                         placeholder="Enter phone number"
-                        className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
                       />
                     </div>
                     <div>
@@ -724,7 +657,7 @@ export function AdminPage() {
                         value={storeFormData.email}
                         onChange={(e) => setStoreFormData({ ...storeFormData, email: e.target.value })}
                         placeholder="Enter email address"
-                        className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
                       />
                     </div>
                   </div>

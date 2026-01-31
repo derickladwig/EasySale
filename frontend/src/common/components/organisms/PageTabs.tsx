@@ -113,12 +113,12 @@ export const PageTabs: React.FC<PageTabsProps> = ({
                   // Base styles - pill shape with good touch targets
                   'flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium',
                   'min-h-[44px] transition-all duration-200',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1',
                   
                   // Active state - filled pill
                   isActive && navigable && [
-                    'bg-primary-600 text-white shadow-sm',
-                    'hover:bg-primary-700',
+                    'bg-accent text-white shadow-sm',
+                    'hover:bg-accent-hover',
                   ],
                   
                   // Inactive navigable state
@@ -168,7 +168,7 @@ export const PageTabs: React.FC<PageTabsProps> = ({
                     'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full',
                     isActive 
                       ? 'bg-white/20 text-white' 
-                      : 'bg-error-500 text-white'
+                      : 'bg-error text-white'
                   )}>
                     {item.badge > 99 ? '99+' : item.badge}
                   </span>

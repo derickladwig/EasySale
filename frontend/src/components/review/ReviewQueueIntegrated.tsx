@@ -5,6 +5,8 @@ import { FlagChips } from './FlagChips';
 import { useNavigate } from 'react-router-dom';
 import { Download } from 'lucide-react';
 import { getErrorMessage } from '../../common/utils/errorUtils';
+import { apiClient } from '../../common/utils/apiClient';
+import { toast } from '../../common/utils/toast';
 
 interface ReviewQueueProps {
   onSelectCase: (caseId: string) => void;
@@ -32,6 +34,30 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
 
   const { data, isLoading, error, refetch } = useReviewQueue(filters);
 
+  // Helper functions for async operations
+  const handleAssignCase = async (caseId: string) => {
+    try {
+      await apiClient.post(`/api/cases/${caseId}/assign`, {});
+      toast.success('Case assigned to you');
+      navigate(`/review/${caseId}`);
+    } catch {
+      toast.error('Failed to assign case');
+      // Still navigate to case detail for manual assignment
+      navigate(`/review/${caseId}`);
+    }
+  };
+
+  const handleExportCase = async (caseId: string) => {
+    try {
+      await apiClient.post(`/api/cases/${caseId}/export`, {});
+      toast.success('Export started');
+      navigate('/exports');
+    } catch {
+      toast.error('Failed to export case');
+      navigate('/exports');
+    }
+  };
+
   // Keyboard shortcuts handler
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -57,10 +83,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
           if (data?.cases && data.cases.length > 0) {
             const currentCase = data.cases[selectedCaseIndex];
             if (currentCase) {
-              // TODO: Implement assign to me functionality
-              // POST /api/cases/:caseId/assign with current user
-              // Navigate to the case detail page for manual assignment
-              navigate(`/review/${currentCase.case_id}`);
+              handleAssignCase(currentCase.case_id);
             }
           }
           break;
@@ -70,10 +93,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
           if (data?.cases && data.cases.length > 0) {
             const currentCase = data.cases[selectedCaseIndex];
             if (currentCase) {
-              // TODO: Implement export functionality
-              // POST /api/cases/:caseId/export
-              // Navigate to exports page
-              navigate('/exports');
+              handleExportCase(currentCase.case_id);
             }
           }
           break;
@@ -216,8 +236,8 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
                     setSelectedCaseIndex(index);
                     onSelectCase(c.case_id);
                   }}
-                  className={`bg-surface-base p-4 rounded-lg shadow-sm border border-border hover:border-primary-500 cursor-pointer transition-colors ${
-                    index === selectedCaseIndex ? 'border-primary-500 ring-2 ring-primary-500/30' : ''
+                  className={`bg-surface-base p-4 rounded-lg shadow-sm border border-border hover:border-accent cursor-pointer transition-colors ${
+                    index === selectedCaseIndex ? 'border-accent ring-2 ring-accent/30' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -250,7 +270,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
                             e.stopPropagation();
                             navigate('/exports');
                           }}
-                          className="px-2 py-1 bg-primary-600 text-white rounded hover:bg-primary-700 text-xs flex items-center gap-1"
+                          className="px-2 py-1 bg-accent text-white rounded hover:bg-accent-hover text-xs flex items-center gap-1"
                           title="Export this case"
                         >
                           <Download className="w-3 h-3" />
@@ -280,7 +300,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
               <button
                 onClick={() => handlePageChange(Math.max(1, data.page - 1))}
                 disabled={data.page === 1}
-                className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:bg-surface-elevated disabled:text-text-tertiary disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-surface-elevated disabled:text-text-tertiary disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -290,7 +310,7 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onSelectCase, initialS
               <button
                 onClick={() => handlePageChange(Math.min(Math.ceil(data.total / data.per_page), data.page + 1))}
                 disabled={data.page >= Math.ceil(data.total / data.per_page)}
-                className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:bg-surface-elevated disabled:text-text-tertiary disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover disabled:bg-surface-elevated disabled:text-text-tertiary disabled:cursor-not-allowed"
               >
                 Next
               </button>

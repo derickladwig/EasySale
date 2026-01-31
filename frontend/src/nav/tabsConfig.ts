@@ -76,7 +76,7 @@ export const inventoryTabs: TabItem[] = [
   {
     id: 'transfers',
     label: 'Transfers',
-    featureStatus: 'comingSoon',
+    featureStatus: 'ready',
     order: 3,
   },
   {

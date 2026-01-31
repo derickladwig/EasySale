@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@common/components/molecules/Card';
 import { Button } from '@common/components/atoms/Button';
 import { toast } from '@common/components/molecules/Toast';
@@ -74,72 +74,109 @@ interface PaymentTerminal {
 export const HardwarePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<HardwareTab>('receipt-printers');
   const [showTemplates, setShowTemplates] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [receiptPrinters] = useState<ReceiptPrinter[]>([
-    {
-      id: 1,
-      name: 'Main Counter Printer',
-      type: 'ESC/POS',
-      connection: 'USB',
-      port: '/dev/usb/lp0',
-      width: '80mm',
-      status: 'connected',
-      is_default: true,
-    },
-  ]);
+  // Default configurations - will be loaded from settings
+  const [receiptPrinters, setReceiptPrinters] = useState<ReceiptPrinter[]>([]);
+  const [labelPrinters, setLabelPrinters] = useState<LabelPrinter[]>([]);
+  const [scanners, setScanners] = useState<Scanner[]>([]);
+  const [cashDrawers, setCashDrawers] = useState<CashDrawer[]>([]);
+  const [paymentTerminals, setPaymentTerminals] = useState<PaymentTerminal[]>([]);
 
-  const [labelPrinters] = useState<LabelPrinter[]>([
-    {
-      id: 1,
-      name: 'Zebra ZD420',
-      type: 'Zebra ZPL',
-      ip_address: '192.168.1.100',
-      port: 9100,
-      status: 'connected',
-      is_default: true,
-    },
-  ]);
+  // Load hardware settings from backend
+  useEffect(() => {
+    const loadHardwareSettings = async () => {
+      try {
+        const response = await fetch('/api/settings/hardware', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.receipt_printers) setReceiptPrinters(data.receipt_printers);
+          if (data.label_printers) setLabelPrinters(data.label_printers);
+          if (data.scanners) setScanners(data.scanners);
+          if (data.cash_drawers) setCashDrawers(data.cash_drawers);
+          if (data.payment_terminals) setPaymentTerminals(data.payment_terminals);
+        } else {
+          // Use defaults if API not available
+          setReceiptPrinters([{
+            id: 1,
+            name: 'Default Receipt Printer',
+            type: 'ESC/POS',
+            connection: 'USB',
+            port: navigator.platform.includes('Win') ? 'USB001' : '/dev/usb/lp0',
+            width: '80mm',
+            status: 'disconnected',
+            is_default: true,
+          }]);
+          setLabelPrinters([{
+            id: 1,
+            name: 'Default Label Printer',
+            type: 'Zebra ZPL',
+            ip_address: '192.168.1.100',
+            port: 9100,
+            status: 'disconnected',
+            is_default: true,
+          }]);
+          setScanners([{
+            id: 1,
+            name: 'Default Scanner',
+            type: 'USB HID',
+            prefix: '',
+            suffix: '\n',
+            status: 'disconnected',
+            is_default: true,
+          }]);
+          setCashDrawers([{
+            id: 1,
+            name: 'Default Cash Drawer',
+            type: 'RJ11 via Printer',
+            connection: 'Default Receipt Printer',
+            open_code: '\\x1B\\x70\\x00',
+            status: 'disconnected',
+            is_default: true,
+          }]);
+          setPaymentTerminals([{
+            id: 1,
+            name: 'Payment Terminal',
+            type: 'Manual Entry',
+            connection_settings: '',
+            status: 'disconnected',
+            is_default: true,
+          }]);
+        }
+      } catch (error) {
+        console.log('Hardware settings API not available, using defaults');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadHardwareSettings();
+  }, []);
 
-  const [scanners] = useState<Scanner[]>([
-    {
-      id: 1,
-      name: 'Honeywell Scanner',
-      type: 'USB HID',
-      prefix: '',
-      suffix: '\n',
-      status: 'connected',
-      is_default: true,
-    },
-  ]);
-
-  const [cashDrawers] = useState<CashDrawer[]>([
-    {
-      id: 1,
-      name: 'Main Cash Drawer',
-      type: 'RJ11 via Printer',
-      connection: 'Main Counter Printer',
-      open_code: '\\x1B\\x70\\x00',
-      status: 'connected',
-      is_default: true,
-    },
-  ]);
-
-  const [paymentTerminals] = useState<PaymentTerminal[]>([
-    {
-      id: 1,
-      name: 'Stripe Reader',
-      type: 'Stripe Terminal',
-      connection_settings: 'tmr_123456',
-      status: 'disconnected',
-      is_default: true,
-    },
-  ]);
-
-  const handleTestPrint = (printerId: number, type: 'receipt' | 'label') => {
-    toast.info(`Sending test print to ${type} printer ${printerId}...`);
-    setTimeout(() => {
-      toast.success('Test print sent successfully');
-    }, 1000);
+  const handleTestPrint = async (printerId: number, type: 'receipt' | 'label') => {
+    toast.info(`Testing ${type} printer ${printerId}...`);
+    try {
+      const response = await fetch(`/api/hardware/printers/${printerId}/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ type })
+      });
+      if (response.ok) {
+        toast.success('Test print sent successfully');
+      } else {
+        // Fallback to browser print for receipt printers
+        if (type === 'receipt') {
+          toast.info('Direct printing not available. Using browser print dialog.');
+          window.print();
+        } else {
+          toast.warning('Printer test API not available. Please verify printer connection manually.');
+        }
+      }
+    } catch {
+      toast.warning('Printer test API not available. Please verify printer connection manually.');
+    }
   };
 
   const handleTestScan = () => {
@@ -187,7 +224,7 @@ export const HardwarePage: React.FC = () => {
               onClick={() => setActiveTab('receipt-printers')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'receipt-printers'
-                  ? 'border-primary-500 text-primary-400'
+                  ? 'border-accent text-accent'
                   : 'border-transparent text-text-tertiary hover:text-text-secondary hover:border-border'
               }`}
             >
@@ -200,7 +237,7 @@ export const HardwarePage: React.FC = () => {
               onClick={() => setActiveTab('label-printers')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'label-printers'
-                  ? 'border-primary-500 text-primary-400'
+                  ? 'border-accent text-accent'
                   : 'border-transparent text-text-tertiary hover:text-text-secondary hover:border-border'
               }`}
             >
@@ -213,7 +250,7 @@ export const HardwarePage: React.FC = () => {
               onClick={() => setActiveTab('scanners')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'scanners'
-                  ? 'border-primary-500 text-primary-400'
+                  ? 'border-accent text-accent'
                   : 'border-transparent text-text-tertiary hover:text-text-secondary hover:border-border'
               }`}
             >
@@ -226,7 +263,7 @@ export const HardwarePage: React.FC = () => {
               onClick={() => setActiveTab('cash-drawers')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'cash-drawers'
-                  ? 'border-primary-500 text-primary-400'
+                  ? 'border-accent text-accent'
                   : 'border-transparent text-text-tertiary hover:text-text-secondary hover:border-border'
               }`}
             >
@@ -239,7 +276,7 @@ export const HardwarePage: React.FC = () => {
               onClick={() => setActiveTab('payment-terminals')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'payment-terminals'
-                  ? 'border-primary-500 text-primary-400'
+                  ? 'border-accent text-accent'
                   : 'border-transparent text-text-tertiary hover:text-text-secondary hover:border-border'
               }`}
             >
@@ -271,7 +308,7 @@ export const HardwarePage: React.FC = () => {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-medium text-text-primary">{printer.name}</h3>
                           {printer.is_default && (
-                            <span className="px-2 py-1 text-xs font-medium bg-primary-500/20 text-primary-400 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-accent/20 text-accent rounded">
                               Default
                             </span>
                           )}
@@ -336,7 +373,7 @@ export const HardwarePage: React.FC = () => {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-medium text-text-primary">{printer.name}</h3>
                           {printer.is_default && (
-                            <span className="px-2 py-1 text-xs font-medium bg-primary-500/20 text-primary-400 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-accent/20 text-accent rounded">
                               Default
                             </span>
                           )}
@@ -398,7 +435,7 @@ export const HardwarePage: React.FC = () => {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-medium text-text-primary">{scanner.name}</h3>
                           {scanner.is_default && (
-                            <span className="px-2 py-1 text-xs font-medium bg-primary-500/20 text-primary-400 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-accent/20 text-accent rounded">
                               Default
                             </span>
                           )}
@@ -458,7 +495,7 @@ export const HardwarePage: React.FC = () => {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-medium text-text-primary">{drawer.name}</h3>
                           {drawer.is_default && (
-                            <span className="px-2 py-1 text-xs font-medium bg-primary-500/20 text-primary-400 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-accent/20 text-accent rounded">
                               Default
                             </span>
                           )}
@@ -513,7 +550,7 @@ export const HardwarePage: React.FC = () => {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-medium text-text-primary">{terminal.name}</h3>
                           {terminal.is_default && (
-                            <span className="px-2 py-1 text-xs font-medium bg-primary-500/20 text-primary-400 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-accent/20 text-accent rounded">
                               Default
                             </span>
                           )}

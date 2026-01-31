@@ -5,7 +5,66 @@ All notable changes to EasySale will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-01-31
+## [1.2.2] - 2026-01-30
+
+### Changed
+- **Global Branding Theming**: Replaced hardcoded `primary-*` colors with `accent` semantic tokens
+  - Navigation (Sidebar, TopBar, BottomNav, AppLayout) now uses accent color
+  - PageTabs use accent for active states
+  - Settings pages (Hardware, Network, Integrations) use accent color
+  - Product pages (Lookup, Import) use accent color
+  - Admin pages use accent color
+  - Review queue uses accent color
+- **Receipt Branding**: Receipts now use branding API instead of localStorage
+  - Company name, logo, header, and footer from `/api/config/brand`
+  - Logo display when `receipts.show_logo` is enabled
+  - Custom receipt header/footer from branding config
+- **Tax Display on Receipts**: Fixed tax, subtotal, and discount display
+  - `lastSale` state now includes `subtotal`, `tax`, `discount` fields
+  - Receipt shows proper tax breakdown
+
+### Fixed
+- Receipt printing now properly shows tax amount (was undefined)
+- Sidebar active item uses accent color from branding
+- Focus rings use accent color throughout the app
+
+---
+
+## [1.2.1] - 2026-01-30
+
+### Added
+- **Inventory Transfers**: Enabled transfers tab with real API integration
+  - Stock transfers use stock adjustment API with transfer_in/transfer_out types
+  - Location-aware transfers with audit trail
+- **Company Info Management**: New backend endpoints
+  - `GET/PUT /api/company/info` - Company information CRUD
+  - `POST /api/company/logo` - Logo upload with file storage
+- **Password Change**: Users can now change their own password
+  - `PUT /api/users/password` - Secure password change endpoint
+- **Enhanced Receipt Printing**:
+  - Store branding from settings (name, address, phone)
+  - Configurable receipt footer message
+  - Subtotals, tax, and discount breakdown
+  - Change calculation for cash payments
+- **Hardware Settings**: Dynamic printer configuration
+  - Load/save printer settings from backend
+  - Platform-aware default ports (Windows vs Linux)
+  - Test print with fallback to browser dialog
+
+### Changed
+- AdminPage General Settings now uses LocalizationPage component
+- NetworkPage saves all fields including offline_mode and max_queue_size
+- Product API migrated from fetch() to centralized apiClient
+- Theme settings now sync to backend preferences API
+- Review queue assign/export actions now call actual API endpoints
+
+### Fixed
+- TransfersTab no longer uses mock data
+- Review queue keyboard shortcuts (A for assign, E for export) now functional
+
+---
+
+## [1.2.0] - 2026-01-30
 
 ### Added
 - **Complete Feature Flag System**: All build variants now properly gated

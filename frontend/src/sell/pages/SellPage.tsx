@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 import { useConfig, DynamicIcon } from '../../config';
+import { useBranding } from '../../config/brandingProvider';
 import { useProductsQuery, Product } from '@domains/product';
 import { Customer } from '@domains/customer';
 import { LoadingSpinner } from '@common/components/organisms/LoadingSpinner';
@@ -52,6 +53,7 @@ interface CartItem {
 
 export function SellPage() {
   const { categories, formatCurrency } = useConfig();
+  const { branding } = useBranding();
 
   // Fetch products from API
   const { data: productsResponse, isLoading, error } = useProductsQuery();
@@ -79,7 +81,17 @@ export function SellPage() {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showHoldModal, setShowHoldModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [lastSale, setLastSale] = useState<{ transactionNumber: string; total: number; items: CartItem[]; customer: Customer | null; paymentMethod: string } | null>(null);
+  const [lastSale, setLastSale] = useState<{ 
+    transactionNumber: string; 
+    total: number; 
+    subtotal: number;
+    tax: number;
+    discount: number;
+    items: CartItem[]; 
+    customer: Customer | null; 
+    paymentMethod: string;
+    amountTendered?: number;
+  } | null>(null);
   
   // Check for customer passed from navigation
   const location = useLocation();
@@ -222,10 +234,13 @@ export function SellPage() {
         discount_amount: discount > 0 ? discount : undefined,
       });
 
-      // Store sale info for receipt
+      // Store sale info for receipt with full details
       setLastSale({ 
         transactionNumber: result.transaction_number, 
         total: result.total_amount,
+        subtotal: subtotal,
+        tax: tax,
+        discount: discount,
         items: saleItems,
         customer: saleCustomer,
         paymentMethod,
@@ -238,9 +253,18 @@ export function SellPage() {
     }
   };
 
-  // Print receipt
+  // Print receipt - uses branding API for store info
   const handlePrintReceipt = () => {
     if (!lastSale) return;
+    
+    // Get store info from branding API, fall back to localStorage, then defaults
+    const storeName = branding?.company?.name || branding?.store?.name || localStorage.getItem('store_name') || 'Store';
+    const storeAddress = localStorage.getItem('store_address') || '';
+    const storePhone = localStorage.getItem('store_phone') || '';
+    const receiptHeader = branding?.receipts?.header || '';
+    const receiptFooter = branding?.receipts?.footer || localStorage.getItem('receipt_footer') || 'Thank you for your purchase!';
+    const showLogo = branding?.receipts?.show_logo ?? false;
+    const logoUrl = branding?.company?.logo_url || branding?.company?.logo_dark_url;
     
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -251,44 +275,91 @@ export function SellPage() {
       <head>
         <title>Receipt - ${lastSale.transactionNumber}</title>
         <style>
-          body { font-family: 'Courier New', monospace; max-width: 300px; margin: 0 auto; padding: 20px; }
-          .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
-          .item { display: flex; justify-content: space-between; margin: 5px 0; }
-          .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; font-weight: bold; }
-          .footer { text-align: center; margin-top: 20px; font-size: 12px; }
+          body { font-family: 'Courier New', monospace; max-width: 300px; margin: 0 auto; padding: 20px; color: #000; background: #fff; }
+          .header { text-align: center; border-bottom: 1px dashed #333; padding-bottom: 10px; margin-bottom: 10px; }
+          .logo { max-width: 150px; max-height: 60px; margin-bottom: 10px; }
+          .store-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+          .store-info { font-size: 11px; color: #555; }
+          .receipt-header { font-size: 10px; color: #555; margin-top: 5px; white-space: pre-line; }
+          .item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 13px; }
+          .item-details { font-size: 11px; color: #555; margin-left: 10px; }
+          .subtotals { border-top: 1px dashed #333; margin-top: 10px; padding-top: 10px; }
+          .total { font-weight: bold; font-size: 16px; margin-top: 5px; }
+          .payment-info { margin-top: 10px; font-size: 12px; }
+          .footer { text-align: center; margin-top: 20px; font-size: 11px; border-top: 1px dashed #333; padding-top: 10px; white-space: pre-line; }
+          @media print { body { margin: 0; padding: 10px; } }
         </style>
       </head>
       <body>
         <div class="header">
-          <h2>RECEIPT</h2>
-          <p>Transaction: ${lastSale.transactionNumber}</p>
-          <p>${new Date().toLocaleString()}</p>
-          ${lastSale.customer ? `<p>Customer: ${lastSale.customer.name}</p>` : ''}
+          ${showLogo && logoUrl ? `<img src="${logoUrl}" alt="${storeName}" class="logo" />` : ''}
+          <div class="store-name">${storeName}</div>
+          ${storeAddress ? `<div class="store-info">${storeAddress}</div>` : ''}
+          ${storePhone ? `<div class="store-info">${storePhone}</div>` : ''}
+          ${receiptHeader ? `<div class="receipt-header">${receiptHeader}</div>` : ''}
+          <div style="margin-top: 10px;">
+            <div>Transaction: ${lastSale.transactionNumber}</div>
+            <div>${new Date().toLocaleString()}</div>
+            ${lastSale.customer ? `<div>Customer: ${lastSale.customer.name}</div>` : ''}
+          </div>
         </div>
         <div class="items">
           ${lastSale.items.map(item => {
             const attrs = item.product.attributes || {};
             const attrStr = Object.entries(attrs).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(', ');
+            const lineTotal = (item.product.unitPrice || 0) * item.quantity;
             return `
               <div class="item">
-                <span>${item.product.name} x${item.quantity}${attrStr ? `<br><small style="color:#666">${attrStr}</small>` : ''}</span>
-                <span>${formatCurrency((item.product.unitPrice || 0) * item.quantity)}</span>
+                <span>${item.product.name}</span>
+                <span>${formatCurrency(lineTotal)}</span>
+              </div>
+              <div class="item-details">
+                ${item.quantity} x ${formatCurrency(item.product.unitPrice || 0)}
+                ${attrStr ? ` | ${attrStr}` : ''}
               </div>
             `;
           }).join('')}
         </div>
-        <div class="total">
+        <div class="subtotals">
           <div class="item">
+            <span>Subtotal</span>
+            <span>${formatCurrency(lastSale.subtotal || lastSale.total)}</span>
+          </div>
+          ${lastSale.tax ? `
+          <div class="item">
+            <span>Tax</span>
+            <span>${formatCurrency(lastSale.tax)}</span>
+          </div>
+          ` : ''}
+          ${lastSale.discount ? `
+          <div class="item">
+            <span>Discount</span>
+            <span>-${formatCurrency(lastSale.discount)}</span>
+          </div>
+          ` : ''}
+          <div class="item total">
             <span>TOTAL</span>
             <span>${formatCurrency(lastSale.total)}</span>
           </div>
+        </div>
+        <div class="payment-info">
           <div class="item">
-            <span>Payment</span>
+            <span>Payment Method</span>
             <span>${lastSale.paymentMethod.toUpperCase()}</span>
           </div>
+          ${lastSale.amountTendered ? `
+          <div class="item">
+            <span>Amount Tendered</span>
+            <span>${formatCurrency(lastSale.amountTendered)}</span>
+          </div>
+          <div class="item">
+            <span>Change</span>
+            <span>${formatCurrency(lastSale.amountTendered - lastSale.total)}</span>
+          </div>
+          ` : ''}
         </div>
         <div class="footer">
-          <p>Thank you for your purchase!</p>
+          <p>${receiptFooter}</p>
         </div>
       </body>
       </html>
