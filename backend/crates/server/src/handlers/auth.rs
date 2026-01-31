@@ -271,7 +271,7 @@ pub async fn login(
         .path("/")
         .http_only(true)  // Prevents JavaScript access - XSS protection
         .secure(is_production)  // Only send over HTTPS in production
-        .same_site(SameSite::Strict)  // CSRF protection
+        .same_site(SameSite::Lax)  // Lax allows cookie on top-level navigations, Strict was too restrictive
         .max_age(actix_web::cookie::time::Duration::hours(config.jwt_expiration_hours as i64))
         .finish();
 
