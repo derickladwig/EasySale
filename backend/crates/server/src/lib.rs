@@ -15,6 +15,7 @@ pub mod security;
 pub mod services;
 pub mod test_utils;
 pub mod test_constants;
+pub mod utils;
 pub mod validators;
 
 #[cfg(test)]

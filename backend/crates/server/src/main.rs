@@ -11,6 +11,7 @@ mod mappers;
 mod middleware;
 mod models;
 mod services;
+mod utils;
 mod validators;
 
 #[cfg(test)]
