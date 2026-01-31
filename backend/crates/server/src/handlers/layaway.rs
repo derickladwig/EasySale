@@ -1,6 +1,6 @@
 use actix_web::{get, post, put, web, HttpResponse, Responder};
 use chrono::Utc;
-use sqlx::{SqlitePool, Transaction, Sqlite};
+use sqlx::{SqlitePool, Transaction, Sqlite, QueryBuilder};
 use uuid::Uuid;
 
 use crate::middleware::tenant::get_current_tenant_id;
@@ -405,25 +405,32 @@ pub async fn list_layaways(
 ) -> impl Responder {
     tracing::info!("Listing layaways");
 
-    let mut sql = "SELECT id, tenant_id, customer_id, status, total_amount, deposit_amount, balance_due, 
-                   due_date, created_at, updated_at, completed_at, sync_version, store_id 
-                   FROM layaways WHERE tenant_id = ?' + [char]34 + '; // Replaced hardcoded tenant_id
-    query = query.bind(&get_current_tenant_id()); 
-    let mut query_str = query_str + [char]34".to_string(); // TODO: Get from tenant context
+    let tenant_id = get_current_tenant_id();
+    
+    // Build parameterized query with tenant isolation
+    let mut query_builder = sqlx::QueryBuilder::new(
+        "SELECT id, tenant_id, customer_id, status, total_amount, deposit_amount, balance_due, 
+         due_date, created_at, updated_at, completed_at, sync_version, store_id 
+         FROM layaways WHERE tenant_id = "
+    );
+    query_builder.push_bind(&tenant_id);
 
     if let Some(customer_id) = query.get("customer_id") {
-        sql.push_str(&format!(" AND customer_id = '{}'", customer_id));
+        query_builder.push(" AND customer_id = ");
+        query_builder.push_bind(customer_id);
     }
     if let Some(status) = query.get("status") {
-        sql.push_str(&format!(" AND status = '{}'", status));
+        query_builder.push(" AND status = ");
+        query_builder.push_bind(status);
     }
     if let Some(store_id) = query.get("store_id") {
-        sql.push_str(&format!(" AND store_id = '{}'", store_id));
+        query_builder.push(" AND store_id = ");
+        query_builder.push_bind(store_id);
     }
 
-    sql.push_str(" ORDER BY created_at DESC");
+    query_builder.push(" ORDER BY created_at DESC");
 
-    let result = sqlx::query_as::<_, Layaway>(&sql)
+    let result = query_builder.build_query_as::<Layaway>()
         .fetch_all(pool.get_ref())
         .await;
 

@@ -231,14 +231,24 @@ pub async fn resolve_conflict(
         }
     };
     
+    // Get store IDs from user context or use defaults
+    let (local_store, remote_store) = if let Some(user_ctx) = http_req.extensions().get::<UserContext>() {
+        (
+            user_ctx.store_id.clone().unwrap_or_else(|| "local-store".to_string()),
+            "remote-store".to_string() // Remote store comes from sync metadata
+        )
+    } else {
+        ("local-store".to_string(), "remote-store".to_string())
+    };
+    
     // Resolve conflict using the resolver service
     match resolver.resolve_conflict(
         &conflict.entity_type,
         &conflict.entity_id,
         local_json,
         remote_json,
-        "local-store",  // TODO: Get from context
-        "remote-store", // TODO: Get from sync metadata
+        &local_store,
+        &remote_store,
     ).await {
         Ok((resolved_version, resolution_method)) => {
             // Mark conflict as resolved

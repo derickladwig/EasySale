@@ -1,6 +1,7 @@
 use actix_web::{web, HttpResponse, Result};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
+use url::Url;
 
 use crate::models::ApiError;
 use crate::services::{
@@ -187,14 +188,29 @@ pub async fn get_quickbooks_auth_url(
         _ => return Err(ApiError::internal("Invalid credential type")),
     };
     
-    // TODO: Get redirect_uri from config or environment
+    // Get redirect_uri from environment variable
     let redirect_uri = std::env::var("QUICKBOOKS_REDIRECT_URI")
         .map_err(|_| ApiError::configuration("QUICKBOOKS_REDIRECT_URI not configured"))?;
     
-    // Validate redirect URI is not localhost in production
-    if cfg!(not(debug_assertions)) && (redirect_uri.contains("localhost") || redirect_uri.contains("127.0.0.1")) {
-        return Err(ApiError::configuration("Localhost redirect URIs not allowed in production"));
-    }    
+    // Validate redirect URI security
+    // 1. Must be HTTPS in production (except localhost for dev)
+    // 2. Localhost not allowed in production builds
+    // 3. Must be a valid URL format
+    if cfg!(not(debug_assertions)) {
+        // Production validation
+        if redirect_uri.contains("localhost") || redirect_uri.contains("127.0.0.1") {
+            return Err(ApiError::configuration("Localhost redirect URIs not allowed in production"));
+        }
+        if !redirect_uri.starts_with("https://") {
+            return Err(ApiError::configuration("Redirect URI must use HTTPS in production"));
+        }
+    }
+    
+    // Validate URL format
+    if Url::parse(&redirect_uri).is_err() {
+        return Err(ApiError::configuration("Invalid redirect URI format"));
+    }
+    
     let oauth = QuickBooksOAuth::new(qb_creds, redirect_uri)?;
     
     // Generate a random state token for CSRF protection (Task 19.3)
