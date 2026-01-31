@@ -274,6 +274,49 @@ STRIPE_SECRET_KEY=sk_live_xxx
   - Zone editor CRUD endpoints
 - Created database migrations 053-054
 
+### Phase 13: Import Wizard & Demo Data (Jan 30, 2026)
+- **Enhanced Import Wizard UI/UX**:
+  - Larger vertical padding for better readability
+  - Collapsible field reference documentation
+  - Clear required vs optional field indicators
+  - CSV column order flexibility explained
+  - Custom attribute support (custom_attr_1, custom_attr_1_value, etc.)
+- **Demo Data Import System**:
+  - "Load Demo" button for each entity type (Products, Customers, Vendors)
+  - "Load All Demo Data" for one-click setup
+  - "Clear Demo Data" to remove demo entries
+  - 25 realistic retail products with barcodes and images
+  - 15 sample customers with pricing tiers
+  - 8 sample vendors for different categories
+  - All demo data prefixed with DEMO- for easy identification
+- **New Backend Endpoints**:
+  - `POST /api/setup/import-demo` - Import demo data
+  - `DELETE /api/setup/clear-demo` - Remove demo data
+- **Enhanced CSV Export**:
+  - Custom attributes flattened into columns
+  - Vendor information included
+  - Alternate SKUs exported
+  - Proper CSV escaping for special characters
+- **Category Lookup Page**:
+  - Hierarchical category browser
+  - Search with auto-expand
+  - Product count per category
+  - Category attribute management
+  - Expand/collapse all controls
+
+### Phase 14: Asset Organization & Feature Completion (Jan 30, 2026)
+- **Asset Pack Relocation**:
+  - Moved `data/easysale_asset_pack/` to root `assets/` folder
+  - Updated all documentation references
+  - Cleaner separation of brand assets from runtime data
+- **Implemented Planned Features** (instead of removing unused imports):
+  - QuotesPage: Added "Email Quote" button using Mail icon
+  - CustomerSearchModal: Added "Create New Customer" button using Plus icon
+  - InventoryPage: Added "Delete Item" functionality using Trash2 icon
+  - ZoneEditor: Preserved zone editing parameters for OCR workflow
+  - CleanupShieldTool: Preserved drawing handlers for document annotation
+  - CleanupTab: Preserved page target label function for UI display
+
 ---
 
 ## Architecture
@@ -383,15 +426,21 @@ backend/crates/
 | Re-OCR Tool | OCR service integration | ✅ Complete |
 | Mask Tool | Vendor template persistence | ✅ Complete |
 | Zone Editor | Full CRUD endpoints | ✅ Complete |
+| Demo Data Import | `POST /api/setup/import-demo` | ✅ Complete |
+| Demo Data Clear | `DELETE /api/setup/clear-demo` | ✅ Complete |
+| Category Browser | `/admin/data/categories` | ✅ Complete |
+| Email Quote | QuotesPage action | ✅ Complete |
+| Create Customer | CustomerSearchModal action | ✅ Complete |
+| Delete Inventory | InventoryPage action | ✅ Complete |
 
 ### Code Statistics
 
-- **Frontend**: ~500 TypeScript/React files
+- **Frontend**: ~505 TypeScript/React files
 - **Backend**: ~420 Rust files
-- **API Endpoints**: 150+
+- **API Endpoints**: 155+
 - **Database Tables**: 50+
 - **Test Coverage**: 80%+ business logic
-- **Blog Posts**: 50+ development entries
+- **Blog Posts**: 72+ development entries
 - **Status Reports**: 300+ in archive
 
 ---
@@ -409,10 +458,18 @@ EasySale/
 │   ├── hooks/          # Automation hooks
 │   └── specs/          # Feature specifications
 ├── archive/            # Development history (300+ reports)
+├── assets/             # Brand assets (logos, icons, favicons)
+│   ├── logos/          # Company logos (dark/light variants)
+│   ├── icons/          # App icons (multiple sizes)
+│   ├── favicons/       # Browser favicons
+│   ├── app-icons/      # PWA icons
+│   └── css/            # Brand CSS variables
 ├── backend/            # Rust API server
 │   ├── crates/         # Workspace crates
 │   └── migrations/     # Database migrations
-├── blog/               # Development blog (50+ entries)
+├── blog/               # Development blog (72+ entries)
+├── data/               # Runtime data
+│   └── demo-import/    # Demo data for import wizard
 ├── docs/               # Documentation
 │   ├── api/            # API documentation
 │   ├── consolidated/   # Canonical docs (start here)

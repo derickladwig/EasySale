@@ -5,6 +5,56 @@ All notable changes to EasySale will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2026-01-30
+
+### Added
+- **Enhanced Import Wizard**:
+  - Collapsible field reference documentation for each entity type
+  - Clear required vs optional field indicators
+  - Custom attribute support (custom_attr_1, custom_attr_1_value, etc.)
+  - CSV column order flexibility explained in UI
+  - Larger vertical padding for better readability
+- **Demo Data Import System**:
+  - "Load Demo" button for Products, Customers, and Vendors
+  - "Load All Demo Data" for one-click setup
+  - "Clear Demo Data" to remove all demo entries
+  - 25 realistic retail products with barcodes and image references
+  - 15 sample customers with varying pricing tiers
+  - 8 sample vendors for different product categories
+  - All demo data prefixed with DEMO- for easy identification
+- **Category Lookup Page** (`/admin/data/categories`):
+  - Hierarchical category browser with tree view
+  - Search with auto-expand matching categories
+  - Product count per category
+  - Category attribute management
+  - Expand/collapse all controls
+- **New API Endpoints**:
+  - `POST /api/setup/import-demo` - Import demo data
+  - `DELETE /api/setup/clear-demo` - Remove demo data
+- **Quote Actions**:
+  - Email Quote button to send quotes to customers
+- **Customer Search Actions**:
+  - Create New Customer button when no matches found
+- **Inventory Actions**:
+  - Delete Item functionality in inventory management
+
+### Changed
+- **Asset Organization**: Moved `data/easysale_asset_pack/` to root `assets/` folder
+  - Cleaner separation of brand assets from runtime data
+  - Updated all documentation references
+- **CSV Export Enhancement**:
+  - Custom attributes flattened into individual columns
+  - Vendor information included in product exports
+  - Alternate SKUs exported
+  - Proper CSV escaping for special characters (prevents injection)
+
+### Fixed
+- Implemented planned features instead of removing unused imports
+- ZoneEditor preserves zone editing parameters for OCR workflow
+- CleanupShieldTool preserves drawing handlers for document annotation
+
+---
+
 ## [1.2.2] - 2026-01-30
 
 ### Changed
