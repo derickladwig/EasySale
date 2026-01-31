@@ -20,6 +20,10 @@
 </p>
 
 <p align="center">
+  <a href="https://www.loom.com/share/94fcc053be2643d580f0ca8a9936425a"><strong>📺 Watch Demo Video</strong></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Rust-1.75+-DEA584?logo=rust" alt="Rust">
