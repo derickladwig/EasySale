@@ -46,21 +46,25 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        // Extract Authorization header
+        // Extract token from cookie first (httpOnly cookie for security)
+        let cookie_token = req.cookie("auth_token").map(|c| c.value().to_string());
+        
+        // Fall back to Authorization header if no cookie
         let auth_header = req.headers().get("Authorization").and_then(|h| h.to_str().ok());
-
-        // Extract token from "Bearer <token>" format
-        let token = auth_header.and_then(|h| {
+        let header_token = auth_header.and_then(|h| {
             if h.starts_with("Bearer ") {
-                Some(&h[7..])
+                Some(h[7..].to_string())
             } else {
                 None
             }
         });
 
+        // Prefer cookie token over header token
+        let token = cookie_token.or(header_token);
+
         // If no token, continue without context (public endpoints)
         let token = match token {
-            Some(t) => t.to_string(),
+            Some(t) => t,
             None => {
                 let fut = self.service.call(req);
                 return Box::pin(async move {

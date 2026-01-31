@@ -112,7 +112,9 @@ export function ConfigProvider({
       setError(null);
 
       // Try to load from API first
-      const response = await fetch(configPath);
+      const response = await fetch(configPath, {
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         // If API fails, use default config

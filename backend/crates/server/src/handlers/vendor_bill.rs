@@ -784,7 +784,7 @@ pub async fn download_bill_file(
 ) -> HttpResponse {
     let bill_id = path.into_inner();
     let tenant_id = req.extensions()
-        .get::<crate::middleware::context::UserContext>()
+        .get::<crate::models::UserContext>()
         .map(|ctx| ctx.tenant_id.clone())
         .unwrap_or_else(|| "default".to_string());
     

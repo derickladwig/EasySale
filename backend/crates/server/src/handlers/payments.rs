@@ -461,7 +461,9 @@ async fn process_checkout_expired(
 #[derive(Debug, sqlx::FromRow)]
 struct PaymentRecord {
     id: String,
-    tenant_id: String,
+    #[sqlx(rename = "tenant_id")]
+    #[allow(dead_code)] // Required for SELECT * deserialization but not used after fetch
+    _tenant_id: String,
     order_id: String,
     provider: String,
     provider_ref: Option<String>,

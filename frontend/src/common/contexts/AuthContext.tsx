@@ -33,25 +33,19 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Determine API base URL dynamically
-// In production (behind nginx proxy), use relative URLs
-// In development, use the same hostname as the frontend but with backend port
+// Use relative URLs to go through Vite proxy (dev) or nginx proxy (prod)
+// This ensures cookies are sent correctly (same-origin requests)
 function getApiBaseUrl(): string {
-  // If VITE_API_URL is explicitly set, use it
+  // If VITE_API_URL is explicitly set, use it (for special cases like LAN access)
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
   
-  // In production mode (built app), use relative URLs for nginx proxy
-  if (import.meta.env.PROD) {
-    return ''; // Relative URLs - nginx will proxy /auth/* and /api/* to backend
-  }
-  
-  // In development, use the same hostname as the current page but with backend port
-  // This works for both localhost and LAN access
-  const hostname = window.location.hostname;
-  const backendPort = '8923';
-  
-  return `http://${hostname}:${backendPort}`;
+  // Use relative URLs - this works in both:
+  // - Development: Vite proxy forwards /auth/* and /api/* to backend (port 8923)
+  // - Production: nginx proxy forwards /auth/* and /api/* to backend
+  // Using relative URLs ensures cookies are sent (same-origin requests)
+  return '';
 }
 
 const API_BASE_URL = getApiBaseUrl();

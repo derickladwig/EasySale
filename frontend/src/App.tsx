@@ -101,15 +101,14 @@ function App() {
                       <Route path="/access-denied" element={<AccessDeniedPage />} />
                       <Route path="/oauth/callback" element={<LazyOAuthCallbackPage />} />
                       
-                      {/* First-run setup wizard - shown when tenant is not configured (lazy loaded) */}
+                      {/* First-run setup wizard - PUBLIC during first-run, protected otherwise (lazy loaded) */}
+                      {/* This route is accessible without auth to allow creating the first admin account */}
                       <Route
                         path="/setup"
                         element={
-                          <RequireAuth>
-                            <TenantSetupProvider>
-                              <LazyFirstRunSetupPage />
-                            </TenantSetupProvider>
-                          </RequireAuth>
+                          <TenantSetupProvider>
+                            <LazyFirstRunSetupPage />
+                          </TenantSetupProvider>
                         }
                       />
 

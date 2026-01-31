@@ -226,6 +226,32 @@ function LoginPageContent({
   const [pin, setPin] = useState('');
   const [rememberUsername, setRememberUsername] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [checkingSetup, setCheckingSetup] = useState(true);
+
+  // Check if this is a fresh install (no setup completed) - redirect to setup wizard
+  useEffect(() => {
+    const checkFreshInstall = async () => {
+      try {
+        const response = await fetch('/api/tenant/setup-status', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (!data.is_configured) {
+            // Fresh install - redirect to setup wizard
+            window.location.href = '/setup';
+            return;
+          }
+        }
+      } catch (err) {
+        // If endpoint fails, continue to login page
+        console.warn('Failed to check setup status:', err);
+      }
+      setCheckingSetup(false);
+    };
+    
+    checkFreshInstall();
+  }, []);
 
   // Load remembered username
   useEffect(() => {
@@ -275,6 +301,18 @@ function LoginPageContent({
   const badgeFavicon = branding.company.favicon;
   const badgeIcon = branding.company.icon;
 
+  // Show loading while checking if this is a fresh install
+  if (checkingSetup) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="text-text-secondary">Checking system status...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="login-page-v2">
       {/* Background - uses CSS variables for theming */}
@@ -288,7 +326,8 @@ function LoginPageContent({
             <img 
               src={headerLogo} 
               alt={branding.company.name}
-              className="h-10 w-auto max-w-[200px] object-contain"
+              className="h-12 w-auto max-w-[280px] max-h-[48px] object-contain"
+              style={{ minWidth: '120px' }}
             />
           ) : (
             <>

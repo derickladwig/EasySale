@@ -36,7 +36,9 @@ export async function fetchCapabilities(): Promise<Capabilities> {
   }
 
   try {
-    const response = await fetch('/api/capabilities');
+    const response = await fetch('/api/capabilities', {
+      credentials: 'include',
+    });
     if (!response.ok) {
       throw new Error(`Failed to fetch capabilities: ${response.statusText}`);
     }

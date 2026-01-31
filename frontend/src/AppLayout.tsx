@@ -42,8 +42,12 @@ export function AppLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [syncStatus] = useState<'online' | 'syncing' | 'offline'>('online');
   
+  // Only fetch stations if user has manage_settings permission
+  // This prevents 401/403 errors for users without admin access
+  const canManageSettings = hasPermission('manage_settings');
+  
   // Fetch stations to resolve station name from user's station_id
-  const { stations } = useStations(user?.store_id || undefined);
+  const { stations } = useStations(user?.store_id || undefined, { skip: !canManageSettings });
   
   // Get station name from user's session or default to "Station 1"
   const stationName = useMemo(() => {

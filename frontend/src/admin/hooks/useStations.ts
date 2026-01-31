@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiClient } from '@common/utils';
+import { apiClient, ApiError } from '@common/utils';
 
 export interface Station {
   id: string;
@@ -30,13 +30,21 @@ export interface UpdateStationData {
   offline_mode_enabled?: boolean;
 }
 
-export function useStations(storeId?: string) {
+interface UseStationsOptions {
+  /** Skip fetching stations (useful when user lacks permissions) */
+  skip?: boolean;
+}
+
+export function useStations(storeId?: string, options: UseStationsOptions = {}) {
   const [stations, setStations] = useState<Station[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch stations (optionally filtered by store)
   const fetchStations = async () => {
+    if (options.skip) {
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -44,6 +52,13 @@ export function useStations(storeId?: string) {
       const response = await apiClient.get<Station[]>(url);
       setStations(response);
     } catch (err: unknown) {
+      // Don't propagate 401/403 errors - just silently fail
+      // This prevents redirect loops when user lacks permissions
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        // Silently ignore permission errors - stations list is optional
+        setStations([]);
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Failed to fetch stations';
       setError(message);
     } finally {
@@ -77,7 +92,7 @@ export function useStations(storeId?: string) {
   // Load stations on mount or when storeId changes
   useEffect(() => {
     fetchStations();
-  }, [storeId]);
+  }, [storeId, options.skip]);
 
   return {
     stations,

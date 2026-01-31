@@ -704,7 +704,7 @@ pub async fn render_overlay(
     let (tenant_id, _store_id) = get_tenant_context(&req);
 
     // Resolve file path
-    let _file_path = match resolve_file_path(
+    let file_path = match resolve_file_path(
         pool.get_ref(),
         &tenant_id,
         body.review_case_id.as_deref(),
@@ -728,8 +728,12 @@ pub async fn render_overlay(
     #[cfg(feature = "full")]
     {
         // Full build: actual overlay rendering would go here
-        tracing::info!("Overlay rendering requested for path: {}", resolved_path);
+        tracing::info!("Overlay rendering requested for path: {}", file_path);
     }
+    
+    // Suppress unused variable warning in non-full builds
+    #[cfg(not(feature = "full"))]
+    let _ = &file_path;
     
     HttpResponse::Ok().json(RenderOverlayResponse {
         overlay_path: format!("/api/cleanup/overlays/{}.png", uuid::Uuid::new_v4()),

@@ -24,6 +24,8 @@ export interface ApiResponse<T> {
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean;
   skipCsrf?: boolean;
+  /** Skip automatic redirect to /login on 401 - let caller handle the error */
+  skipAuthRedirect?: boolean;
 }
 
 /**
@@ -45,17 +47,15 @@ class ApiClient {
   private baseUrl: string;
 
   constructor() {
-    // If VITE_API_URL is explicitly set, use it
+    // If VITE_API_URL is explicitly set, use it (for special cases like direct LAN access)
     if (import.meta.env.VITE_API_URL) {
       this.baseUrl = import.meta.env.VITE_API_URL;
-    } else if (import.meta.env.PROD) {
-      // In production mode (built app), use relative URLs for nginx proxy
-      this.baseUrl = ''; // Relative URLs - nginx will proxy /auth/* and /api/* to backend
     } else {
-      // In development, use the same hostname as the frontend but with backend port
-      // This allows LAN access (e.g., 192.168.x.x:7945 -> 192.168.x.x:8923)
-      const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-      this.baseUrl = `http://${hostname}:8923`;
+      // Use relative URLs - this works in both:
+      // - Development: Vite proxy forwards /auth/* and /api/* to backend (port 8923)
+      // - Production: nginx proxy forwards /auth/* and /api/* to backend
+      // Using relative URLs ensures cookies are sent correctly (same-origin requests)
+      this.baseUrl = '';
     }
   }
 
@@ -79,17 +79,9 @@ class ApiClient {
         }
       }
 
-      // Handle 401 Unauthorized - redirect to login
-      if (response.status === 401) {
-        // Clear any stale auth state and redirect to login
-        // Store current location so we can redirect back after login
-        const currentPath = window.location.pathname;
-        if (currentPath !== '/login' && currentPath !== '/auth/login') {
-          // Use sessionStorage to preserve redirect target across page reload
-          sessionStorage.setItem('auth_redirect', currentPath);
-          window.location.href = '/login';
-        }
-      }
+      // NOTE: 401 redirect is now handled by AuthContext
+      // Individual API calls should catch errors and handle them appropriately
+      // This prevents race conditions where API calls during initial load cause redirect loops
 
       // Log error
       logError('API request failed', {
