@@ -46,6 +46,8 @@ const ANIMATION_SPEED_MULTIPLIERS: Record<AnimationSpeed, number> = {
 };
 
 const STORAGE_KEY = 'displaySettings';
+const THEME_CACHE_KEY = 'EasySale_theme_cache_v2';
+const THEME_MODE_KEY = 'EasySale_theme_mode';
 
 const DEFAULT_SETTINGS: DisplaySettings = {
   textSize: 'medium',
@@ -126,6 +128,37 @@ export function useDisplaySettings() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [settings.theme]);
 
+  // Listen for theme changes from other components (ThemeToggle, ThemeEngine)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === THEME_CACHE_KEY || e.key === THEME_MODE_KEY) {
+        // Reload theme from cache
+        let newTheme: Theme | undefined;
+        try {
+          if (e.key === THEME_MODE_KEY && e.newValue) {
+            if (e.newValue === 'dark' || e.newValue === 'light') {
+              newTheme = e.newValue;
+            }
+          } else if (e.key === THEME_CACHE_KEY && e.newValue) {
+            const parsed = JSON.parse(e.newValue);
+            if (parsed.lastTheme?.mode === 'dark' || parsed.lastTheme?.mode === 'light') {
+              newTheme = parsed.lastTheme.mode;
+            }
+          }
+        } catch {
+          // Ignore parse errors
+        }
+        
+        if (newTheme && newTheme !== settings.theme) {
+          setSettings(prev => ({ ...prev, theme: newTheme! }));
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [settings.theme]);
+
   const updateSettings = useCallback((newSettings: Partial<DisplaySettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
@@ -148,22 +181,43 @@ export function useDisplaySettings() {
 
 /**
  * Load settings from localStorage
+ * Syncs theme from ThemeEngine cache for consistency
  */
 function loadSettings(): DisplaySettings {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
+    let parsed = saved ? JSON.parse(saved) : {};
 
-      // Check for prefers-reduced-motion
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Check for prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      return {
-        ...DEFAULT_SETTINGS,
-        ...parsed,
-        reducedMotion: prefersReducedMotion || parsed.reducedMotion,
-      };
+    // Sync theme from ThemeEngine cache (single source of truth)
+    let themeFromCache: Theme | undefined;
+    try {
+      const themeCache = localStorage.getItem(THEME_CACHE_KEY);
+      if (themeCache) {
+        const themeParsed = JSON.parse(themeCache);
+        if (themeParsed.lastTheme?.mode === 'dark' || themeParsed.lastTheme?.mode === 'light') {
+          themeFromCache = themeParsed.lastTheme.mode;
+        }
+      }
+      // Also check simple mode key as fallback
+      if (!themeFromCache) {
+        const simpleMode = localStorage.getItem(THEME_MODE_KEY);
+        if (simpleMode === 'dark' || simpleMode === 'light') {
+          themeFromCache = simpleMode;
+        }
+      }
+    } catch {
+      // Ignore theme cache errors
     }
+
+    return {
+      ...DEFAULT_SETTINGS,
+      ...parsed,
+      theme: themeFromCache || parsed.theme || DEFAULT_SETTINGS.theme,
+      reducedMotion: prefersReducedMotion || parsed.reducedMotion,
+    };
   } catch (error) {
     console.error('Failed to load display settings:', error);
   }
@@ -176,10 +230,14 @@ function loadSettings(): DisplaySettings {
 
 /**
  * Save settings to localStorage and optionally sync to backend
+ * Also syncs theme to ThemeEngine cache for consistency
  */
 function saveSettings(settings: DisplaySettings, syncToBackend = true): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    
+    // Sync theme to ThemeEngine cache (single source of truth)
+    syncThemeToCache(settings.theme);
     
     // Sync theme to backend preferences (non-blocking)
     if (syncToBackend) {
@@ -189,6 +247,30 @@ function saveSettings(settings: DisplaySettings, syncToBackend = true): void {
     }
   } catch (error) {
     console.error('Failed to save display settings:', error);
+  }
+}
+
+/**
+ * Sync theme to ThemeEngine cache for consistency across components
+ */
+function syncThemeToCache(theme: Theme): void {
+  try {
+    // Update simple mode key
+    if (theme === 'dark' || theme === 'light') {
+      localStorage.setItem(THEME_MODE_KEY, theme);
+    }
+    
+    // Update theme cache if it exists
+    const cached = localStorage.getItem(THEME_CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed.lastTheme) {
+        parsed.lastTheme.mode = theme === 'auto' ? 'dark' : theme; // Default auto to dark
+        localStorage.setItem(THEME_CACHE_KEY, JSON.stringify(parsed));
+      }
+    }
+  } catch {
+    // Ignore sync errors
   }
 }
 

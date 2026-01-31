@@ -2,6 +2,20 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 use sqlx::{Row, SqlitePool, QueryBuilder};
 use serde::{Deserialize, Serialize};
 use crate::validators::ValidatedDateRange;
+use crate::middleware::get_current_tenant_id;
+
+/// Escape a value for CSV to prevent injection attacks
+fn escape_csv_value(value: &str) -> String {
+    // If the value contains comma, quote, newline, or starts with special chars, wrap in quotes
+    if value.contains(',') || value.contains('"') || value.contains('\n') || value.contains('\r')
+        || value.starts_with('=') || value.starts_with('+') || value.starts_with('-') || value.starts_with('@')
+    {
+        // Double any existing quotes and wrap in quotes
+        format!("\"{}\"", value.replace('"', "\"\""))
+    } else {
+        value.to_string()
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SalesReportParams {
@@ -42,6 +56,8 @@ pub async fn get_sales_report(
         }
     };
 
+    let tenant_id = get_current_tenant_id();
+    
     // Build secure parameterized query for current period
     let mut query_builder = QueryBuilder::new(
         "SELECT 
@@ -50,8 +66,9 @@ pub async fn get_sales_report(
         COALESCE(AVG(total_amount), 0.0) as average_transaction,
         COALESCE(SUM(items_count), 0) as total_items_sold
         FROM sales_transactions
-        WHERE 1=1"
+        WHERE tenant_id = "
     );
+    query_builder.push_bind(tenant_id.clone());
 
     if let Some(ref start_date) = date_range.start_date {
         query_builder.push(" AND created_at >= ").push_bind(start_date.to_string());
@@ -81,8 +98,10 @@ pub async fn get_sales_report(
             COALESCE(AVG(total_amount), 0.0) as average_transaction,
             COALESCE(SUM(items_count), 0) as total_items_sold
             FROM sales_transactions
-            WHERE created_at >= "
+            WHERE tenant_id = "
         );
+        prev_query.push_bind(tenant_id.clone());
+        prev_query.push(" AND created_at >= ");
         prev_query.push_bind(prev_start.clone().unwrap());
         prev_query.push(" AND created_at <= ");
         prev_query.push_bind(prev_end.clone().unwrap());
@@ -206,6 +225,8 @@ pub async fn get_sales_by_employee(
         }
     };
 
+    let tenant_id = get_current_tenant_id();
+    
     // Build secure parameterized query
     let mut query_builder = QueryBuilder::new(
         "SELECT 
@@ -214,8 +235,9 @@ pub async fn get_sales_by_employee(
         SUM(total_amount) as total_sales,
         AVG(total_amount) as average_transaction
         FROM sales_transactions
-        WHERE 1=1"
+        WHERE tenant_id = "
     );
+    query_builder.push_bind(tenant_id);
 
     if let Some(start_date) = date_range.start_date {
         query_builder.push(" AND created_at >= ").push_bind(start_date.to_string());
@@ -280,6 +302,8 @@ pub async fn get_sales_by_pricing_tier(
         }
     };
 
+    let tenant_id = get_current_tenant_id();
+    
     // Build secure parameterized query
     let mut query_builder = QueryBuilder::new(
         "SELECT 
@@ -289,8 +313,9 @@ pub async fn get_sales_by_pricing_tier(
         AVG(st.total_amount) as average_transaction
         FROM sales_transactions st
         JOIN customers c ON st.customer_id = c.id
-        WHERE 1=1"
+        WHERE st.tenant_id = "
     );
+    query_builder.push_bind(tenant_id);
 
     if let Some(start_date) = date_range.start_date {
         query_builder.push(" AND st.created_at >= ").push_bind(start_date.to_string());
@@ -355,6 +380,8 @@ pub async fn get_commission_report(
         }
     };
 
+    let tenant_id = get_current_tenant_id();
+    
     // Build secure parameterized query
     let mut query_builder = QueryBuilder::new(
         "SELECT 
@@ -363,8 +390,9 @@ pub async fn get_commission_report(
         SUM(c.amount) as total_commission,
         AVG(c.amount) as average_commission
         FROM commissions c
-        WHERE 1=1"
+        WHERE c.tenant_id = "
     );
+    query_builder.push_bind(tenant_id);
 
     if let Some(start_date) = date_range.start_date {
         query_builder.push(" AND c.created_at >= ").push_bind(start_date.to_string());
@@ -429,6 +457,8 @@ pub async fn get_sales_by_category(
         }
     };
 
+    let tenant_id = get_current_tenant_id();
+    
     let mut query_builder = QueryBuilder::new(
         "SELECT 
             p.category,
@@ -438,8 +468,9 @@ pub async fn get_sales_by_category(
         FROM sales_transactions st
         JOIN sales_line_items sli ON st.id = sli.transaction_id
         JOIN products p ON sli.product_id = p.id
-        WHERE 1=1"
+        WHERE st.tenant_id = "
     );
+    query_builder.push_bind(tenant_id);
 
     if let Some(start_date) = &date_range.start_date {
         query_builder.push(" AND st.created_at >= ");
@@ -501,6 +532,8 @@ pub async fn get_sales_by_tier(
         }
     };
 
+    let tenant_id = get_current_tenant_id();
+    
     let mut query_builder = QueryBuilder::new(
         "SELECT 
             c.pricing_tier,
@@ -509,8 +542,9 @@ pub async fn get_sales_by_tier(
             AVG(st.total_amount) as average_transaction
         FROM sales_transactions st
         JOIN customers c ON st.customer_id = c.id
-        WHERE 1=1"
+        WHERE st.tenant_id = "
     );
+    query_builder.push_bind(tenant_id);
 
     if let Some(start_date) = &date_range.start_date {
         query_builder.push(" AND st.created_at >= ");
@@ -559,7 +593,10 @@ pub async fn get_customer_report(
 ) -> impl Responder {
     tracing::info!("Generating customer report");
 
-    let sql = "SELECT 
+    let tenant_id = get_current_tenant_id();
+    
+    let result = sqlx::query(
+        "SELECT 
         c.id,
         c.name,
         c.email,
@@ -570,12 +607,15 @@ pub async fn get_customer_report(
         COUNT(DISTINCT st.id) as transaction_count,
         COALESCE(SUM(st.total_amount), 0.0) as total_revenue
         FROM customers c
-        LEFT JOIN sales_transactions st ON c.id = st.customer_id
+        LEFT JOIN sales_transactions st ON c.id = st.customer_id AND st.tenant_id = c.tenant_id
+        WHERE c.tenant_id = ?
         GROUP BY c.id
         ORDER BY total_revenue DESC
-        LIMIT 100";
-
-    let result = sqlx::query(sql).fetch_all(pool.get_ref()).await;
+        LIMIT 100"
+    )
+    .bind(&tenant_id)
+    .fetch_all(pool.get_ref())
+    .await;
 
     match result {
         Ok(rows) => {
@@ -629,6 +669,8 @@ pub async fn get_employee_report(
         }
     };
 
+    let tenant_id = get_current_tenant_id();
+    
     let mut query_builder = QueryBuilder::new(
         "SELECT 
             employee_id,
@@ -636,8 +678,9 @@ pub async fn get_employee_report(
             SUM(total_amount) as total_sales,
             AVG(total_amount) as average_transaction
         FROM sales_transactions
-        WHERE 1=1"
+        WHERE tenant_id = "
     );
+    query_builder.push_bind(tenant_id);
 
     if let Some(start_date) = &date_range.start_date {
         query_builder.push(" AND created_at >= ");
@@ -685,14 +728,20 @@ pub async fn get_layaway_report(
 ) -> impl Responder {
     tracing::info!("Generating layaway report");
 
-    let sql = "SELECT 
+    let tenant_id = get_current_tenant_id();
+    
+    let result = sqlx::query(
+        "SELECT 
         COUNT(CASE WHEN status = 'Active' THEN 1 END) as active_count,
         COUNT(CASE WHEN status = 'Completed' THEN 1 END) as completed_count,
         COUNT(CASE WHEN status = 'Cancelled' THEN 1 END) as cancelled_count,
         COALESCE(SUM(CASE WHEN status = 'Active' THEN balance_remaining END), 0.0) as total_outstanding
-        FROM layaways";
-
-    let result = sqlx::query(sql).fetch_one(pool.get_ref()).await;
+        FROM layaways
+        WHERE tenant_id = ?"
+    )
+    .bind(&tenant_id)
+    .fetch_one(pool.get_ref())
+    .await;
 
     match result {
         Ok(row) => {
@@ -756,22 +805,25 @@ pub async fn get_dashboard_metrics(
 ) -> impl Responder {
     tracing::info!("Generating dashboard metrics");
 
+    let tenant_id = get_current_tenant_id();
     let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
 
-    // Today's sales
+    // Today's sales - filtered by tenant
     let todays_sales = sqlx::query_as::<_, (f64,)>(
-        "SELECT COALESCE(SUM(total_amount), 0.0) FROM sales_transactions WHERE DATE(created_at) = DATE(?)"
+        "SELECT COALESCE(SUM(total_amount), 0.0) FROM sales_transactions WHERE tenant_id = ? AND DATE(created_at) = DATE(?)"
     )
+    .bind(&tenant_id)
     .bind(&today)
     .fetch_one(pool.get_ref())
     .await
     .map(|(sales,)| sales)
     .unwrap_or(0.0);
 
-    // Active layaways count
+    // Active layaways count - filtered by tenant
     let active_layaways = sqlx::query_as::<_, (i64,)>(
-        "SELECT COUNT(*) FROM layaways WHERE status = 'Active'"
+        "SELECT COUNT(*) FROM layaways WHERE tenant_id = ? AND status = 'Active'"
     )
+    .bind(&tenant_id)
     .fetch_one(pool.get_ref())
     .await
     .map(|(count,)| count)
@@ -808,7 +860,9 @@ pub async fn export_report(
         }
     };
 
-    // Build query for sales data
+    let tenant_id = get_current_tenant_id();
+    
+    // Build query for sales data - filtered by tenant
     let mut query_builder = sqlx::QueryBuilder::new(
         "SELECT 
             st.id,
@@ -819,8 +873,9 @@ pub async fn export_report(
             c.pricing_tier
         FROM sales_transactions st
         LEFT JOIN customers c ON st.customer_id = c.id
-        WHERE 1=1"
+        WHERE st.tenant_id = "
     );
+    query_builder.push_bind(tenant_id);
 
     if let Some(start_date) = date_range.start_date {
         query_builder.push(" AND st.created_at >= ").push_bind(start_date.to_string());
@@ -835,7 +890,7 @@ pub async fn export_report(
 
     match result {
         Ok(rows) => {
-            // Generate CSV content
+            // Generate CSV content with proper escaping to prevent injection
             let mut csv_content = String::from("Transaction ID,Date,Amount,Employee ID,Customer Name,Pricing Tier\n");
             
             for row in rows {
@@ -846,8 +901,15 @@ pub async fn export_report(
                 let customer_name: String = row.try_get("customer_name").unwrap_or_default();
                 let pricing_tier: String = row.try_get("pricing_tier").unwrap_or_default();
                 
+                // Use proper CSV escaping to prevent injection attacks
                 csv_content.push_str(&format!("{},{},{},{},{},{}\n", 
-                    id, created_at, total_amount, employee_id, customer_name, pricing_tier));
+                    escape_csv_value(&id),
+                    escape_csv_value(&created_at),
+                    total_amount,
+                    escape_csv_value(&employee_id),
+                    escape_csv_value(&customer_name),
+                    escape_csv_value(&pricing_tier)
+                ));
             }
 
             HttpResponse::Ok()

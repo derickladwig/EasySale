@@ -44,7 +44,7 @@ export function BackgroundRenderer({ lowPowerMode = false }: BackgroundRendererP
     return (
       <div
         className="background-renderer background-renderer--solid background-renderer--fallback"
-        style={{ backgroundColor: 'var(--color-bg-primary, #0f172a)' }}
+        style={{ backgroundColor: 'var(--color-slate-900)' }}
         data-testid="background-fallback"
       />
     );
@@ -57,7 +57,7 @@ export function BackgroundRenderer({ lowPowerMode = false }: BackgroundRendererP
         return (
           <div
             className="background-renderer background-renderer--solid"
-            style={{ backgroundColor: background.solid?.color || 'var(--color-bg-primary, #000)' }}
+            style={{ backgroundColor: background.solid?.color || 'var(--color-background)' }}
             data-testid="background-solid"
           />
         );
@@ -109,7 +109,7 @@ export function BackgroundRenderer({ lowPowerMode = false }: BackgroundRendererP
         return (
           <div
             className="background-renderer background-renderer--solid"
-            style={{ backgroundColor: 'var(--color-bg-primary, #000)' }}
+            style={{ backgroundColor: 'var(--color-background)' }}
             data-testid="background-solid"
           />
         );
@@ -146,7 +146,7 @@ export function BackgroundRenderer({ lowPowerMode = false }: BackgroundRendererP
         }
 
         .background-renderer--fallback {
-          background-color: var(--color-slate-900, #0f172a);
+          background-color: var(--color-slate-900);
         }
 
         /* Low-power mode: disable animations and effects */

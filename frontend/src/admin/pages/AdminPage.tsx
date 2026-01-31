@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Breadcrumbs } from '../../common/components/molecules/Breadcrumbs';
 import { ContextDisplay } from '../components/ContextDisplay';
 import { EmptyState } from '../../common/components/molecules/EmptyState';
-import { useUsers, CreateUserData } from '../hooks/useUsers';
+import { useUsers, CreateUserData, UpdateUserData, User as ApiUser } from '../hooks/useUsers';
 import { useStores } from '../hooks/useStores';
 import { useStations } from '../hooks/useStations';
 import { useConfig } from '../../config';
 import { Button } from '../../common/components/atoms/Button';
 import { CreateUserModal } from '../components/CreateUserModal';
+import { EditUserModal } from '../components/EditUserModal';
 import { toast } from '../../common/components/molecules/Toast';
 import {
   Settings,
@@ -256,7 +257,9 @@ const settingsSections: SettingsSection[] = [
 export function AdminPage() {
   const [activeSection, setActiveSection] = useState<SettingsSectionId>('general');
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
-  const { users: apiUsers, isLoading: usersLoading, error: usersError, createUser, deleteUser } = useUsers();
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<ApiUser | undefined>(undefined);
+  const { users: apiUsers, isLoading: usersLoading, error: usersError, createUser, updateUser, deleteUser, bulkResetPassword } = useUsers();
   const { stores, updateStore } = useStores();
   const { stations } = useStations();
   const { branding } = useConfig();
@@ -326,6 +329,37 @@ export function AdminPage() {
       const message = error instanceof Error ? error.message : 'Failed to create user';
       toast.error(message);
       throw error; // Re-throw to keep modal open
+    }
+  };
+
+  // Handle user edit
+  const handleEditUser = (user: ApiUser) => {
+    setEditingUser(user);
+    setShowEditUserModal(true);
+  };
+
+  // Handle user update
+  const handleUpdateUser = async (userId: string, data: UpdateUserData) => {
+    try {
+      await updateUser(userId, data);
+      setShowEditUserModal(false);
+      setEditingUser(undefined);
+      toast.success('User updated successfully');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update user';
+      toast.error(message);
+      throw error;
+    }
+  };
+
+  // Handle password reset
+  const handleResetPassword = async (userId: string, userName: string) => {
+    if (!confirm(`Send password reset email to ${userName}?`)) return;
+    try {
+      await bulkResetPassword([userId]);
+      toast.success(`Password reset email sent to ${userName}`);
+    } catch (error) {
+      toast.error('Failed to send password reset email. Please configure email service in Integrations.');
     }
   };
 
@@ -566,15 +600,18 @@ export function AdminPage() {
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1">
                               <button 
-                                onClick={() => toast.info(`Password reset email would be sent to ${user.email}. Configure email service in Integrations.`)}
+                                onClick={() => handleResetPassword(user.id, user.name)}
                                 title="Reset Password"
                                 className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors"
                               >
                                 <Key size={16} />
                               </button>
                               <button 
-                                onClick={() => setActiveSection('users')}
-                                title="Edit User - Go to Users & Security"
+                                onClick={() => {
+                                  const apiUser = apiUsers.find(u => u.id === user.id);
+                                  if (apiUser) handleEditUser(apiUser);
+                                }}
+                                title="Edit User"
                                 className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors"
                               >
                                 <Edit size={16} />
@@ -741,6 +778,19 @@ export function AdminPage() {
         stores={stores.map(s => ({ id: s.id, name: s.name }))}
         stations={stations.map(s => ({ id: s.id, name: s.name, store_id: s.store_id }))}
         onSave={handleCreateUser}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={showEditUserModal}
+        onClose={() => {
+          setShowEditUserModal(false);
+          setEditingUser(undefined);
+        }}
+        user={editingUser}
+        stores={stores.map(s => ({ id: s.id, name: s.name }))}
+        stations={stations.map(s => ({ id: s.id, name: s.name, store_id: s.store_id }))}
+        onSave={handleUpdateUser}
       />
     </div>
   );

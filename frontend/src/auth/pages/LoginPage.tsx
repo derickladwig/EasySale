@@ -56,16 +56,16 @@ function LogoBadge({ favicon, icon, shortName }: { favicon?: string; icon?: stri
   
   if (src) {
     return (
-      <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center bg-slate-800/50 shadow-lg">
+      <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center bg-surface-elevated shadow-lg">
         <img src={src} alt="Logo" className="w-12 h-12 object-contain" />
       </div>
     );
   }
   
-  // Fallback to initials with theme-aware primary color
+  // Fallback to initials with theme-aware accent color
   return (
-    <div className="w-16 h-16 rounded-2xl bg-primary-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
-      <span className="text-white font-bold text-2xl">{shortName}</span>
+    <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center shadow-lg shadow-accent/30">
+      <span className="text-text-inverse font-bold text-2xl">{shortName}</span>
     </div>
   );
 }
@@ -84,12 +84,12 @@ function AuthMethodTabs({
         onClick={() => onMethodChange('password')}
         className={`flex items-center gap-2 text-sm font-medium transition-colors ${
           activeMethod === 'password' 
-            ? 'text-primary-400' 
-            : 'text-slate-400 hover:text-slate-300'
+            ? 'text-accent' 
+            : 'text-text-muted hover:text-text-secondary'
         }`}
       >
         <span className={`w-2 h-2 rounded-full ${
-          activeMethod === 'password' ? 'bg-primary-400' : 'bg-transparent'
+          activeMethod === 'password' ? 'bg-accent' : 'bg-transparent'
         }`} />
         Password
       </button>
@@ -98,12 +98,12 @@ function AuthMethodTabs({
         onClick={() => onMethodChange('pin')}
         className={`flex items-center gap-2 text-sm font-medium transition-colors ${
           activeMethod === 'pin' 
-            ? 'text-primary-400' 
-            : 'text-slate-400 hover:text-slate-300'
+            ? 'text-accent' 
+            : 'text-text-muted hover:text-text-secondary'
         }`}
       >
         <span className={`w-2 h-2 rounded-full ${
-          activeMethod === 'pin' ? 'bg-primary-400' : 'bg-transparent'
+          activeMethod === 'pin' ? 'bg-accent' : 'bg-transparent'
         }`} />
         PIN
       </button>
@@ -135,15 +135,15 @@ function StatusPanel({
   };
 
   const getDbStatusColor = () => {
-    if (isLoading || databaseStatus === 'checking') return 'bg-yellow-400 animate-pulse';
-    return databaseStatus === 'connected' ? 'bg-green-400' : 'bg-red-400';
+    if (isLoading || databaseStatus === 'checking') return 'bg-warning animate-pulse';
+    return databaseStatus === 'connected' ? 'bg-success' : 'bg-error';
   };
 
   const getSyncStatusColor = () => {
-    if (isLoading || syncStatus === 'checking') return 'bg-yellow-400 animate-pulse';
-    if (syncStatus === 'online') return 'bg-green-400';
-    if (syncStatus === 'syncing') return 'bg-primary-400 animate-pulse';
-    return 'bg-yellow-400';
+    if (isLoading || syncStatus === 'checking') return 'bg-warning animate-pulse';
+    if (syncStatus === 'online') return 'bg-success';
+    if (syncStatus === 'syncing') return 'bg-accent animate-pulse';
+    return 'bg-warning';
   };
 
   const getDbStatusText = () => {
@@ -160,40 +160,40 @@ function StatusPanel({
     <div className="glass-panel rounded-2xl p-8 w-[240px]">
       {/* Database Status */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center">
-          <svg className="w-5 h-5 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+          <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
           </svg>
         </div>
         <div>
-          <div className="text-slate-300 text-sm font-medium">Database</div>
+          <div className="text-text-secondary text-sm font-medium">Database</div>
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${getDbStatusColor()}`} />
-            <span className="text-slate-200 text-sm">{getDbStatusText()}</span>
+            <span className="text-text-primary text-sm">{getDbStatusText()}</span>
           </div>
         </div>
       </div>
 
       {/* Sync Status */}
       <div className="mb-4">
-        <div className="text-slate-300 text-sm font-medium mb-1">Sync Status</div>
+        <div className="text-text-secondary text-sm font-medium mb-1">Sync Status</div>
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${getSyncStatusColor()}`} />
-          <span className="text-slate-200 text-sm">{getSyncStatusText()}</span>
+          <span className="text-text-primary text-sm">{getSyncStatusText()}</span>
         </div>
-        <div className="text-slate-400 text-xs mt-1">{formatTime(lastSyncTime)}</div>
+        <div className="text-text-muted text-xs mt-1">{formatTime(lastSyncTime)}</div>
       </div>
 
       {/* Store */}
       <div className="mb-4">
-        <div className="text-slate-400 text-xs">Store</div>
-        <div className="text-slate-200 text-sm font-medium">{storeName}</div>
+        <div className="text-text-muted text-xs">Store</div>
+        <div className="text-text-primary text-sm font-medium">{storeName}</div>
       </div>
 
       {/* Station */}
       <div>
-        <div className="text-slate-400 text-xs">Station</div>
-        <div className="text-slate-200 text-sm font-medium">{stationId}</div>
+        <div className="text-text-muted text-xs">Station</div>
+        <div className="text-text-primary text-sm font-medium">{stationId}</div>
       </div>
     </div>
   );
@@ -291,11 +291,11 @@ function LoginPageContent({
               className="h-8 w-auto"
             />
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">{shortName}</span>
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+              <span className="text-text-inverse font-bold text-sm">{shortName}</span>
             </div>
           )}
-          <span className="text-slate-200 font-semibold text-lg">{branding.company.name}</span>
+          <span className="text-text-primary font-semibold text-lg">{branding.company.name}</span>
         </div>
       </header>
 
@@ -310,14 +310,14 @@ function LoginPageContent({
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl font-semibold text-slate-100 text-center mb-8">Sign In</h1>
+            <h1 className="text-2xl font-semibold text-text-primary text-center mb-8">Sign In</h1>
 
             {/* Auth Method Tabs */}
             <AuthMethodTabs activeMethod={authMethod} onMethodChange={setAuthMethod} />
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="mb-4 p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm">
                 {error}
               </div>
             )}
@@ -327,7 +327,7 @@ function LoginPageContent({
               {authMethod === 'password' ? (
                 <>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Username</label>
+                    <label className="block text-text-secondary text-sm mb-2">Username</label>
                     <input
                       type="text"
                       value={username}
@@ -340,7 +340,7 @@ function LoginPageContent({
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Password</label>
+                    <label className="block text-text-secondary text-sm mb-2">Password</label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
@@ -354,7 +354,7 @@ function LoginPageContent({
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
                       >
                         {showPassword ? (
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -373,7 +373,7 @@ function LoginPageContent({
               ) : (
                 <>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Username (Optional)</label>
+                    <label className="block text-text-secondary text-sm mb-2">Username (Optional)</label>
                     <input
                       type="text"
                       value={username}
@@ -384,7 +384,7 @@ function LoginPageContent({
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">PIN</label>
+                    <label className="block text-text-secondary text-sm mb-2">PIN</label>
                     <input
                       type="password"
                       value={pin}
@@ -406,23 +406,23 @@ function LoginPageContent({
                   type="checkbox"
                   checked={rememberUsername}
                   onChange={(e) => setRememberUsername(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-600 bg-slate-700/50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-border bg-surface-elevated text-accent focus:ring-accent focus:ring-offset-0"
                 />
-                <span className="text-slate-400 text-sm">Remember username</span>
+                <span className="text-text-muted text-sm">Remember username</span>
               </label>
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 px-4 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-500/25"
+                className="w-full py-3.5 px-4 rounded-lg bg-gradient-to-r from-accent to-accent-hover hover:from-accent-hover hover:to-accent text-text-inverse font-medium text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/25"
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </button>
 
               {/* Forgot Password */}
               <div className="text-center">
-                <button type="button" className="text-primary-400 hover:text-primary-300 text-sm">
+                <button type="button" className="text-accent hover:text-accent/80 text-sm">
                   Forgot password?
                 </button>
               </div>
@@ -430,8 +430,8 @@ function LoginPageContent({
 
             {/* Demo Accounts */}
             {profile === 'demo' && demoAccounts.length > 0 && (
-              <div className="mt-6 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                <p className="text-slate-400 text-xs mb-2">Demo Accounts:</p>
+              <div className="mt-6 p-3 rounded-lg bg-surface-elevated border border-border-subtle">
+                <p className="text-text-muted text-xs mb-2">Demo Accounts:</p>
                 <div className="space-y-1">
                   {demoAccounts.map((account) => (
                     <button
@@ -442,7 +442,7 @@ function LoginPageContent({
                         setPassword(account.password);
                         setAuthMethod('password');
                       }}
-                      className="block text-sm text-primary-400 hover:text-primary-300"
+                      className="block text-sm text-accent hover:text-accent/80"
                     >
                       {account.username} ({account.role})
                     </button>
@@ -465,7 +465,7 @@ function LoginPageContent({
       </main>
 
       {/* Footer - uses real version/build info */}
-      <footer className="relative z-10 flex items-center justify-between px-6 py-4 text-slate-500 text-xs">
+      <footer className="relative z-10 flex items-center justify-between px-6 py-4 text-text-tertiary text-xs">
         <div>v{appInfo.version} • {appInfo.buildDate}-{appInfo.buildHash}</div>
         <div className="flex items-center gap-4">
           <ThemeToggle simple />
@@ -537,31 +537,6 @@ function LoginPageContent({
         .login-input:hover:not(:focus) {
           border-color: var(--login-border);
         }
-
-        /* Text color classes for login page */
-        .login-page-v2 .text-slate-100 { color: var(--login-text-primary); }
-        .login-page-v2 .text-slate-200 { color: var(--login-text-primary); }
-        .login-page-v2 .text-slate-300 { color: var(--login-text-secondary); }
-        .login-page-v2 .text-slate-400 { color: var(--login-text-muted); }
-        .login-page-v2 .text-slate-500 { color: var(--login-text-tertiary); }
-        
-        /* Status indicator colors */
-        .login-page-v2 .bg-green-400 { background-color: var(--color-success-500, #22c55e); }
-        .login-page-v2 .bg-yellow-400 { background-color: var(--color-warning-500, #eab308); }
-        .login-page-v2 .bg-red-400 { background-color: var(--color-error-500, #ef4444); }
-        
-        /* Error message styling */
-        .login-page-v2 .bg-red-500\\/10 { background-color: color-mix(in srgb, var(--color-error-500, #ef4444) 10%, transparent); }
-        .login-page-v2 .border-red-500\\/20 { border-color: color-mix(in srgb, var(--color-error-500, #ef4444) 20%, transparent); }
-        .login-page-v2 .text-red-400 { color: var(--color-error-500, #f87171); }
-        
-        /* Checkbox styling */
-        .login-page-v2 .text-blue-500 { color: var(--color-primary-500, #3b82f6); }
-        .login-page-v2 .focus\\:ring-blue-500:focus { --tw-ring-color: var(--color-primary-500, #3b82f6); }
-        .login-page-v2 .border-slate-600 { border-color: var(--login-border); }
-        .login-page-v2 .bg-slate-700\\/50 { background-color: var(--login-surface-elevated); }
-        .login-page-v2 .bg-slate-800\\/50 { background-color: var(--login-surface); }
-        .login-page-v2 .border-slate-700\\/50 { border-color: var(--login-border-subtle); }
       `}</style>
     </div>
   );
@@ -575,20 +550,20 @@ export function LoginPage(props: LoginPageProps) {
   return (
     <ErrorBoundary
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background px-4 dark:bg-slate-900">
-          <div className="max-w-md w-full bg-surface rounded-2xl p-6 border border-border dark:bg-slate-800/80 dark:border-slate-700/50">
+        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+          <div className="max-w-md w-full bg-surface rounded-2xl p-6 border border-border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-error-500/20 rounded-full flex items-center justify-center">
-                <span className="text-error-500 text-2xl">⚠</span>
+              <div className="w-12 h-12 bg-error/20 rounded-full flex items-center justify-center">
+                <span className="text-error text-2xl">⚠</span>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-text-primary dark:text-slate-100">Login Error</h1>
-                <p className="text-sm text-text-secondary dark:text-slate-400">Unable to load the login page</p>
+                <h1 className="text-xl font-semibold text-text-primary">Login Error</h1>
+                <p className="text-sm text-text-secondary">Unable to load the login page</p>
               </div>
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="w-full px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+              className="w-full px-4 py-2 bg-accent text-text-inverse rounded-lg hover:bg-accent-hover transition-colors"
             >
               Reload Page
             </button>
