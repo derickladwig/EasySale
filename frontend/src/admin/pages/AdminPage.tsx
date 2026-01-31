@@ -256,14 +256,65 @@ const settingsSections: SettingsSection[] = [
 export function AdminPage() {
   const [activeSection, setActiveSection] = useState<SettingsSectionId>('general');
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
-  const { users: apiUsers, isLoading: usersLoading, error: usersError, createUser } = useUsers();
-  const { stores } = useStores();
+  const { users: apiUsers, isLoading: usersLoading, error: usersError, createUser, deleteUser } = useUsers();
+  const { stores, updateStore } = useStores();
   const { stations } = useStations();
   const { branding } = useConfig();
   const hasExport = useHasExportFeatures();
   const hasSync = useHasSyncFeatures();
   const hasIntegrations = useHasIntegrations();
   const hasDataManager = useHasDataManager();
+  
+  // Store form state
+  const [storeFormData, setStoreFormData] = useState({
+    name: '',
+    address: '',
+    phone: '',
+    email: '',
+  });
+  const [storeFormInitialized, setStoreFormInitialized] = useState(false);
+  const [isSavingStore, setIsSavingStore] = useState(false);
+  
+  // Initialize store form when stores load
+  if (stores.length > 0 && !storeFormInitialized) {
+    const store = stores[0];
+    setStoreFormData({
+      name: store.name || '',
+      address: store.address ? `${store.address}\n${store.city || ''}, ${store.state || ''} ${store.zip || ''}`.trim() : '',
+      phone: store.phone || '',
+      email: store.email || '',
+    });
+    setStoreFormInitialized(true);
+  }
+  
+  // Handle store save
+  const handleSaveStore = async () => {
+    if (!stores[0]) return;
+    setIsSavingStore(true);
+    try {
+      await updateStore(stores[0].id, {
+        name: storeFormData.name,
+        phone: storeFormData.phone,
+        email: storeFormData.email,
+      });
+      toast.success('Store information saved successfully');
+    } catch (error) {
+      toast.error('Failed to save store information');
+    } finally {
+      setIsSavingStore(false);
+    }
+  };
+  
+  // Handle user deletion
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete ${userName}?`)) return;
+    try {
+      await deleteUser(userId);
+      toast.success(`User ${userName} deleted successfully`);
+    } catch (error) {
+      toast.error('Failed to delete user');
+    }
+  };
 
   // Handle user creation
   const handleCreateUser = async (data: CreateUserData) => {
@@ -582,25 +633,21 @@ export function AdminPage() {
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1">
                               <button 
-                                onClick={() => toast.info(`Password reset email would be sent to ${user.email}`)}
+                                onClick={() => toast.info(`Password reset email would be sent to ${user.email}. Configure email service in Integrations.`)}
                                 title="Reset Password"
                                 className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors"
                               >
                                 <Key size={16} />
                               </button>
                               <button 
-                                onClick={() => toast.info(`Edit user: ${user.name}. Full user management available in Admin → Users & Security.`)}
-                                title="Edit User"
+                                onClick={() => setActiveSection('users')}
+                                title="Edit User - Go to Users & Security"
                                 className="p-2 text-text-tertiary hover:text-white hover:bg-surface-overlay rounded-lg transition-colors"
                               >
                                 <Edit size={16} />
                               </button>
                               <button 
-                                onClick={() => {
-                                  if (confirm(`Are you sure you want to delete ${user.name}?`)) {
-                                    toast.success(`User ${user.name} would be deleted`);
-                                  }
-                                }}
+                                onClick={() => handleDeleteUser(user.id, user.name)}
                                 title="Delete User"
                                 className="p-2 text-text-tertiary hover:text-error-400 hover:bg-surface-overlay rounded-lg transition-colors"
                               >
@@ -635,7 +682,8 @@ export function AdminPage() {
                     <label className="block text-sm font-medium text-text-secondary mb-2">Store Name</label>
                     <input
                       type="text"
-                      defaultValue={stores[0]?.name || branding.store?.name || ''}
+                      value={storeFormData.name}
+                      onChange={(e) => setStoreFormData({ ...storeFormData, name: e.target.value })}
                       className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
@@ -643,8 +691,8 @@ export function AdminPage() {
                     <label className="block text-sm font-medium text-text-secondary mb-2">Store ID</label>
                     <input
                       type="text"
-                      defaultValue={stores[0]?.id || ''}
-                      className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      value={stores[0]?.id || ''}
+                      className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-tertiary focus:outline-none"
                       disabled
                     />
                   </div>
@@ -652,7 +700,8 @@ export function AdminPage() {
                     <label className="block text-sm font-medium text-text-secondary mb-2">Address</label>
                     <textarea
                       rows={3}
-                      defaultValue={stores[0]?.address ? `${stores[0].address}\n${stores[0].city || ''}, ${stores[0].state || ''} ${stores[0].zip || ''}`.trim() : ''}
+                      value={storeFormData.address}
+                      onChange={(e) => setStoreFormData({ ...storeFormData, address: e.target.value })}
                       placeholder="Enter store address"
                       className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                     />
@@ -662,7 +711,8 @@ export function AdminPage() {
                       <label className="block text-sm font-medium text-text-secondary mb-2">Phone</label>
                       <input
                         type="tel"
-                        defaultValue={stores[0]?.phone || ''}
+                        value={storeFormData.phone}
+                        onChange={(e) => setStoreFormData({ ...storeFormData, phone: e.target.value })}
                         placeholder="Enter phone number"
                         className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
@@ -671,7 +721,8 @@ export function AdminPage() {
                       <label className="block text-sm font-medium text-text-secondary mb-2">Email</label>
                       <input
                         type="email"
-                        defaultValue={stores[0]?.email || ''}
+                        value={storeFormData.email}
+                        onChange={(e) => setStoreFormData({ ...storeFormData, email: e.target.value })}
                         placeholder="Enter email address"
                         className="w-full px-4 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
@@ -680,9 +731,10 @@ export function AdminPage() {
                   <div className="pt-4">
                     <Button 
                       variant="primary"
-                      onClick={() => toast.success('Store information saved successfully')}
+                      onClick={handleSaveStore}
+                      disabled={isSavingStore}
                     >
-                      Save Changes
+                      {isSavingStore ? 'Saving...' : 'Save Changes'}
                     </Button>
                   </div>
                 </div>

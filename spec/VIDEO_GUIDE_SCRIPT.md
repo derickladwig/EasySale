@@ -241,7 +241,7 @@ These numbers are verified from the actual codebase (2026-01-30):
 |--------|-------|--------|
 | API Endpoints | 150+ | `backend/crates/server/src/main.rs` |
 | Database Migrations | 57 | `backend/migrations/*.sql` |
-| Blog Posts | 64 | `blog/*.md` |
+| Blog Posts | 72 | `blog/*.md` |
 | Archive Files | 390+ | `archive/**/*` |
 | Spec Folders | 26 | `.kiro/specs/` |
 | Steering Files | 5 | `.kiro/steering/` |

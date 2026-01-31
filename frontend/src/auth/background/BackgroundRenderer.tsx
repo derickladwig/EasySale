@@ -146,7 +146,7 @@ export function BackgroundRenderer({ lowPowerMode = false }: BackgroundRendererP
         }
 
         .background-renderer--fallback {
-          background-color: #0f172a !important;
+          background-color: var(--color-slate-900, #0f172a);
         }
 
         /* Low-power mode: disable animations and effects */

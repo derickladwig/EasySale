@@ -258,7 +258,7 @@
   --color-background: var(--color-dark-bg);
   --color-surface: var(--color-dark-surface);
   --color-surface-elevated: var(--color-dark-elevated);
-  --color-overlay: rgba(0, 0, 0, 0.8);
+  --color-overlay: rgba(0, 0, 0, 0.6); /* Softened from 0.8 for less harsh overlay */
   
   /* Text - Dark Mode (high contrast against #222224) */
   --color-text-primary: #f5f5f7;
@@ -278,11 +278,11 @@
   /* Surface Elevation - Dark Mode */
   --surface-3: #3a3a3c;
   
-  /* Shadows - Dark Mode (stronger for visibility) */
-  --shadow-dropdown: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  --shadow-popover: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-  --shadow-toast: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  /* Shadows - Dark Mode (softened for less harsh appearance) */
+  --shadow-dropdown: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+  --shadow-popover: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  --shadow-toast: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
   
   /* ============================================
    * CLEANUP SHIELD TOKENS - Dark Mode

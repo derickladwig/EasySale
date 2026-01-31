@@ -312,38 +312,73 @@ export function ReportingPage() {
               </div>
             )}
 
-            {/* Top Products */}
-            <div className="bg-surface-base border border-border rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Top Selling Products</h2>
-              <div className="text-center py-8 text-text-tertiary">
-                <Package size={32} className="mx-auto mb-3 opacity-50" />
-                <p className="text-sm">Product-level analytics require additional data.</p>
-                <p className="text-xs mt-1">View category breakdown in the chart above.</p>
-              </div>
-            </div>
-
-            {/* Sales Chart Placeholder */}
+            {/* Sales Summary Chart */}
             <div className="bg-surface-base border border-border rounded-xl p-6 lg:col-span-2">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-white">Sales Trend</h2>
+                <h2 className="text-lg font-semibold text-white">Sales Overview</h2>
                 <div className="flex gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-primary-500 rounded-full" />
-                    <span className="text-text-tertiary">This Period</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-surface-overlay rounded-full" />
-                    <span className="text-text-tertiary">Previous Period</span>
+                    <span className="text-text-tertiary">{dateRange === 'custom' ? 'Custom Period' : dateRange.charAt(0).toUpperCase() + dateRange.slice(1)}</span>
                   </div>
                 </div>
               </div>
-              <div className="h-64 flex items-center justify-center text-text-tertiary">
-                <div className="text-center">
-                  <BarChart3 size={48} className="mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Chart Visualization</p>
-                  <p className="text-sm">Sales trend chart will be displayed here</p>
+              {salesSummary ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-surface-elevated rounded-lg p-4 text-center">
+                    <DollarSign className="w-8 h-8 mx-auto mb-2 text-primary-500" />
+                    <p className="text-2xl font-bold text-white">${salesSummary.total_revenue.toFixed(0)}</p>
+                    <p className="text-xs text-text-tertiary">Total Revenue</p>
+                  </div>
+                  <div className="bg-surface-elevated rounded-lg p-4 text-center">
+                    <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-success-500" />
+                    <p className="text-2xl font-bold text-white">{salesSummary.total_transactions}</p>
+                    <p className="text-xs text-text-tertiary">Transactions</p>
+                  </div>
+                  <div className="bg-surface-elevated rounded-lg p-4 text-center">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-2 text-warning-500" />
+                    <p className="text-2xl font-bold text-white">${salesSummary.average_transaction.toFixed(0)}</p>
+                    <p className="text-xs text-text-tertiary">Avg Transaction</p>
+                  </div>
+                  <div className="bg-surface-elevated rounded-lg p-4 text-center">
+                    <Package className="w-8 h-8 mx-auto mb-2 text-info-500" />
+                    <p className="text-2xl font-bold text-white">{salesSummary.total_items_sold}</p>
+                    <p className="text-xs text-text-tertiary">Items Sold</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="h-32 flex items-center justify-center text-text-tertiary">
+                  <div className="text-center">
+                    <BarChart3 size={32} className="mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No sales data for this period</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Category Breakdown Bar Chart */}
+              {salesByCategory.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-border">
+                  <h3 className="text-sm font-medium text-text-secondary mb-4">Revenue by Category</h3>
+                  <div className="flex items-end gap-2 h-32">
+                    {salesByCategory.map((cat, index) => {
+                      const maxRevenue = Math.max(...salesByCategory.map(c => c.revenue));
+                      const heightPercent = maxRevenue > 0 ? (cat.revenue / maxRevenue) * 100 : 0;
+                      return (
+                        <div key={cat.category} className="flex-1 flex flex-col items-center">
+                          <div 
+                            className={cn('w-full rounded-t', cat.color)}
+                            style={{ height: `${Math.max(heightPercent, 5)}%` }}
+                            title={`${cat.category}: $${cat.revenue.toFixed(2)}`}
+                          />
+                          <p className="text-xs text-text-tertiary mt-2 truncate w-full text-center">
+                            {cat.category.length > 8 ? cat.category.slice(0, 8) + '...' : cat.category}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>

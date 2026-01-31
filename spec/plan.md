@@ -50,14 +50,17 @@ Create production-ready documentation and automation that enables:
 
 | Area | Status | Notes |
 |------|--------|-------|
-| **Core Architecture** | ✅ Complete | React + Rust + SQLite |
+| **Core Architecture** | ✅ Complete | React 19 + Rust + SQLite |
 | **Authentication** | ✅ Complete | JWT + Argon2 |
-| **Database Schema** | ✅ Complete | 50+ tables |
+| **Database Schema** | ✅ Complete | 57 migrations |
 | **API Endpoints** | ✅ Complete | 150+ endpoints |
 | **Docker Setup** | ✅ Complete | Dev + Prod configs |
 | **Batch Scripts** | ✅ Complete | 10+ Windows scripts |
 | **CI Pipeline** | ✅ Complete | GitHub Actions |
 | **Property Tests** | ✅ Complete | 20+ tests |
+| **Blog Posts** | ✅ Complete | 72 entries |
+| **Spec Folders** | ✅ Complete | 26 specs |
+| **Archive Files** | ✅ Complete | 390+ files |
 
 ### 2.2 Documentation Gaps Identified
 

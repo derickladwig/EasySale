@@ -201,7 +201,7 @@ export function QuotesPage() {
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Quotes</h1>
             <p className="text-text-tertiary text-sm">
-              Manage saved quotes and estimates
+              Manage saved quotes and estimates (stored locally on this device)
             </p>
           </div>
           <Button
