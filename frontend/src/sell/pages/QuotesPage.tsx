@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Clock,
   User,
-  ChevronRight,
   AlertCircle,
   Printer,
   Mail,
@@ -23,6 +22,7 @@ import { cn } from '@common/utils/classNames';
 import { useConfig } from '../../config';
 import { Button } from '@common/components/atoms/Button';
 import { EmptyState } from '@common/components/molecules/EmptyState';
+import { toast } from '@common/utils/toast';
 
 interface QuoteItem {
   productId: string;
@@ -386,6 +386,19 @@ export function QuotesPage() {
                 >
                   <Printer size={16} />
                   Print
+                </button>
+                <button
+                  onClick={() => {
+                    if (selectedQuote.customer) {
+                      toast.info(`Email quote to ${selectedQuote.customer.name} - Feature coming soon`);
+                    } else {
+                      toast.warning('No customer associated with this quote');
+                    }
+                  }}
+                  className="flex-1 py-2 bg-surface-3 hover:bg-surface-3/80 text-text-primary rounded-lg flex items-center justify-center gap-2"
+                >
+                  <Mail size={16} />
+                  Email
                 </button>
                 <button
                   onClick={() => handleDeleteQuote(selectedQuote.id)}

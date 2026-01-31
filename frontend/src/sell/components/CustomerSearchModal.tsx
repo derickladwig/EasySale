@@ -108,11 +108,22 @@ export function CustomerSearchModal({
               <Loader2 className="animate-spin text-text-tertiary" size={32} />
             </div>
           ) : filteredCustomers.length === 0 ? (
-            <EmptyState
-              title="No customers found"
-              description={searchQuery ? `No customers match "${searchQuery}"` : 'No customers in database'}
-              icon={<User size={48} className="opacity-50" />}
-            />
+            <div className="text-center py-8">
+              <EmptyState
+                title="No customers found"
+                description={searchQuery ? `No customers match "${searchQuery}"` : 'No customers in database'}
+                icon={<User size={48} className="opacity-50" />}
+              />
+              <button
+                onClick={() => {
+                  window.open('/customers?action=create', '_blank');
+                }}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
+              >
+                <Plus size={16} />
+                Create New Customer
+              </button>
+            </div>
           ) : (
             <div className="space-y-2">
               {filteredCustomers.slice(0, 50).map((customer: Customer) => (

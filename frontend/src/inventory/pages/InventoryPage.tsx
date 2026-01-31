@@ -767,18 +767,6 @@ export function InventoryPage() {
                                     <ShoppingCart size={16} />
                                     Reorder
                                   </button>
-                                  <div className="border-t border-border my-1" />
-                                  <button
-                                    className="w-full px-4 py-2 text-left text-sm text-error-400 hover:bg-error-500/10 flex items-center gap-2"
-                                    onClick={() => {
-                                      setActiveRowMenu(null);
-                                      // TODO: Implement delete with confirmation dialog
-                                      toast.info(`Delete functionality coming soon for ${item.name}`);
-                                    }}
-                                  >
-                                    <Trash2 size={16} />
-                                    Delete
-                                  </button>
                                 </div>
                               )}
                             </div>

@@ -101,12 +101,12 @@ export const ZoneEditor: React.FC<ZoneEditorProps> = ({
     // Enable drawing mode on document
   };
 
-  const handleDeleteZone = (_zoneId: string) => {
+  const handleDeleteZone = (zoneId: string) => {
     // TODO: Implement zone deletion via API
     // DELETE /api/zones/:zoneId
   };
 
-  const handleAdjustZone = (_zoneId: string) => {
+  const handleAdjustZone = (zoneId: string) => {
     // TODO: Implement zone adjustment mode
     // This should enable drag handles on the zone
   };
