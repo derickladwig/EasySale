@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Search,
   Plus,
@@ -19,6 +20,10 @@ import {
   RotateCcw,
   Pause,
   Play,
+  Printer,
+  Mail,
+  X,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 import { useConfig, DynamicIcon } from '../../config';
@@ -70,7 +75,27 @@ export function SellPage() {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showHoldModal, setShowHoldModal] = useState(false);
-  const [lastSale, setLastSale] = useState<{ transactionNumber: string; total: number } | null>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [lastSale, setLastSale] = useState<{ transactionNumber: string; total: number; items: CartItem[]; customer: Customer | null; paymentMethod: string } | null>(null);
+  
+  // Check for customer passed from navigation
+  const location = useLocation();
+  useEffect(() => {
+    const state = location.state as { customerId?: string; customerName?: string } | null;
+    if (state?.customerId && state?.customerName) {
+      setSelectedCustomer({
+        id: state.customerId,
+        name: state.customerName,
+        email: '',
+        phone: '',
+        type: 'individual',
+        tier: 'standard',
+        totalSpent: 0,
+        orderCount: 0,
+        lastOrder: new Date().toISOString(),
+      });
+    }
+  }, [location.state]);
   
   // Held transactions
   const [heldTransactions, setHeldTransactions] = useState<Array<{
@@ -146,6 +171,9 @@ export function SellPage() {
   // Handle payment completion
   const handlePayment = async (paymentMethod: 'cash' | 'card' | 'other') => {
     try {
+      const saleItems = [...cart]; // Store cart before clearing
+      const saleCustomer = selectedCustomer;
+      
       const result = await createSale.mutateAsync({
         customer_id: selectedCustomer?.id,
         items: cart.map((item) => ({
@@ -157,16 +185,115 @@ export function SellPage() {
         discount_amount: discount > 0 ? discount : undefined,
       });
 
-      // Show success and clear cart
-      setLastSale({ transactionNumber: result.transaction_number, total: result.total_amount });
+      // Store sale info for receipt
+      setLastSale({ 
+        transactionNumber: result.transaction_number, 
+        total: result.total_amount,
+        items: saleItems,
+        customer: saleCustomer,
+        paymentMethod,
+      });
       setShowPaymentModal(false);
+      setShowReceiptModal(true); // Show receipt modal
       clearCart();
-
-      // Clear success message after 5 seconds
-      setTimeout(() => setLastSale(null), 5000);
     } catch {
       // Error is handled by React Query
     }
+  };
+
+  // Print receipt
+  const handlePrintReceipt = () => {
+    if (!lastSale) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt - ${lastSale.transactionNumber}</title>
+        <style>
+          body { font-family: 'Courier New', monospace; max-width: 300px; margin: 0 auto; padding: 20px; }
+          .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+          .item { display: flex; justify-content: space-between; margin: 5px 0; }
+          .total { border-top: 1px dashed #000; margin-top: 10px; padding-top: 10px; font-weight: bold; }
+          .footer { text-align: center; margin-top: 20px; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h2>RECEIPT</h2>
+          <p>Transaction: ${lastSale.transactionNumber}</p>
+          <p>${new Date().toLocaleString()}</p>
+          ${lastSale.customer ? `<p>Customer: ${lastSale.customer.name}</p>` : ''}
+        </div>
+        <div class="items">
+          ${lastSale.items.map(item => `
+            <div class="item">
+              <span>${item.product.name} x${item.quantity}</span>
+              <span>${formatCurrency((item.product.unitPrice || 0) * item.quantity)}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="total">
+          <div class="item">
+            <span>TOTAL</span>
+            <span>${formatCurrency(lastSale.total)}</span>
+          </div>
+          <div class="item">
+            <span>Payment</span>
+            <span>${lastSale.paymentMethod.toUpperCase()}</span>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Thank you for your purchase!</p>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  // Email receipt
+  const handleEmailReceipt = () => {
+    if (!lastSale) return;
+    // In production, this would call an API to send email
+    alert('Email receipt functionality requires backend email service configuration.');
+  };
+
+  // Save as quote
+  const handleSaveAsQuote = () => {
+    if (cart.length === 0) return;
+    
+    const quote = {
+      id: `Q-${Date.now()}`,
+      items: cart.map(item => ({
+        productId: item.product.id,
+        name: item.product.name,
+        sku: item.product.sku,
+        quantity: item.quantity,
+        unitPrice: item.product.unitPrice || 0,
+      })),
+      customer: selectedCustomer,
+      subtotal,
+      discount,
+      tax,
+      total,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+      status: 'pending' as const,
+    };
+    
+    // Save to localStorage (in production, this would be an API call)
+    const quotes = JSON.parse(localStorage.getItem('EasySale_quotes') || '[]');
+    quotes.push(quote);
+    localStorage.setItem('EasySale_quotes', JSON.stringify(quotes));
+    
+    // Show success and clear cart
+    alert(`Quote ${quote.id} saved successfully! Valid for 7 days.`);
+    clearCart();
   };
 
   // Handle discount application
@@ -326,12 +453,118 @@ export function SellPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Success Banner */}
-      {lastSale && (
-        <div className="bg-success text-white px-4 py-3 flex items-center justify-center gap-2">
-          <Check size={20} />
-          <span>
-            Sale completed! Transaction #{lastSale.transactionNumber} - {formatCurrency(lastSale.total)}
-          </span>
+      {lastSale && !showReceiptModal && (
+        <div className="bg-success text-white px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Check size={20} />
+            <span>
+              Sale completed! Transaction #{lastSale.transactionNumber} - {formatCurrency(lastSale.total)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowReceiptModal(true)}
+              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-sm flex items-center gap-1"
+            >
+              <Receipt size={16} />
+              View Receipt
+            </button>
+            <button
+              onClick={() => setLastSale(null)}
+              className="p-1 hover:bg-white/20 rounded"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Modal */}
+      {showReceiptModal && lastSale && (
+        <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 'var(--z-modal)' }}>
+          <div 
+            className="absolute inset-0 bg-black/50" 
+            onClick={() => setShowReceiptModal(false)}
+          />
+          <div className="relative bg-surface-1 rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 className="text-xl font-bold text-text-primary">Receipt</h2>
+              <button
+                onClick={() => setShowReceiptModal(false)}
+                className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-2 rounded-lg"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              <div className="text-center mb-4 pb-4 border-b border-border">
+                <div className="text-2xl font-bold text-success mb-1">
+                  <Check className="inline mr-2" size={24} />
+                  Sale Complete!
+                </div>
+                <div className="text-text-secondary">
+                  Transaction #{lastSale.transactionNumber}
+                </div>
+                <div className="text-sm text-text-tertiary">
+                  {new Date().toLocaleString()}
+                </div>
+              </div>
+              
+              {lastSale.customer && (
+                <div className="mb-4 p-3 bg-surface-2 rounded-lg">
+                  <div className="text-sm text-text-tertiary">Customer</div>
+                  <div className="font-medium text-text-primary">{lastSale.customer.name}</div>
+                </div>
+              )}
+              
+              <div className="space-y-2 mb-4">
+                {lastSale.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between text-text-secondary">
+                    <span>{item.product.name} × {item.quantity}</span>
+                    <span>{formatCurrency((item.product.unitPrice || 0) * item.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="pt-4 border-t border-border">
+                <div className="flex justify-between text-xl font-bold text-text-primary">
+                  <span>Total</span>
+                  <span>{formatCurrency(lastSale.total)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-text-tertiary mt-1">
+                  <span>Payment Method</span>
+                  <span className="capitalize">{lastSale.paymentMethod}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-border bg-surface-2 flex gap-3">
+              <button
+                onClick={handlePrintReceipt}
+                className="flex-1 py-3 bg-surface-3 hover:bg-surface-3/80 text-text-primary font-medium rounded-lg flex items-center justify-center gap-2"
+              >
+                <Printer size={18} />
+                Print
+              </button>
+              <button
+                onClick={handleEmailReceipt}
+                className="flex-1 py-3 bg-surface-3 hover:bg-surface-3/80 text-text-primary font-medium rounded-lg flex items-center justify-center gap-2"
+              >
+                <Mail size={18} />
+                Email
+              </button>
+              <button
+                onClick={() => {
+                  setShowReceiptModal(false);
+                  setLastSale(null);
+                }}
+                className="flex-1 py-3 bg-success hover:bg-success/90 text-white font-medium rounded-lg"
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -699,7 +932,7 @@ export function SellPage() {
           </div>
 
           {/* Payment buttons */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 mb-2">
             <button
               onClick={() => setShowPaymentModal(true)}
               disabled={cart.length === 0}
@@ -725,6 +958,16 @@ export function SellPage() {
               <span className="text-sm">Other</span>
             </button>
           </div>
+          
+          {/* Save as Quote button */}
+          <button
+            onClick={handleSaveAsQuote}
+            disabled={cart.length === 0}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-surface-2 hover:bg-surface-3 disabled:bg-surface-3 disabled:text-text-muted rounded-lg text-text-secondary hover:text-text-primary font-medium transition-colors border border-border"
+          >
+            <FileText size={18} />
+            <span>Save as Quote</span>
+          </button>
         </div>
       </div>
       </div>

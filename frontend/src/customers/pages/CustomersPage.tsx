@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Search,
@@ -19,6 +20,8 @@ import {
   ShoppingBag,
   Edit2,
   Trash2,
+  CreditCard,
+  Gift,
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 import { EmptyState } from '@common/components/molecules/EmptyState';
@@ -157,12 +160,14 @@ const tierColors = {
 };
 
 export function CustomersPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'individual' | 'business'>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showCustomerMenu, setShowCustomerMenu] = useState(false);
 
   // Fetch customers from backend
   const { data: customersData = [], isLoading, error } = useCustomersQuery();
@@ -415,9 +420,59 @@ export function CustomersPage() {
                     <User className="text-text-tertiary" size={28} />
                   )}
                 </div>
-                <button className="p-2 text-text-tertiary hover:text-white hover:bg-surface-elevated rounded-lg transition-colors">
-                  <MoreVertical size={20} />
-                </button>
+                <div className="relative">
+                  <button 
+                    className="p-2 text-text-tertiary hover:text-white hover:bg-surface-elevated rounded-lg transition-colors"
+                    onClick={() => setShowCustomerMenu(!showCustomerMenu)}
+                  >
+                    <MoreVertical size={20} />
+                  </button>
+                  {showCustomerMenu && (
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-surface-elevated border border-border rounded-lg shadow-lg z-50">
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                        onClick={() => {
+                          setShowCustomerMenu(false);
+                          setIsEditModalOpen(true);
+                        }}
+                      >
+                        <Edit2 size={16} />
+                        Edit Customer
+                      </button>
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                        onClick={() => {
+                          setShowCustomerMenu(false);
+                          navigate('/sell', { state: { customerId: selectedCustomer.id, customerName: selectedCustomer.name } });
+                        }}
+                      >
+                        <ShoppingBag size={16} />
+                        New Sale
+                      </button>
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                        onClick={() => {
+                          setShowCustomerMenu(false);
+                          navigate('/transactions', { state: { customerId: selectedCustomer.id } });
+                        }}
+                      >
+                        <Calendar size={16} />
+                        View All Orders
+                      </button>
+                      <div className="border-t border-border my-1" />
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm text-status-error hover:bg-surface-secondary flex items-center gap-2"
+                        onClick={() => {
+                          setShowCustomerMenu(false);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 size={16} />
+                        Delete Customer
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <h2 className="text-xl font-bold text-white mb-1">{selectedCustomer.name}</h2>
               {selectedCustomer.company && (
@@ -496,7 +551,7 @@ export function CustomersPage() {
                       Avg. Order
                     </div>
                     <div className="text-lg font-bold text-white">
-                      ${(selectedCustomer.totalSpent / selectedCustomer.orderCount).toFixed(2)}
+                      ${selectedCustomer.orderCount > 0 ? (selectedCustomer.totalSpent / selectedCustomer.orderCount).toFixed(2) : '0.00'}
                     </div>
                   </div>
                   <div className="bg-surface-elevated rounded-lg p-3">
@@ -505,10 +560,37 @@ export function CustomersPage() {
                       Last Order
                     </div>
                     <div className="text-lg font-bold text-white">
-                      {new Date(selectedCustomer.lastOrder).toLocaleDateString('en-US', {
+                      {selectedCustomer.lastOrder ? new Date(selectedCustomer.lastOrder).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
-                      })}
+                      }) : 'Never'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loyalty & Credit */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-text-tertiary uppercase tracking-wider">
+                  Loyalty & Credit
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-surface-elevated rounded-lg p-3">
+                    <div className="flex items-center gap-2 text-text-tertiary text-xs mb-1">
+                      <Gift size={14} />
+                      Loyalty Points
+                    </div>
+                    <div className="text-lg font-bold text-status-success">
+                      {(selectedCustomer as Customer & { loyaltyPoints?: number }).loyaltyPoints?.toLocaleString() || 0}
+                    </div>
+                  </div>
+                  <div className="bg-surface-elevated rounded-lg p-3">
+                    <div className="flex items-center gap-2 text-text-tertiary text-xs mb-1">
+                      <CreditCard size={14} />
+                      Store Credit
+                    </div>
+                    <div className="text-lg font-bold text-status-info">
+                      ${((selectedCustomer as Customer & { storeCredit?: number }).storeCredit || 0).toFixed(2)}
                     </div>
                   </div>
                 </div>
@@ -579,7 +661,15 @@ export function CustomersPage() {
                   Delete
                 </Button>
               </div>
-              <Button variant="primary" fullWidth>
+              <Button 
+                variant="primary" 
+                fullWidth
+                leftIcon={<ShoppingBag size={16} />}
+                onClick={() => {
+                  // Navigate to sell page with customer pre-selected
+                  navigate('/sell', { state: { customerId: selectedCustomer.id, customerName: selectedCustomer.name } });
+                }}
+              >
                 New Sale
               </Button>
             </div>

@@ -13,6 +13,7 @@ import { AccessDeniedPage } from './auth/pages/AccessDeniedPage';
 import { FreshInstallWizard } from './setup/pages/FreshInstallWizard';
 import { HomePage } from './home/pages/HomePage';
 import { SellPage } from './sell/pages/SellPage';
+import { QuotesPage } from './sell/pages/QuotesPage';
 import { LookupPage } from './lookup/pages/LookupPage';
 import { InventoryPage } from './inventory/pages/InventoryPage';
 import { CustomersPage } from './customers/pages/CustomersPage';
@@ -130,6 +131,17 @@ function App() {
                             <RequireSetup>
                               <RequirePermission permission="access_sell">
                                 <SellPage />
+                              </RequirePermission>
+                            </RequireSetup>
+                          }
+                        />
+
+                        <Route
+                          path="quotes"
+                          element={
+                            <RequireSetup>
+                              <RequirePermission permission="access_sell">
+                                <QuotesPage />
                               </RequirePermission>
                             </RequireSetup>
                           }

@@ -14,6 +14,11 @@ import {
   Barcode,
   MapPin,
   FileText,
+  Printer,
+  Edit,
+  Trash2,
+  X,
+  ShoppingCart,
 } from 'lucide-react';
 import { cn } from '@common/utils/classNames';
 import { useInventoryQuery } from '../hooks/useInventoryQuery';
@@ -115,12 +120,217 @@ const tabs = [
   { id: 'alerts' as TabType, label: 'Alerts', icon: AlertTriangle, badge: 0 },
 ];
 
+// Filter Modal Component
+interface FilterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  filters: FilterState;
+  onApply: (filters: FilterState) => void;
+}
+
+interface FilterState {
+  status: 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
+  location: string;
+  minStock: number | null;
+  maxStock: number | null;
+}
+
+function FilterModal({ isOpen, onClose, filters, onApply }: FilterModalProps) {
+  const [localFilters, setLocalFilters] = useState<FilterState>(filters);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-elevated rounded-lg p-6 w-full max-w-md" style={{ boxShadow: 'var(--shadow-modal)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-text-primary">Filter Inventory</h2>
+          <button onClick={onClose} className="p-2 text-text-tertiary hover:text-text-primary">
+            <X size={20} />
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          {/* Status filter */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Status</label>
+            <select
+              value={localFilters.status}
+              onChange={(e) => setLocalFilters({ ...localFilters, status: e.target.value as FilterState['status'] })}
+              className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-md text-text-primary"
+            >
+              <option value="all">All Statuses</option>
+              <option value="in-stock">In Stock</option>
+              <option value="low-stock">Low Stock</option>
+              <option value="out-of-stock">Out of Stock</option>
+            </select>
+          </div>
+
+          {/* Location filter */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Location</label>
+            <input
+              type="text"
+              placeholder="Filter by location..."
+              value={localFilters.location}
+              onChange={(e) => setLocalFilters({ ...localFilters, location: e.target.value })}
+              className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-md text-text-primary placeholder-text-tertiary"
+            />
+          </div>
+
+          {/* Stock range */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Min Stock</label>
+              <input
+                type="number"
+                placeholder="0"
+                value={localFilters.minStock ?? ''}
+                onChange={(e) => setLocalFilters({ ...localFilters, minStock: e.target.value ? parseInt(e.target.value) : null })}
+                className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-md text-text-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Max Stock</label>
+              <input
+                type="number"
+                placeholder="∞"
+                value={localFilters.maxStock ?? ''}
+                onChange={(e) => setLocalFilters({ ...localFilters, maxStock: e.target.value ? parseInt(e.target.value) : null })}
+                className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-md text-text-primary"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-6">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setLocalFilters({ status: 'all', location: '', minStock: null, maxStock: null });
+            }}
+          >
+            Clear
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              onApply(localFilters);
+              onClose();
+            }}
+          >
+            Apply Filters
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Stock Adjustment Modal
+interface StockAdjustmentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  items: { id: string; name: string; stock: number }[];
+  onAdjust: (adjustments: { id: string; newStock: number; reason: string }[]) => void;
+}
+
+function StockAdjustmentModal({ isOpen, onClose, items, onAdjust }: StockAdjustmentModalProps) {
+  const [adjustments, setAdjustments] = useState<Record<string, { newStock: number; reason: string }>>(
+    Object.fromEntries(items.map(item => [item.id, { newStock: item.stock, reason: '' }]))
+  );
+  const [globalReason, setGlobalReason] = useState('');
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 'var(--z-modal)' }}>
+      <div className="bg-surface-elevated rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-modal)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-text-primary">Adjust Stock</h2>
+          <button onClick={onClose} className="p-2 text-text-tertiary hover:text-text-primary">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-text-secondary mb-2">Adjustment Reason (applies to all)</label>
+          <select
+            value={globalReason}
+            onChange={(e) => setGlobalReason(e.target.value)}
+            className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-md text-text-primary"
+          >
+            <option value="">Select reason...</option>
+            <option value="cycle_count">Cycle Count</option>
+            <option value="damaged">Damaged/Defective</option>
+            <option value="theft">Theft/Shrinkage</option>
+            <option value="received">Received Stock</option>
+            <option value="returned">Customer Return</option>
+            <option value="correction">Correction</option>
+          </select>
+        </div>
+
+        <div className="space-y-3 mb-6">
+          {items.map(item => (
+            <div key={item.id} className="flex items-center gap-4 p-3 bg-surface-secondary rounded-lg">
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-text-primary truncate">{item.name}</div>
+                <div className="text-sm text-text-tertiary">Current: {item.stock}</div>
+              </div>
+              <input
+                type="number"
+                min="0"
+                value={adjustments[item.id]?.newStock ?? item.stock}
+                onChange={(e) => setAdjustments({
+                  ...adjustments,
+                  [item.id]: { ...adjustments[item.id], newStock: parseInt(e.target.value) || 0 }
+                })}
+                className="w-24 px-3 py-2 bg-surface border border-border rounded-md text-text-primary text-center"
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              const adjustmentList = items.map(item => ({
+                id: item.id,
+                newStock: adjustments[item.id]?.newStock ?? item.stock,
+                reason: globalReason || 'correction'
+              }));
+              onAdjust(adjustmentList);
+              onClose();
+            }}
+          >
+            Save Adjustments
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function InventoryPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('inventory');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const [activeRowMenu, setActiveRowMenu] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterState>({
+    status: 'all',
+    location: '',
+    minStock: null,
+    maxStock: null,
+  });
 
   // Use inventory query hook
    
@@ -143,11 +353,55 @@ export function InventoryPage() {
     }
   };
 
-  const filteredInventory = inventory.filter(
-    (item) =>
+  const filteredInventory = inventory.filter((item) => {
+    // Text search
+    const matchesSearch = 
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      item.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Status filter
+    const matchesStatus = filters.status === 'all' || item.status === filters.status;
+    
+    // Location filter
+    const matchesLocation = !filters.location || 
+      item.location.toLowerCase().includes(filters.location.toLowerCase());
+    
+    // Stock range filter
+    const matchesMinStock = filters.minStock === null || item.stock >= filters.minStock;
+    const matchesMaxStock = filters.maxStock === null || item.stock <= filters.maxStock;
+    
+    return matchesSearch && matchesStatus && matchesLocation && matchesMinStock && matchesMaxStock;
+  });
+
+  const hasActiveFilters = filters.status !== 'all' || filters.location !== '' || 
+    filters.minStock !== null || filters.maxStock !== null;
+
+  const handlePrintLabels = () => {
+    const selectedProducts = inventory.filter(item => selectedItems.includes(item.id));
+    toast.success(`Printing labels for ${selectedProducts.length} items...`);
+    // In production, this would trigger label printing
+    setTimeout(() => {
+      toast.info('Labels sent to printer');
+      setSelectedItems([]);
+    }, 1500);
+  };
+
+  const handleStockAdjustment = (adjustments: { id: string; newStock: number; reason: string }[]) => {
+    // In production, this would call the API
+    toast.success(`Adjusted stock for ${adjustments.length} items`);
+    setSelectedItems([]);
+  };
+
+  const handleTransfer = () => {
+    const selectedProductIds = selectedItems.join(',');
+    navigate(`/inventory/transfer?items=${selectedProductIds}`);
+  };
+
+  const handleReorder = (item: typeof inventory[0]) => {
+    toast.success(`Creating purchase order for ${item.name}...`);
+    // In production, navigate to purchase order creation
+    navigate('/vendor-bills/upload', { state: { reorderItem: item } });
+  };
 
   const stats = {
     totalItems: inventory.length,
@@ -281,10 +535,16 @@ export function InventoryPage() {
                 />
               </div>
               <Button
-                variant="secondary"
+                variant={hasActiveFilters ? "primary" : "secondary"}
                 leftIcon={<Filter size={18} />}
+                onClick={() => setIsFilterModalOpen(true)}
               >
                 <span className="hidden sm:inline">Filter</span>
+                {hasActiveFilters && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded text-xs">
+                    Active
+                  </span>
+                )}
               </Button>
             </div>
 
@@ -434,9 +694,69 @@ export function InventoryPage() {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <button className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors">
-                              <MoreVertical size={18} />
-                            </button>
+                            <div className="relative">
+                              <button 
+                                className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors"
+                                onClick={() => setActiveRowMenu(activeRowMenu === item.id ? null : item.id)}
+                              >
+                                <MoreVertical size={18} />
+                              </button>
+                              {activeRowMenu === item.id && (
+                                <div className="absolute right-0 top-full mt-1 w-48 bg-surface-elevated border border-border rounded-lg shadow-lg z-50">
+                                  <button
+                                    className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                                    onClick={() => {
+                                      setActiveRowMenu(null);
+                                      navigate(`/lookup/${item.id}`);
+                                    }}
+                                  >
+                                    <Edit size={16} />
+                                    Edit Product
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                                    onClick={() => {
+                                      setActiveRowMenu(null);
+                                      setSelectedItems([item.id]);
+                                      setIsAdjustModalOpen(true);
+                                    }}
+                                  >
+                                    <ArrowUpDown size={16} />
+                                    Adjust Stock
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                                    onClick={() => {
+                                      setActiveRowMenu(null);
+                                      navigate(`/inventory/transfer?items=${item.id}`);
+                                    }}
+                                  >
+                                    <TruckIcon size={16} />
+                                    Transfer
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                                    onClick={() => {
+                                      setActiveRowMenu(null);
+                                      toast.success(`Printing label for ${item.name}`);
+                                    }}
+                                  >
+                                    <Printer size={16} />
+                                    Print Label
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-surface-secondary hover:text-white flex items-center gap-2"
+                                    onClick={() => {
+                                      setActiveRowMenu(null);
+                                      handleReorder(item);
+                                    }}
+                                  >
+                                    <ShoppingCart size={16} />
+                                    Reorder
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -451,13 +771,28 @@ export function InventoryPage() {
                       {selectedItems.length} item(s) selected
                     </span>
                     <div className="flex gap-2">
-                      <Button variant="secondary" size="sm">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        leftIcon={<Printer size={16} />}
+                        onClick={handlePrintLabels}
+                      >
                         Print Labels
                       </Button>
-                      <Button variant="secondary" size="sm">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        leftIcon={<ArrowUpDown size={16} />}
+                        onClick={() => setIsAdjustModalOpen(true)}
+                      >
                         Adjust Stock
                       </Button>
-                      <Button variant="secondary" size="sm">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        leftIcon={<TruckIcon size={16} />}
+                        onClick={handleTransfer}
+                      >
                         Transfer
                       </Button>
                     </div>
@@ -546,6 +881,7 @@ export function InventoryPage() {
                       variant="primary"
                       size="sm"
                       rightIcon={<ChevronRight size={16} />}
+                      onClick={() => handleReorder(item)}
                     >
                       Reorder
                     </Button>
@@ -559,6 +895,23 @@ export function InventoryPage() {
           isOpen={isScanModalOpen}
           onClose={() => setIsScanModalOpen(false)}
           onScanComplete={handleScanComplete}
+        />
+
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          filters={filters}
+          onApply={setFilters}
+        />
+
+        <StockAdjustmentModal
+          isOpen={isAdjustModalOpen}
+          onClose={() => {
+            setIsAdjustModalOpen(false);
+            setSelectedItems([]);
+          }}
+          items={inventory.filter(item => selectedItems.includes(item.id))}
+          onAdjust={handleStockAdjustment}
         />
       </div>
     </div>
