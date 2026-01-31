@@ -5,7 +5,7 @@ import { validateConfig } from './validation';
 import { mergeConfigs, type StoreConfig, type UserConfig } from './configMerge';
 import { applyThemeToCSS } from './themeBridge';
 import { preloadBrandingAssets, resolveLogo } from './assetCache';
-import { toBrandConfig, getBrandConfigForProfile } from './brandConfig';
+import { getBrandConfigForProfile } from './brandConfig';
 import { devLog } from '../common/utils/devLog';
 import { getRuntimeProfile } from '../common/utils/demoMode';
 
