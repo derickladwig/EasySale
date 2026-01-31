@@ -116,7 +116,11 @@ echo To restart: start-prod.bat
 echo To rebuild: build-prod.bat
 echo.
 
-call :PAUSE_IF_INTERACTIVE
+if not defined NO_PAUSE (
+    echo.
+    echo Press any key to close this window...
+    pause >nul
+)
 exit /b 0
 
 REM ============================================

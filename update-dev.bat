@@ -188,7 +188,11 @@ echo   Start dev environment:  start-dev.bat
 echo   View changes:           git diff package-lock.json Cargo.lock
 echo.
 
-call :PAUSE_IF_INTERACTIVE
+if not defined NO_PAUSE (
+    echo.
+    echo Press any key to close this window...
+    pause >nul
+)
 exit /b 0
 
 REM ============================================

@@ -174,7 +174,11 @@ echo [%date% %time%] Docker clean completed successfully >> "%LOG_FILE%"
 echo Log file: %LOG_FILE%
 echo.
 
-call :PAUSE_IF_INTERACTIVE
+if not defined NO_PAUSE (
+    echo.
+    echo Press any key to close this window...
+    pause >nul
+)
 popd
 exit /b 0
 
