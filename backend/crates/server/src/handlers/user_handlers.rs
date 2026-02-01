@@ -11,6 +11,8 @@ pub struct CreateUserRequest {
     pub email: String,
     pub password: String,
     pub display_name: String,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
     pub role: String,
     pub store_id: Option<String>,
     pub station_policy: Option<String>,
@@ -23,6 +25,8 @@ pub struct UpdateUserRequest {
     pub username: Option<String>,
     pub email: Option<String>,
     pub display_name: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
     pub role: Option<String>,
     pub store_id: Option<String>,
     pub station_policy: Option<String>,
@@ -36,6 +40,8 @@ pub struct UserResponse {
     pub username: String,
     pub email: String,
     pub display_name: String,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
     pub role: String,
     pub store_id: Option<String>,
     pub station_policy: Option<String>,
@@ -78,14 +84,15 @@ fn validate_create_user(req: &CreateUserRequest) -> Result<(), String> {
         return Err("Password must be at least 8 characters".to_string());
     }
 
-    // Role validation
-    let valid_roles = vec!["admin", "manager", "cashier", "inventory"];
+    // Role validation - support both frontend and backend role names
+    let valid_roles = vec!["admin", "manager", "cashier", "inventory", "inventory_clerk", "specialist", "technician"];
     if !valid_roles.contains(&req.role.as_str()) {
         return Err(format!("Invalid role. Must be one of: {}", valid_roles.join(", ")));
     }
 
-    // Store requirement for POS roles
-    if (req.role == "cashier" || req.role == "inventory") && req.store_id.is_none() {
+    // Store requirement for POS roles (including inventory_clerk alias)
+    let pos_roles = vec!["cashier", "inventory", "inventory_clerk", "specialist", "technician"];
+    if pos_roles.contains(&req.role.as_str()) && req.store_id.is_none() {
         return Err(format!("{} role requires store assignment", req.role));
     }
 
@@ -123,16 +130,19 @@ pub async fn create_user(
     let password_hash = crate::services::PasswordService::hash_password(&req.password)
         .map_err(|_| ApiError::internal("Password hashing failed"))?; // Secure bcrypt hashing
     let now = Utc::now().to_rfc3339();
+    
+    // Use tenant_id from context or default
+    let tenant_id = context.tenant_id.clone().unwrap_or_else(|| "default".to_string());
 
-    // Insert user
+    // Insert user with tenant_id
     let result = sqlx::query!(
         r#"
         INSERT INTO users (
             username, email, password_hash, display_name, role,
             store_id, station_policy, station_id, is_active,
-            created_at, updated_at
+            tenant_id, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#,
         req.username,
         req.email,
@@ -143,6 +153,7 @@ pub async fn create_user(
         req.station_policy,
         req.station_id,
         req.is_active,
+        tenant_id,
         now,
         now
     )
@@ -252,12 +263,40 @@ pub async fn list_users(
     pool: web::Data<SqlitePool>,
     query: web::Query<ListUsersQuery>,
 ) -> Result<HttpResponse> {
-    // Build dynamic query based on filters
-    let mut sql = String::from(
+    // Use parameterized queries to prevent SQL injection
+    // Build conditions and parameters separately
+    let mut conditions = Vec::new();
+    let mut bind_values: Vec<String> = Vec::new();
+    
+    if query.never_logged_in == Some(true) {
+        conditions.push("last_login_at IS NULL");
+    }
+    if let Some(ref role) = query.role {
+        conditions.push("role = ?");
+        bind_values.push(role.clone());
+    }
+    if let Some(ref store_id) = query.store_id {
+        conditions.push("store_id = ?");
+        bind_values.push(store_id.clone());
+    }
+    if let Some(is_active) = query.is_active {
+        conditions.push("is_active = ?");
+        bind_values.push(if is_active { "1".to_string() } else { "0".to_string() });
+    }
+    
+    let where_clause = if conditions.is_empty() {
+        String::new()
+    } else {
+        format!(" AND {}", conditions.join(" AND "))
+    };
+    
+    let sql = format!(
         r#"
         SELECT 
             id, username, email,
             display_name,
+            first_name,
+            last_name,
             role,
             store_id,
             station_policy,
@@ -266,39 +305,31 @@ pub async fn list_users(
             created_at, updated_at,
             last_login_at
         FROM users
-        WHERE 1=1
-        "#
+        WHERE 1=1 {}
+        ORDER BY created_at DESC
+        "#,
+        where_clause
     );
     
-    // Add filter conditions
-    if query.never_logged_in == Some(true) {
-        sql.push_str(" AND last_login_at IS NULL");
-    }
-    if let Some(ref role) = query.role {
-        sql.push_str(&format!(" AND role = '{}'", role));
-    }
-    if let Some(ref store_id) = query.store_id {
-        sql.push_str(&format!(" AND store_id = '{}'", store_id));
-    }
-    if let Some(is_active) = query.is_active {
-        sql.push_str(&format!(" AND is_active = {}", if is_active { 1 } else { 0 }));
+    // Build query with proper parameter binding
+    let mut query_builder = sqlx::query_as::<_, (String, String, String, String, Option<String>, Option<String>, String, Option<String>, Option<String>, Option<String>, i32, String, String, Option<String>)>(&sql);
+    
+    for value in bind_values {
+        query_builder = query_builder.bind(value);
     }
     
-    sql.push_str(" ORDER BY created_at DESC");
-    
-    let users: Result<Vec<(String, String, String, String, String, Option<String>, Option<String>, Option<String>, i32, String, String, Option<String>)>, _> = 
-        sqlx::query_as(&sql)
-        .fetch_all(pool.get_ref())
-        .await;
+    let users = query_builder.fetch_all(pool.get_ref()).await;
 
     match users {
         Ok(rows) => {
-            let users: Vec<UserResponse> = rows.into_iter().map(|(id, username, email, display_name, role, store_id, station_policy, station_id, is_active, created_at, updated_at, last_login_at)| {
+            let users: Vec<UserResponse> = rows.into_iter().map(|(id, username, email, display_name, first_name, last_name, role, store_id, station_policy, station_id, is_active, created_at, updated_at, last_login_at)| {
                 UserResponse {
                     id,
                     username,
                     email,
                     display_name,
+                    first_name,
+                    last_name,
                     role,
                     store_id,
                     station_policy,
@@ -369,6 +400,14 @@ pub async fn update_user(
         updates.push("display_name = ?");
         params.push(display_name.clone());
     }
+    if let Some(first_name) = &req.first_name {
+        updates.push("first_name = ?");
+        params.push(first_name.clone());
+    }
+    if let Some(last_name) = &req.last_name {
+        updates.push("last_name = ?");
+        params.push(last_name.clone());
+    }
     if let Some(role) = &req.role {
         updates.push("role = ?");
         params.push(role.clone());
@@ -398,16 +437,22 @@ pub async fn update_user(
 
     updates.push("updated_at = ?");
     params.push(Utc::now().to_rfc3339());
+    
+    // Add user_id as the last parameter for WHERE clause
+    params.push(user_id.clone());
 
     let query = format!(
         "UPDATE users SET {} WHERE id = ?",
         updates.join(", ")
     );
 
-    // Execute update (simplified - in production would use proper parameter binding)
-    let result = sqlx::query(&query)
-        .execute(pool.get_ref())
-        .await;
+    // Execute update with proper parameter binding
+    let mut query_builder = sqlx::query(&query);
+    for param in &params {
+        query_builder = query_builder.bind(param);
+    }
+    
+    let result = query_builder.execute(pool.get_ref()).await;
 
     match result {
         Ok(_) => {
@@ -730,5 +775,85 @@ pub async fn change_password(
     
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "message": "Password changed successfully"
+    })))
+}
+
+/// Request body for admin password reset
+#[derive(Debug, Deserialize)]
+pub struct AdminPasswordResetRequest {
+    pub new_password: String,
+}
+
+/// POST /api/users/{id}/reset-password
+/// Admin endpoint to reset another user's password
+pub async fn reset_user_password(
+    pool: web::Data<SqlitePool>,
+    audit_logger: web::Data<AuditLogger>,
+    context: web::ReqData<crate::models::UserContext>,
+    user_id: web::Path<String>,
+    body: web::Json<AdminPasswordResetRequest>,
+) -> Result<HttpResponse> {
+    let target_user_id = user_id.into_inner();
+    
+    // Validate new password
+    if body.new_password.len() < 8 {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "New password must be at least 8 characters"
+        })));
+    }
+
+    // Check if target user exists
+    let user_exists: Option<(String,)> = sqlx::query_as(
+        "SELECT username FROM users WHERE id = ?"
+    )
+    .bind(&target_user_id)
+    .fetch_optional(pool.get_ref())
+    .await
+    .map_err(|e| ApiError::internal(format!("Database error: {}", e)))?;
+
+    let target_username = match user_exists {
+        Some((username,)) => username,
+        None => {
+            return Ok(HttpResponse::NotFound().json(serde_json::json!({
+                "error": "User not found"
+            })));
+        }
+    };
+
+    // Hash new password
+    let new_hash = crate::services::PasswordService::hash_password(&body.new_password)
+        .map_err(|_| ApiError::internal("Password hashing failed"))?;
+
+    // Update password
+    let now = Utc::now().to_rfc3339();
+    sqlx::query("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?")
+        .bind(&new_hash)
+        .bind(&now)
+        .bind(&target_user_id)
+        .execute(pool.get_ref())
+        .await
+        .map_err(|e| ApiError::internal(format!("Failed to reset password: {}", e)))?;
+
+    // Log audit event
+    audit_logger.log_settings_change(
+        "user",
+        &target_user_id,
+        "password_reset",
+        &context.user_id,
+        &context.username,
+        context.store_id.as_deref(),
+        context.station_id.as_deref(),
+        None,
+        Some(serde_json::json!({
+            "target_user": target_username,
+            "reset_by": context.username
+        })),
+        false,
+    ).await.ok();
+
+    tracing::info!("Password reset for user {} by admin {}", target_user_id, context.username);
+    
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "message": "Password reset successfully"
     })))
 }

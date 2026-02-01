@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT id, code, name, discount_type, amount, description\n            FROM discounts\n            WHERE tenant_id = ? AND code = ? AND is_active = 1\n            AND (start_date IS NULL OR start_date <= datetime('now'))\n            AND (end_date IS NULL OR end_date >= datetime('now'))\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "code",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "discount_type",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "amount",
+        "ordinal": 4,
+        "type_info": "Float"
+      },
+      {
+        "name": "description",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "1bb3be5964cbd7e2ac4f2f979969e50a0d962f92c541d09cef27864cb7f54d5d"
+}

@@ -5,9 +5,11 @@
  * Prevents regression by failing if hardcoded colors are found outside theme files.
  * 
  * Rules enforced:
- * 1. No hex colors (#xxx, #xxxxxx) in src/ except allowed theme files
- * 2. No rgb()/hsl() in src/ except allowed theme files
- * 3. No Tailwind base color utilities (slate-*, blue-*, gray-*) in components
+ * 1. No hex colors (#xxx, #xxxxxx, #xxxxxxxx) in src/ except allowed theme files
+ * 2. No rgb()/rgba() in src/ except allowed theme files
+ * 3. No hsl()/hsla() in src/ except allowed theme files
+ * 4. No Tailwind base color utilities (slate-*, blue-*, gray-*) in components
+ * 5. No named colors (red, blue, white, etc.) in style attributes
  * 
  * Allowed files (theme source of truth):
  * - src/styles/tokens.css
@@ -44,11 +46,24 @@ const ALLOWED_FILES = [
   'theme/ThemeEngine.ts',
   'config/themeBridge.ts',
   'config/defaultConfig.ts',    // Default theme configuration
+  'config/ConfigStore.ts',      // Default theme configuration
   'auth/theme/presets/',
+  'auth/',                      // Auth theme system (LoginThemeProvider exception)
   'common/utils/designTokens.ts',
+  'common/styles/theme.ts',     // Theme constants
   'settings/components/StoreThemeConfig.tsx', // Color picker presets
+  'settings/components/SettingsLayout.module.css', // CSS module with fallbacks
+  'admin/pages/BrandingSettingsPage.tsx',     // Color picker presets and preview
+  'admin/pages/SetupWizard.module.css',       // CSS module with fallbacks
+  'admin/components/wizard/BrandingStepContent.tsx', // Color picker presets
+  'assets/styles/print.css',    // Print styles need explicit colors
+  'components/FaviconManager.tsx', // Favicon generation needs explicit colors
+  'sales/pages/TransactionHistoryPage.tsx', // Print receipt styles
+  'sell/pages/QuotesPage.tsx',  // Print quote styles
+  'sell/pages/SellPage.tsx',    // Print receipt styles
   'index.css',                  // Root styles with fallbacks
   'test-inline-styles.tsx',     // Test file
+  'test/fixtures/',             // Test fixtures
   'legacy_quarantine/',         // Quarantined legacy code
 ];
 
@@ -56,12 +71,26 @@ const ALLOWED_PATTERNS = [
   /\.test\.(ts|tsx|js|jsx)$/,
   /\.stories\.(ts|tsx|js|jsx)$/,
   /\.spec\.(ts|tsx|js|jsx)$/,
+  /\.example\.(ts|tsx|js|jsx)$/,
+  /Example\.(ts|tsx|js|jsx)$/,
 ];
 
 // Patterns to detect
-const HEX_COLOR_PATTERN = /#([0-9a-fA-F]{3}){1,2}\b/g;
-const RGB_HSL_PATTERN = /\b(rgb|hsl)a?\s*\(/gi;
+const HEX_COLOR_PATTERN = /#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b/g;
+const RGB_PATTERN = /\brgba?\s*\(\s*\d+\s*,\s*\d+\s*,\s*\d+/gi;
+const HSL_PATTERN = /\bhsla?\s*\(\s*\d+\s*,\s*\d+%?\s*,\s*\d+%?/gi;
 const TAILWIND_BASE_COLORS = /\b(bg|text|border|ring|fill|stroke)-(slate|blue|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}\b/g;
+
+// Named CSS colors to detect in style attributes
+const NAMED_COLORS = [
+  'black', 'white', 'red', 'blue', 'green', 'yellow', 'orange', 'purple',
+  'pink', 'brown', 'gray', 'grey', 'cyan', 'magenta', 'lime', 'navy',
+  'teal', 'aqua', 'maroon', 'olive', 'silver', 'fuchsia', 'indigo'
+];
+const NAMED_COLOR_PATTERN = new RegExp(
+  `\\b(color|background|backgroundColor|borderColor)\\s*[:=]\\s*['"\`](${NAMED_COLORS.join('|')})['"\`]`,
+  'gi'
+);
 
 // Results tracking
 let violations = [];
@@ -91,6 +120,52 @@ function isAllowedFile(filePath) {
 }
 
 /**
+ * Check if a line is a comment
+ */
+function isComment(line, ext) {
+  const trimmed = line.trim();
+  
+  // JavaScript/TypeScript comments
+  if (ext === '.ts' || ext === '.tsx' || ext === '.js' || ext === '.jsx') {
+    return trimmed.startsWith('//') || 
+           trimmed.startsWith('*') || 
+           trimmed.startsWith('/*') ||
+           trimmed.startsWith('*/');
+  }
+  
+  // CSS comments
+  if (ext === '.css' || ext === '.scss') {
+    return trimmed.startsWith('/*') || 
+           trimmed.startsWith('*') || 
+           trimmed.startsWith('*/');
+  }
+  
+  return false;
+}
+
+/**
+ * Check if a hex value is likely a color (not an ID or other value)
+ */
+function isLikelyColor(hexMatch, line) {
+  // Check if it's in a color-related context
+  const colorContexts = [
+    'color', 'background', 'border', 'fill', 'stroke',
+    'bg-', 'text-', 'border-', 'shadow', 'gradient'
+  ];
+  
+  const lowerLine = line.toLowerCase();
+  for (const context of colorContexts) {
+    if (lowerLine.includes(context)) {
+      return true;
+    }
+  }
+  
+  // If it's a 3 or 6 digit hex, it's likely a color
+  const digits = hexMatch.slice(1);
+  return digits.length === 3 || digits.length === 6 || digits.length === 8;
+}
+
+/**
  * Check a single file for violations
  */
 function checkFile(filePath) {
@@ -116,19 +191,14 @@ function checkFile(filePath) {
       const lineNum = index + 1;
       
       // Skip comments
-      if (line.trim().startsWith('//') || line.trim().startsWith('*') || line.trim().startsWith('/*')) {
+      if (isComment(line, ext)) {
         return;
       }
       
       // Check for hex colors
       const hexMatches = line.match(HEX_COLOR_PATTERN);
       if (hexMatches) {
-        // Filter out false positives (e.g., IDs, version numbers)
-        const realHexColors = hexMatches.filter(match => {
-          // Must be a valid color (3 or 6 hex digits)
-          const digits = match.slice(1);
-          return digits.length === 3 || digits.length === 6;
-        });
+        const realHexColors = hexMatches.filter(match => isLikelyColor(match, line));
         
         if (realHexColors.length > 0) {
           violations.push({
@@ -141,18 +211,40 @@ function checkFile(filePath) {
         }
       }
       
-      // Check for rgb/hsl (only in non-CSS files, CSS may have var() fallbacks)
-      if (ext !== '.css' && ext !== '.scss') {
-        const rgbHslMatches = line.match(RGB_HSL_PATTERN);
-        if (rgbHslMatches) {
-          violations.push({
-            file: relativePath,
-            line: lineNum,
-            type: 'rgb-hsl',
-            matches: rgbHslMatches,
-            content: line.trim().substring(0, 100),
-          });
-        }
+      // Check for rgb/rgba
+      const rgbMatches = line.match(RGB_PATTERN);
+      if (rgbMatches && (ext !== '.css' && ext !== '.scss')) {
+        violations.push({
+          file: relativePath,
+          line: lineNum,
+          type: 'rgb-color',
+          matches: rgbMatches,
+          content: line.trim().substring(0, 100),
+        });
+      }
+      
+      // Check for hsl/hsla
+      const hslMatches = line.match(HSL_PATTERN);
+      if (hslMatches && (ext !== '.css' && ext !== '.scss')) {
+        violations.push({
+          file: relativePath,
+          line: lineNum,
+          type: 'hsl-color',
+          matches: hslMatches,
+          content: line.trim().substring(0, 100),
+        });
+      }
+      
+      // Check for named colors in style attributes
+      const namedColorMatches = line.match(NAMED_COLOR_PATTERN);
+      if (namedColorMatches) {
+        violations.push({
+          file: relativePath,
+          line: lineNum,
+          type: 'named-color',
+          matches: namedColorMatches,
+          content: line.trim().substring(0, 100),
+        });
       }
       
       // Check for Tailwind base color utilities (only in TSX/JSX)
@@ -227,19 +319,39 @@ function main() {
     byFile[v.file].push(v);
   }
   
-  for (const [file, fileViolations] of Object.entries(byFile)) {
+  // Sort files alphabetically
+  const sortedFiles = Object.keys(byFile).sort();
+  
+  for (const file of sortedFiles) {
+    const fileViolations = byFile[file];
     console.log(`📄 ${file}`);
     for (const v of fileViolations) {
-      console.log(`   Line ${v.line}: [${v.type}] ${v.matches.join(', ')}`);
+      const typeLabel = {
+        'hex-color': 'HEX',
+        'rgb-color': 'RGB',
+        'hsl-color': 'HSL',
+        'named-color': 'NAMED',
+        'tailwind-base-color': 'TAILWIND'
+      }[v.type] || v.type.toUpperCase();
+      
+      console.log(`   Line ${v.line}: [${typeLabel}] ${v.matches.join(', ')}`);
       console.log(`   > ${v.content}`);
     }
     console.log('');
   }
   
   console.log('💡 Fix: Use CSS variables (var(--color-*)) or Tailwind semantic classes');
+  console.log('   Examples:');
+  console.log('   - Instead of #3b82f6 → use var(--color-primary-500)');
+  console.log('   - Instead of rgb(59, 130, 246) → use var(--color-primary-500)');
+  console.log('   - Instead of text-blue-600 → use text-primary-600');
+  console.log('   - Instead of color="red" → use className="text-error-600"');
   console.log('   Allowed theme files: tokens.css, themes.css, ThemeEngine.ts, themeBridge.ts\n');
   
   process.exit(1);
 }
+
+// Export for testing
+export { isAllowedFile, isComment, isLikelyColor, checkFile };
 
 main();

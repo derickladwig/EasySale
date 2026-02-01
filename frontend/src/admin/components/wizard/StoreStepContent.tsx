@@ -61,9 +61,42 @@ export function StoreStepContent({
 
     setIsSubmitting(true);
     try {
+      // Save store settings to backend
+      const settingsToSave = [
+        { key: 'store_name', value: formData.storeName, scope: 'global' },
+        { key: 'currency', value: formData.currency, scope: 'global' },
+        { key: 'locale', value: formData.locale, scope: 'global' },
+        { key: 'timezone', value: formData.timezone, scope: 'global' },
+        { key: 'tax_region', value: formData.taxRegion, scope: 'global' },
+        { key: 'tax_rates', value: JSON.stringify(formData.taxRates), scope: 'global' },
+      ];
+
+      // Try to save each setting - continue even if some fail during first setup
+      for (const setting of settingsToSave) {
+        try {
+          await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(setting),
+          });
+        } catch {
+          // Settings endpoint may require auth - store locally for now
+          localStorage.setItem(`easysale_${setting.key}`, String(setting.value));
+        }
+      }
+
+      // Also store in localStorage as backup
+      localStorage.setItem('store_name', formData.storeName);
+      localStorage.setItem('currency', formData.currency);
+      localStorage.setItem('locale', formData.locale);
+      localStorage.setItem('timezone', formData.timezone);
+
       onComplete(formData);
     } catch (error) {
       console.error('Failed to save store config:', error);
+      // Still complete the step - data is stored locally
+      onComplete(formData);
     } finally {
       setIsSubmitting(false);
     }

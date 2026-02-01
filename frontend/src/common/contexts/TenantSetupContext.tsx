@@ -63,14 +63,18 @@ interface SetupStatusResponse {
 const SETUP_CACHE_KEY = 'EasySale_setup_status';
 const SETUP_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// API base URL - use relative URLs to ensure cookies are sent (same-origin)
-// Works in both dev (Vite proxy) and prod (nginx proxy)
+// API base URL - same pattern as AuthContext
+// In production (behind nginx proxy), use relative URLs
+// In development, use the same hostname as the frontend but with backend port
 function getApiBaseUrl(): string {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // Use relative URLs - ensures same-origin requests so cookies work
-  return '';
+  if (import.meta.env.PROD) {
+    return ''; // Relative URLs - nginx will proxy to backend
+  }
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  return `http://${hostname}:8923`;
 }
 
 const API_BASE_URL = getApiBaseUrl();
@@ -143,7 +147,6 @@ export function TenantSetupProvider({
     try {
       const response = await fetch(`${API_BASE_URL}/api/tenant/setup-status`, {
         method: 'GET',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -209,7 +212,6 @@ export function TenantSetupProvider({
       // Call backend to persist setup completion
       const response = await fetch(`${API_BASE_URL}/api/tenant/setup-complete`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

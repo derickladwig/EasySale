@@ -64,28 +64,43 @@ function Copy-FolderExcluding {
 
 # Folders to sync with their exclusions
 $folderConfigs = @{
-    "backend" = @("target")
-    "frontend" = @("node_modules", "dist", "build")
-    "ci" = @("node_modules")
+    "backend" = @("target", "*.db", "*.db-shm", "*.db-wal")
+    "frontend" = @("node_modules", "dist", "build", "coverage", "playwright-report", "test-results", "storybook-static")
+    "ci" = @("node_modules", "coverage")
     "configs" = @()
     "docs" = @()
     "spec" = @()
+    "specs" = @()
     ".github" = @()
+    ".kiro" = @()
+    ".husky" = @()
     "installer" = @()
-    "data" = @()
+    "data" = @("*.db", "*.db-shm", "*.db-wal")
     "config" = @()
     "scripts" = @()
-    ".husky" = @()
+    "audit" = @()
+    "blog" = @()
+    "assets" = @()
+    "archive" = @()
+    "memory-bank" = @()
+    "examples" = @()
+    "runtime" = @("*.db", "*.db-shm", "*.db-wal", "backups")
+    "sync" = @()
 }
 
 # Production root files to sync
 $files = @(
     ".gitignore",
+    ".dockerignore",
     ".env.example",
     "docker-compose.yml",
     "docker-compose.prod.yml",
     "docker-compose.build.yml",
     "docker-start.sh",
+    "docker-stop.sh",
+    "docker-stop.bat",
+    "docker-clean.bat",
+    "Dockerfile.backend",
     "build-prod.bat",
     "build-prod.sh",
     "build-dev.bat",
@@ -95,14 +110,42 @@ $files = @(
     "start-prod.bat",
     "update-dev.bat",
     "update-prod.bat",
-    "docker-clean.bat",
+    "setup.sh",
+    "validate-build.sh",
     "README.md",
+    "README_MASTER.md",
+    "README_VNEXT.md",
+    "START_HERE.md",
     "LICENSE",
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
     "SECURITY.md",
     "CHANGELOG.md",
-    "START_HERE.md"
+    "DEVLOG.md",
+    "PRD.md",
+    "CHECKLISTS.md",
+    "UPLOAD_GUIDE.md",
+    "codecov.yml",
+    "do-copy.ps1",
+    "copy-to-production.ps1",
+    # Session/audit files
+    "AUTH_SETUP_ANALYSIS.md",
+    "FEATURE_FLAGS_DEEP_AUDIT_2026-01-31.md",
+    "SPEC_AUDIT_SUMMARY_2026-01-31.md",
+    "OUTDATED_CLAIMS_AUDIT_2026-01-31.md",
+    "DOCUMENTATION_FIXES_2026-01-31.md",
+    "PHASE_1_CAPABILITIES_INTEGRATION_2026-01-31.md",
+    "CAPABILITIES_INTEGRATION_COMPLETE_2026-01-31.md",
+    "AUDIT_SESSION_SUMMARY_2026-01-31.md",
+    "SESSION_COMPLETE_2026-01-31.md",
+    "FINAL_SESSION_SUMMARY_2026-01-31.md",
+    "OPTIONAL_ENHANCEMENTS_COMPLETE_2026-01-31.md",
+    "COPY_TO_PRODUCTION_UPDATE.md",
+    "FRONTEND_TO_BACKEND_PARITY.md",
+    "REPO_REORGANIZATION_COMPLETE.md",
+    "audit-fix-plan-complete.md",
+    "audit-results-summary.md",
+    "final-cleanup-complete-status.md"
 )
 
 Write-Host "Syncing folders (excluding build artifacts)..." -ForegroundColor Green

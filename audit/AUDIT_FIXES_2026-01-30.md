@@ -630,3 +630,105 @@ invalid project name "EasySale": must consist only of lowercase alphanumeric cha
 **Impact:** Builds without explicit feature flags will now produce the `export` variant (core POS + CSV export), matching documentation.
 
 *Last Updated: 2026-01-30 (Session 9 - Build Variant Defaults)*
+
+## Session 10 Fixes (2026-01-30 - UI Issues)
+
+### Issue 1: Setup Wizard Doesn't Scroll
+
+**Files Modified:**
+- `frontend/src/admin/pages/SetupWizard.module.css`
+
+**Changes:**
+- Line 154: `.mainContent` - changed `overflow: hidden` to `overflow: visible`
+- Line 397: `.contentArea` - changed `overflow: hidden` to `overflow: visible`
+
+### Issue 2: "EasySale (Dev)" Shows in Production
+
+**Files Modified:**
+- `.env` - Added `VITE_RUNTIME_PROFILE=prod`
+- `.env.example` - Added documentation for `VITE_RUNTIME_PROFILE`
+
+**Root Cause:** `getRuntimeProfile()` returns 'dev' when `VITE_RUNTIME_PROFILE` is not set.
+
+### Issue 5: Wrong Logo Paths in brandConfig.ts
+
+**Files Modified:**
+- `frontend/src/config/brandConfig.ts`
+
+**Changes:**
+- Updated `defaultBrandConfig.logo` paths from non-existent `easysale-logo-light.png`/`easysale-logo-dark.png` to existing `logo.png`
+- Updated `defaultBrandConfig.favicon` from non-existent `easysale-favicon.png` to existing `favicon.png`
+- Updated `devBrandConfig` with same fixes
+- Updated `firstRunBrandConfig` with same fixes
+
+### Issues 3 & 4: Database/Cache Issues (User Action Required)
+
+These are not code issues - they require user action:
+
+**Issue 3 (admin/admin123 default):** Database has old admin user from before the password fix.
+- Fix: Delete `data/pos.db` and restart backend to trigger fresh setup
+
+**Issue 4 ("FP" logo):** Stale config cached in localStorage.
+- Fix: Run `localStorage.clear(); location.reload();` in browser console
+
+### Verification Steps
+
+After applying fixes:
+1. Clear browser localStorage
+2. Delete database (`del data\pos.db`)
+3. Restart backend
+4. Verify:
+   - [ ] Setup wizard scrolls properly
+   - [ ] No "(Dev)" in header
+   - [ ] Logo displays correctly
+   - [ ] Fresh setup requires creating new admin password
+
+*Last Updated: 2026-01-30 (Session 10 - UI Issues)*
+
+## Session 11 Fixes (2026-01-30 - Import & CORS Issues)
+
+### Issue: Product Import Fails with "Category not found"
+
+**Root Cause:** The `ProductService.create_product` validates that categories exist in the tenant config. During setup wizard, the default config only has `products` category, but import CSVs may use categories like `General`, `Apparel`, etc.
+
+**Files Modified:**
+- `backend/crates/server/src/handlers/data_management.rs`
+
+**Changes:**
+1. Added category validation at import start - loads valid categories from config
+2. Added category normalization - if imported category doesn't exist, falls back to default category (`products`)
+3. Logs when category is normalized for transparency
+
+**Behavior:**
+- Products with unknown categories are now imported successfully
+- Category is normalized to the first valid category in config (usually `products`)
+- No data loss - products are imported with a valid category
+
+### Issue: CORS Not Supporting Credentials (httpOnly Cookies)
+
+**Root Cause:** The CORS config used `allow_any_origin()` which cannot be combined with `supports_credentials()` per the CORS specification. This broke httpOnly cookie authentication.
+
+**Files Modified:**
+- `backend/crates/server/src/main.rs`
+
+**Changes:**
+- Changed from `Cors::default().allow_any_origin()` to `Cors::permissive().supports_credentials()`
+- `Cors::permissive()` reflects the Origin header back, allowing any origin while still supporting credentials
+- This enables httpOnly cookie auth to work properly across LAN access
+
+### Note on 401 on /auth/me
+
+The 401 response on `/auth/me` during setup wizard is **expected behavior**, not an error:
+- The endpoint returns 401 when no user is authenticated
+- The frontend `AuthContext` handles this correctly by setting `user` to `null`
+- This is how the app detects "not logged in" state
+- The setup wizard works without authentication - it's registered before the `ContextExtractor` middleware
+
+### Verification
+
+**Backend:**
+- ✅ Compiles successfully
+- ✅ CORS now supports credentials
+- ✅ Import normalizes unknown categories
+
+*Last Updated: 2026-01-30 (Session 11 - Import & CORS Issues)*

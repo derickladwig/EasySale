@@ -5,9 +5,10 @@ import { validateConfig } from './validation';
 import { mergeConfigs, type StoreConfig, type UserConfig } from './configMerge';
 import { applyThemeToCSS } from './themeBridge';
 import { preloadBrandingAssets, resolveLogo } from './assetCache';
-import { getBrandConfigForProfile } from './brandConfig';
+import { toBrandConfig, getBrandConfigForProfile } from './brandConfig';
 import { devLog } from '../common/utils/devLog';
 import { getRuntimeProfile } from '../common/utils/demoMode';
+import { useConfigWebSocket, type ConnectionStatus } from '../hooks/useConfigWebSocket';
 
 // ============================================================================
 // Context Types
@@ -21,6 +22,10 @@ interface ConfigContextValue {
   // Runtime metadata
   profile: 'dev' | 'demo' | 'prod';
   presetPack: PresetPack | null;
+
+  // WebSocket connection status
+  wsStatus: ConnectionStatus;
+  wsError: string | null;
 
   // Convenience accessors
   branding: TenantConfig['branding'];
@@ -61,6 +66,7 @@ interface ConfigProviderProps {
   configPath?: string;
   initialConfig?: TenantConfig;
   config?: TenantConfig; // For testing - bypasses API loading
+  enableWebSocket?: boolean; // Enable WebSocket for hot-reload (default: true in dev/demo, false in prod)
 }
 
 // ============================================================================
@@ -72,6 +78,7 @@ export function ConfigProvider({
   configPath = '/api/config',
   initialConfig,
   config: providedConfig,
+  enableWebSocket,
 }: ConfigProviderProps) {
   const [config, setConfig] = useState<TenantConfig>(
     providedConfig || initialConfig || defaultConfig
@@ -84,6 +91,10 @@ export function ConfigProvider({
   // This ensures prod builds show real branding, not "Demo Store"
   const [profile, setProfile] = useState<'dev' | 'demo' | 'prod'>(getRuntimeProfile);
   const [presetPack, setPresetPack] = useState<PresetPack | null>(null);
+
+  // Determine if WebSocket should be enabled
+  // Default: enabled in dev/demo, disabled in prod (unless explicitly set)
+  const wsEnabled = enableWebSocket ?? (profile !== 'prod');
 
   // Clear stale CAPS config on startup (one-time migration)
   useEffect(() => {
@@ -112,9 +123,7 @@ export function ConfigProvider({
       setError(null);
 
       // Try to load from API first
-      const response = await fetch(configPath, {
-        credentials: 'include',
-      });
+      const response = await fetch(configPath);
 
       if (!response.ok) {
         // If API fails, use default config
@@ -223,6 +232,29 @@ export function ConfigProvider({
     }
   }, [providedConfig, initialConfig, loadConfig]);
 
+  // Determine if WebSocket should be active
+  // Only enable if: wsEnabled flag is true AND not using provided/initial config
+  const wsConnectionEnabled = wsEnabled && !providedConfig && !initialConfig;
+
+  // WebSocket connection for configuration hot-reload
+  const { status: wsStatus, error: wsError } = useConfigWebSocket({
+    tenantId: wsConnectionEnabled ? (config.tenant?.id || 'default') : '',
+    onConfigChange: (changeType) => {
+      devLog.info(`[ConfigProvider] Configuration changed (${changeType}), reloading...`);
+      
+      // Reload configuration from API
+      loadConfig().catch((err) => {
+        devLog.error('[ConfigProvider] Failed to reload config after WebSocket notification:', err);
+      });
+    },
+    onStatusChange: (status) => {
+      devLog.info(`[ConfigProvider] WebSocket status: ${status}`);
+    },
+    autoReconnect: true,
+    maxReconnectAttempts: 5,
+    reconnectDelay: 1000,
+  });
+
   // Helper: Get category by ID
   const getCategory = useCallback(
     (id: string): CategoryConfig | undefined => {
@@ -320,6 +352,10 @@ export function ConfigProvider({
     // Runtime metadata
     profile,
     presetPack,
+
+    // WebSocket connection status
+    wsStatus: wsConnectionEnabled ? wsStatus : 'disconnected',
+    wsError: wsConnectionEnabled ? wsError : null,
 
     // Convenience accessors
     branding: config.branding,

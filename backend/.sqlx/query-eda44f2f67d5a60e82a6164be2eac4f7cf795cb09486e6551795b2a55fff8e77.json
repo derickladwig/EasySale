@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO discounts (id, tenant_id, store_id, code, name, discount_type, amount, description)\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": []
+  },
+  "hash": "eda44f2f67d5a60e82a6164be2eac4f7cf795cb09486e6551795b2a55fff8e77"
+}

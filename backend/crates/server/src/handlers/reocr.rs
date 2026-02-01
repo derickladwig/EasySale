@@ -4,7 +4,7 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
-use crate::services::ocr_service::{OCRService, OCRConfig};
+use crate::services::ocr_service::{OCRService, OCREngine, OCRConfig};
 
 #[derive(Debug, Deserialize)]
 pub struct ReOcrRequest {
@@ -396,11 +396,13 @@ pub async fn manage_masks(
         .and_then(|j| serde_json::from_str(&j).ok())
         .unwrap_or_default();
     
-    let reprocessing_started = match request.action.as_str() {
+    let mut reprocessing_started = false;
+    
+    match request.action.as_str() {
         "add" => {
             // Add the new mask region
             validation.masks.push(request.region.clone());
-            true
+            reprocessing_started = true;
         }
         "remove" => {
             // Remove masks that overlap with the specified region
@@ -408,14 +410,14 @@ pub async fn manage_masks(
                 !(m.x == request.region.x && m.y == request.region.y &&
                   m.width == request.region.width && m.height == request.region.height)
             });
-            true
+            reprocessing_started = true;
         }
         _ => {
             return HttpResponse::BadRequest().json(ErrorResponse {
                 error: format!("Invalid action: {}. Use 'add' or 'remove'", request.action),
             });
         }
-    };
+    }
     
     // Save updated validation result with masks
     let validation_str = serde_json::to_string(&validation).unwrap_or_default();
@@ -439,6 +441,9 @@ pub async fn manage_masks(
     // If remember_for_vendor is true, store the mask pattern in vendor_templates
     if request.remember_for_vendor {
         if let Some(ref vid) = vendor_id {
+            // Store mask in vendor template
+            let mask_json = serde_json::to_string(&request.region).unwrap_or_default();
+            
             // Check if vendor template exists
             let existing_template = sqlx::query_scalar::<_, Option<String>>(
                 "SELECT mask_regions FROM vendor_templates WHERE vendor_id = ?"

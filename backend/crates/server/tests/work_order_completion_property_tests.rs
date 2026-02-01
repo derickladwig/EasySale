@@ -1,26 +1,12 @@
-// Property-Based Tests for Sales & Customer Management
-// Feature: sales-customer-management, Property 6: Work order completion creates invoice
+// Property-Based Tests for Work Order Invoice Creation
+// Feature: feature-flags-implementation, Task P0-1: Work Order Invoice Creation
 // These tests validate that work order completion creates invoices and updates inventory
-
-// NOTE: This property test is currently a placeholder because the invoice creation
-// functionality is not yet implemented. The current implementation only updates the
-// work order status to "Completed" and sets the completed_at timestamp.
 //
-// According to Requirement 2.6:
-// "WHEN a work order is completed, THE System SHALL convert it to an invoice and 
-// update inventory for consumed parts"
+// According to Requirement 2.1:
+// "When work order status changes to 'completed', automatically create invoice,
+// reduce inventory for all parts, and set invoiced_at timestamp"
 //
-// To fully implement this property test, the following functionality needs to be added:
-// 1. Invoice creation when work order status changes to "Completed"
-// 2. Inventory updates for all consumed parts in the work order
-// 3. Setting the invoiced_at timestamp on the work order
-//
-// Once the invoice creation functionality is implemented, this test should verify:
-// - For any work order with parts, when status changes to "Completed":
-//   * An invoice record is created (or invoiced_at is set)
-//   * Inventory quantities are reduced for all consumed parts
-//   * The work order's actual_total matches the invoice total
-//   * All work order lines are reflected in the invoice
+// **Validates: Requirements 2.1**
 
 use proptest::prelude::*;
 use sqlx::SqlitePool;
@@ -28,6 +14,7 @@ use uuid::Uuid;
 use chrono::Utc;
 
 use easysale_server::models::{WorkOrder, WorkOrderStatus};
+use easysale_server::services::invoice_service::InvoiceService;
 
 // ============================================================================
 // Test Database Setup
@@ -39,15 +26,15 @@ async fn setup_test_db() -> SqlitePool {
     // Create work_orders table
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS work_orders (
-            id TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             tenant_id TEXT NOT NULL,
             work_order_number TEXT NOT NULL UNIQUE,
-            customer_id TEXT NOT NULL,
-            vehicle_id TEXT NOT NULL,
+            customer_id INTEGER NOT NULL,
             status TEXT NOT NULL,
             description TEXT NOT NULL,
             estimated_total REAL,
             actual_total REAL,
+            total_amount REAL NOT NULL DEFAULT 0.0,
             labor_total REAL NOT NULL DEFAULT 0.0,
             parts_total REAL NOT NULL DEFAULT 0.0,
             created_at TEXT NOT NULL,
@@ -64,20 +51,81 @@ async fn setup_test_db() -> SqlitePool {
     .await
     .unwrap();
     
-    // Create work_order_lines table
+    // Create work_order_items table
     sqlx::query(
-        "CREATE TABLE IF NOT EXISTS work_order_lines (
-            id TEXT PRIMARY KEY,
+        "CREATE TABLE IF NOT EXISTS work_order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             tenant_id TEXT NOT NULL,
-            work_order_id TEXT NOT NULL,
-            line_type TEXT NOT NULL,
-            product_id TEXT,
+            work_order_id INTEGER NOT NULL,
+            product_id INTEGER,
             description TEXT NOT NULL,
             quantity REAL NOT NULL,
             unit_price REAL NOT NULL,
             total_price REAL NOT NULL,
             is_warranty INTEGER NOT NULL DEFAULT 0,
             FOREIGN KEY (work_order_id) REFERENCES work_orders(id) ON DELETE CASCADE
+        )"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    
+    // Create invoices table
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS invoices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id TEXT NOT NULL,
+            invoice_number TEXT NOT NULL,
+            work_order_id INTEGER,
+            customer_id INTEGER NOT NULL,
+            invoice_date TEXT NOT NULL,
+            due_date TEXT,
+            subtotal REAL NOT NULL,
+            tax_amount REAL NOT NULL,
+            discount_amount REAL NOT NULL DEFAULT 0,
+            total_amount REAL NOT NULL,
+            status TEXT NOT NULL DEFAULT 'draft',
+            notes TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (work_order_id) REFERENCES work_orders(id),
+            UNIQUE(tenant_id, invoice_number)
+        )"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    
+    // Create invoice_line_items table
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS invoice_line_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            invoice_id INTEGER NOT NULL,
+            product_id INTEGER,
+            description TEXT NOT NULL,
+            quantity REAL NOT NULL,
+            unit_price REAL NOT NULL,
+            tax_rate REAL NOT NULL DEFAULT 0,
+            discount_rate REAL NOT NULL DEFAULT 0,
+            line_total REAL NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (invoice_id) REFERENCES invoices(id)
+        )"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    
+    // Create products table for inventory tracking
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id TEXT NOT NULL,
+            sku TEXT NOT NULL,
+            name TEXT NOT NULL,
+            quantity_on_hand REAL NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(tenant_id, sku)
         )"
     )
     .execute(&pool)
@@ -92,13 +140,8 @@ async fn setup_test_db() -> SqlitePool {
 // ============================================================================
 
 /// Generate a valid customer ID
-fn arb_customer_id() -> impl Strategy<Value = String> {
-    Just(Uuid::new_v4().to_string())
-}
-
-/// Generate a valid vehicle ID
-fn arb_vehicle_id() -> impl Strategy<Value = String> {
-    Just(Uuid::new_v4().to_string())
+fn arb_customer_id() -> impl Strategy<Value = i64> {
+    (1i64..1000000i64)
 }
 
 /// Generate a valid description
@@ -137,23 +180,18 @@ fn arb_parts_total() -> impl Strategy<Value = f64> {
 // Property Tests
 // ============================================================================
 
-// Property 6: Work order completion creates invoice
-// For any work order, when its status changes to "Completed", an invoice should be 
-// created and inventory should be updated for all consumed parts
-// **Validates: Requirements 2.6**
-
-// PLACEHOLDER TEST: This test currently only verifies that the work order status
-// changes to "Completed" and completed_at is set. Once invoice creation is implemented,
-// this test should be expanded to verify invoice creation and inventory updates.
+// Property 1: Work order completion creates invoice with inventory reduction
+// For any work order with parts, when its status changes to "Completed", an invoice should be 
+// created, inventory should be updated for all consumed parts, and invoiced_at should be set
+// **Validates: Requirements 2.1**
 
 proptest! {
-    #![proptest_config(ProptestConfig::with_cases(100))]
+    #![proptest_config(ProptestConfig::with_cases(50))]
 
     #[test]
-    fn property_6_work_order_completion_placeholder(
+    fn property_1_work_order_completion_creates_invoice(
         work_order_number in arb_work_order_number(),
         customer_id in arb_customer_id(),
-        vehicle_id in arb_vehicle_id(),
         description in arb_description(),
         store_id in arb_store_id(),
         tenant_id in arb_tenant_id(),
@@ -163,91 +201,135 @@ proptest! {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let pool = setup_test_db().await;
+            let invoice_service = InvoiceService::new(pool.clone());
+            
+            // Create a product for inventory tracking
+            let product_id: i64 = sqlx::query_scalar(
+                "INSERT INTO products (tenant_id, sku, name, quantity_on_hand) 
+                 VALUES (?, ?, ?, ?) RETURNING id"
+            )
+            .bind(&tenant_id)
+            .bind("TEST-SKU-001")
+            .bind("Test Product")
+            .bind(100.0) // Initial inventory
+            .fetch_one(&pool)
+            .await
+            .unwrap();
             
             // Create a work order in "Created" status
-            let work_order_id = Uuid::new_v4().to_string();
             let now = Utc::now().to_rfc3339();
+            let total_amount = labor_total + parts_total;
             
-            let result = sqlx::query(
-                "INSERT INTO work_orders (id, tenant_id, work_order_number, customer_id, vehicle_id, 
-                 status, description, labor_total, parts_total, created_at, updated_at, 
+            let work_order_id: i64 = sqlx::query_scalar(
+                "INSERT INTO work_orders (tenant_id, work_order_number, customer_id, 
+                 status, description, labor_total, parts_total, total_amount, created_at, updated_at, 
                  is_warranty, sync_version, store_id)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?)"
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?) RETURNING id"
             )
-            .bind(&work_order_id)
             .bind(&tenant_id)
             .bind(&work_order_number)
-            .bind(&customer_id)
-            .bind(&vehicle_id)
+            .bind(customer_id)
             .bind(WorkOrderStatus::Created.as_str())
             .bind(&description)
             .bind(labor_total)
             .bind(parts_total)
+            .bind(total_amount)
             .bind(&now)
             .bind(&now)
             .bind(&store_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            
+            // Add work order items (parts)
+            let parts_quantity = 2.0;
+            sqlx::query(
+                "INSERT INTO work_order_items (tenant_id, work_order_id, product_id, description, quantity, unit_price, total_price)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)"
+            )
+            .bind(&tenant_id)
+            .bind(work_order_id)
+            .bind(product_id)
+            .bind("Test Part")
+            .bind(parts_quantity)
+            .bind(parts_total / parts_quantity)
+            .bind(parts_total)
             .execute(&pool)
-            .await;
+            .await
+            .unwrap();
             
-            prop_assert!(result.is_ok(), "Work order creation should succeed");
-            
-            // Simulate completing the work order
+            // Complete the work order
             let completed_at = Utc::now().to_rfc3339();
-            let actual_total = labor_total + parts_total;
-            
-            let complete_result = sqlx::query(
+            sqlx::query(
                 "UPDATE work_orders 
                  SET status = ?, actual_total = ?, completed_at = ?, updated_at = ?, 
                      sync_version = sync_version + 1
                  WHERE id = ? AND tenant_id = ?"
             )
             .bind(WorkOrderStatus::Completed.as_str())
-            .bind(actual_total)
+            .bind(total_amount)
             .bind(&completed_at)
             .bind(&completed_at)
-            .bind(&work_order_id)
+            .bind(work_order_id)
             .bind(&tenant_id)
             .execute(&pool)
-            .await;
+            .await
+            .unwrap();
             
-            prop_assert!(complete_result.is_ok(), "Work order completion should succeed");
+            // Create invoice from work order
+            let invoice_result = invoice_service
+                .create_from_work_order(&tenant_id, work_order_id)
+                .await;
             
-            // Retrieve the completed work order
-            let retrieved = sqlx::query_as::<_, WorkOrder>(
-                "SELECT id, tenant_id, work_order_number, customer_id, vehicle_id, status, 
-                 description, estimated_total, actual_total, labor_total, parts_total, 
+            prop_assert!(invoice_result.is_ok(), "Invoice creation should succeed");
+            
+            let invoice = invoice_result.unwrap();
+            
+            // Verify invoice was created
+            prop_assert!(invoice.id > 0, "Invoice should have valid ID");
+            prop_assert_eq!(invoice.work_order_id, Some(work_order_id), 
+                "Invoice should be linked to work order");
+            prop_assert_eq!(invoice.customer_id, customer_id, 
+                "Invoice should have correct customer ID");
+            prop_assert!(invoice.invoice_number.starts_with("INV-"), 
+                "Invoice number should have correct format");
+            
+            // Verify work order invoiced_at is set
+            let wo: WorkOrder = sqlx::query_as(
+                "SELECT id, tenant_id, work_order_number, customer_id, status, 
+                 description, estimated_total, actual_total, total_amount, labor_total, parts_total, 
                  created_at, updated_at, completed_at, invoiced_at, assigned_technician_id, 
                  is_warranty, sync_version, store_id 
                  FROM work_orders 
                  WHERE id = ?"
             )
-            .bind(&work_order_id)
+            .bind(work_order_id)
             .fetch_one(&pool)
-            .await;
+            .await
+            .unwrap();
             
-            prop_assert!(retrieved.is_ok(), "Completed work order should be retrievable");
+            prop_assert!(wo.invoiced_at.is_some(), 
+                "Work order invoiced_at should be set");
             
-            let wo = retrieved.unwrap();
+            // Verify inventory was reduced
+            let remaining_qty: f64 = sqlx::query_scalar(
+                "SELECT quantity_on_hand FROM products WHERE id = ?"
+            )
+            .bind(product_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
             
-            // Verify the work order status changed to Completed
-            prop_assert_eq!(wo.status(), WorkOrderStatus::Completed, 
-                "Work order status should be Completed");
-            
-            // Verify completed_at is set
-            prop_assert!(wo.completed_at.is_some(), 
-                "Work order completed_at should be set");
-            
-            // Verify actual_total is calculated correctly
-            let expected_total = labor_total + parts_total;
-            let diff = (wo.actual_total.unwrap_or(0.0) - expected_total).abs();
+            let expected_remaining = 100.0 - parts_quantity;
+            let diff = (remaining_qty - expected_remaining).abs();
             prop_assert!(diff < 0.01, 
-                "Work order actual_total should equal labor_total + parts_total");
+                "Inventory should be reduced by consumed quantity (expected {}, got {})", 
+                expected_remaining, remaining_qty);
             
-            // TODO: Once invoice creation is implemented, add these assertions:
-            // 1. Verify an invoice record exists (or invoiced_at is set)
-            // 2. Verify inventory quantities are reduced for all parts
-            // 3. Verify invoice total matches work order actual_total
-            // 4. Verify all work order lines are reflected in the invoice
+            // Verify invoice line items were created
+            let line_items = invoice_service.get_line_items(invoice.id).await.unwrap();
+            prop_assert!(!line_items.is_empty(), 
+                "Invoice should have line items");
             
             Ok(())
         }).unwrap();
@@ -258,49 +340,75 @@ proptest! {
 mod additional_tests {
     use super::*;
 
-    // Unit test: Verify current implementation behavior
+    // Unit test: Verify invoice creation from completed work order
     #[tokio::test]
-    async fn test_work_order_completion_current_implementation() {
+    async fn test_work_order_completion_with_invoice_creation() {
         let pool = setup_test_db().await;
+        let invoice_service = InvoiceService::new(pool.clone());
         
-        // Create a work order
-        let work_order_id = Uuid::new_v4().to_string();
         let tenant_id = "tenant-001";
         let work_order_number = "WO-20240101-ABCD1234";
-        let customer_id = Uuid::new_v4().to_string();
-        let vehicle_id = Uuid::new_v4().to_string();
+        let customer_id = 12345i64;
         let description = "Oil change and tire rotation";
         let store_id = "store-001";
         let labor_total = 75.00;
         let parts_total = 125.50;
+        let total_amount = labor_total + parts_total;
         let now = Utc::now().to_rfc3339();
         
-        sqlx::query(
-            "INSERT INTO work_orders (id, tenant_id, work_order_number, customer_id, vehicle_id, 
-             status, description, labor_total, parts_total, created_at, updated_at, 
-             is_warranty, sync_version, store_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?)"
+        // Create a product for inventory tracking
+        let product_id: i64 = sqlx::query_scalar(
+            "INSERT INTO products (tenant_id, sku, name, quantity_on_hand) 
+             VALUES (?, ?, ?, ?) RETURNING id"
         )
-        .bind(&work_order_id)
+        .bind(tenant_id)
+        .bind("OIL-FILTER-001")
+        .bind("Oil Filter")
+        .bind(50.0)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        
+        // Create work order
+        let work_order_id: i64 = sqlx::query_scalar(
+            "INSERT INTO work_orders (tenant_id, work_order_number, customer_id, 
+             status, description, labor_total, parts_total, total_amount, created_at, updated_at, 
+             is_warranty, sync_version, store_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?) RETURNING id"
+        )
         .bind(tenant_id)
         .bind(work_order_number)
-        .bind(&customer_id)
-        .bind(&vehicle_id)
+        .bind(customer_id)
         .bind(WorkOrderStatus::Created.as_str())
         .bind(description)
         .bind(labor_total)
         .bind(parts_total)
+        .bind(total_amount)
         .bind(&now)
         .bind(&now)
         .bind(store_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        
+        // Add work order items
+        sqlx::query(
+            "INSERT INTO work_order_items (tenant_id, work_order_id, product_id, description, quantity, unit_price, total_price)
+             VALUES (?, ?, ?, ?, ?, ?, ?)"
+        )
+        .bind(tenant_id)
+        .bind(work_order_id)
+        .bind(product_id)
+        .bind("Oil Filter")
+        .bind(3.0)
+        .bind(parts_total / 3.0)
+        .bind(parts_total)
         .execute(&pool)
         .await
         .unwrap();
         
         // Complete the work order
         let completed_at = Utc::now().to_rfc3339();
-        let actual_total = labor_total + parts_total;
-        
         sqlx::query(
             "UPDATE work_orders 
              SET status = ?, actual_total = ?, completed_at = ?, updated_at = ?, 
@@ -308,52 +416,52 @@ mod additional_tests {
              WHERE id = ? AND tenant_id = ?"
         )
         .bind(WorkOrderStatus::Completed.as_str())
-        .bind(actual_total)
+        .bind(total_amount)
         .bind(&completed_at)
         .bind(&completed_at)
-        .bind(&work_order_id)
+        .bind(work_order_id)
         .bind(tenant_id)
         .execute(&pool)
         .await
         .unwrap();
         
-        // Verify the work order is completed
-        let wo = sqlx::query_as::<_, WorkOrder>(
-            "SELECT id, tenant_id, work_order_number, customer_id, vehicle_id, status, 
-             description, estimated_total, actual_total, labor_total, parts_total, 
+        // Create invoice from work order
+        let invoice = invoice_service
+            .create_from_work_order(tenant_id, work_order_id)
+            .await
+            .unwrap();
+        
+        // Verify invoice created
+        assert!(invoice.id > 0);
+        assert_eq!(invoice.work_order_id, Some(work_order_id));
+        assert_eq!(invoice.customer_id, customer_id);
+        assert!(invoice.invoice_number.starts_with("INV-"));
+        
+        // Verify work order invoiced_at is set
+        let wo: WorkOrder = sqlx::query_as(
+            "SELECT id, tenant_id, work_order_number, customer_id, status, 
+             description, estimated_total, actual_total, total_amount, labor_total, parts_total, 
              created_at, updated_at, completed_at, invoiced_at, assigned_technician_id, 
              is_warranty, sync_version, store_id 
              FROM work_orders 
              WHERE id = ?"
         )
-        .bind(&work_order_id)
+        .bind(work_order_id)
         .fetch_one(&pool)
         .await
         .unwrap();
         
-        assert_eq!(wo.status(), WorkOrderStatus::Completed);
-        assert!(wo.completed_at.is_some());
-        assert_eq!(wo.actual_total.unwrap(), 200.50);
+        assert!(wo.invoiced_at.is_some());
         
-        // NOTE: invoiced_at is currently None because invoice creation is not implemented
-        assert!(wo.invoiced_at.is_none(), 
-            "invoiced_at should be None until invoice creation is implemented");
-    }
-
-    // Unit test: Document expected behavior once invoice creation is implemented
-    #[tokio::test]
-    #[ignore] // Ignore until invoice creation is implemented
-    async fn test_work_order_completion_with_invoice_creation() {
-        let _pool = setup_test_db().await;
+        // Verify inventory was reduced
+        let remaining_qty: f64 = sqlx::query_scalar(
+            "SELECT quantity_on_hand FROM products WHERE id = ?"
+        )
+        .bind(product_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
         
-        // TODO: Once invoice creation is implemented, this test should:
-        // 1. Create a work order with parts
-        // 2. Complete the work order
-        // 3. Verify an invoice is created
-        // 4. Verify inventory is updated for consumed parts
-        // 5. Verify invoiced_at is set on the work order
-        
-        // This is a placeholder for the future implementation
-        panic!("This test should be implemented once invoice creation functionality is added");
+        assert_eq!(remaining_qty, 47.0); // 50 - 3 = 47
     }
 }

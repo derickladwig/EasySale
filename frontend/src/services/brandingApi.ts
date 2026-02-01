@@ -8,14 +8,15 @@
 import axios from 'axios';
 
 // Determine API base URL dynamically
-// Use relative URLs to go through Vite proxy (dev) or nginx proxy (prod)
-// This ensures cookies are sent correctly (same-origin requests)
 function getApiBaseUrl(): string {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // Use relative URLs - works in both dev (Vite proxy) and prod (nginx proxy)
-  return '';
+  if (import.meta.env.PROD) {
+    return ''; // Relative URLs - nginx will proxy to backend
+  }
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  return `http://${hostname}:8923`;
 }
 
 /**

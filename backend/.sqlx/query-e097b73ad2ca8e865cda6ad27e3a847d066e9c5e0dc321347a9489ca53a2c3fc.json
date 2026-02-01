@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE discounts\n            SET name = ?, discount_type = ?, amount = ?, description = ?, \n                is_active = ?, updated_at = datetime('now')\n            WHERE id = ?\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "e097b73ad2ca8e865cda6ad27e3a847d066e9c5e0dc321347a9489ca53a2c3fc"
+}

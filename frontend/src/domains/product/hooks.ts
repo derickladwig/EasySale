@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { productApi } from './api';
-import { Product, ProductSearchResponse, CreateProductRequest, UpdateProductRequest } from './types';
+import { Product, ProductSearchResponse, ProductSearchRequest, CreateProductRequest, UpdateProductRequest } from './types';
 
 /**
  * Hook to fetch products list
@@ -20,8 +20,22 @@ export function useProductsQuery(params?: {
   return useQuery({
     queryKey: ['products', params],
     queryFn: () => productApi.listProducts(params),
-    // Stub: Return empty data until backend is ready
-    placeholderData: { products: [], total: 0, page: 1, pageSize: 50, hasMore: false },
+  });
+}
+
+/**
+ * Hook to search products with advanced filters
+ *
+ * @param request - Search request with query, filters, pagination
+ * @returns Query result with search results
+ */
+export function useProductSearchQuery(
+  request: ProductSearchRequest
+): UseQueryResult<ProductSearchResponse, Error> {
+  return useQuery({
+    queryKey: ['products', 'search', request],
+    queryFn: () => productApi.searchProducts(request),
+    enabled: !!(request.query || request.category || request.filters),
   });
 }
 

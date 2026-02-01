@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT min_purchase_amount\n            FROM discounts\n            WHERE tenant_id = ? AND code = ? AND is_active = 1\n            AND (start_date IS NULL OR start_date <= datetime('now'))\n            AND (end_date IS NULL OR end_date >= datetime('now'))\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "min_purchase_amount",
+        "ordinal": 0,
+        "type_info": "Float"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "d0b6b4a317092d44acd30a953b1058ec7096d948f54ecde581e2d0673457e0d2"
+}

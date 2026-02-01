@@ -1,8 +1,1 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Run lint-staged to check and fix linting issues
-npx lint-staged
-
-# Run tests
 npm test

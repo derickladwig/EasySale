@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Product, CategoryConfig as _CategoryConfig } from '../types';
-import { productApi } from '../api';
+import { useProductsQuery } from '../hooks';
 
 interface ProductGridProps {
   category?: string;
@@ -15,34 +15,18 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   onProductSelect,
   viewMode = 'grid',
 }) => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    loadProducts();
-  }, [category, filters, page]);
+  // Use React Query hook for better state management
+  const { data, isLoading, isError, error } = useProductsQuery({
+    page,
+    pageSize: 50,
+    category,
+  });
 
-  const loadProducts = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await productApi.listProducts({
-        page,
-        pageSize: 50,
-        category,
-      });
-      setProducts(response.products);
-      setHasMore(response.hasMore);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const products = data?.products || [];
+  const hasMore = data?.hasMore || false;
 
   const toggleProductSelection = (productId: string) => {
     const newSelection = new Set(selectedProducts);
@@ -62,12 +46,28 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
     setSelectedProducts(new Set());
   };
 
-  if (loading && products.length === 0) {
-    return <div className="p-4 text-center">Loading products...</div>;
+  if (isLoading && products.length === 0) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-text-secondary">Loading products...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div className="p-4 text-center text-[var(--color-error-600)]">Error: {error}</div>;
+  if (isError) {
+    return (
+      <div className="p-4 text-center">
+        <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-4 max-w-md mx-auto">
+          <p className="text-error-600 dark:text-error-400 font-medium mb-2">Error loading products</p>
+          <p className="text-error-700 dark:text-error-300 text-sm">
+            {error instanceof Error ? error.message : 'Failed to load products'}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (products.length === 0) {

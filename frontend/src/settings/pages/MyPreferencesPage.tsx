@@ -79,19 +79,24 @@ export const MyPreferencesPage: React.FC = () => {
       const response = await fetch('/api/users/password', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
       });
       if (response.status === 404) {
         toast.warning('Password change feature is not yet available');
         return;
       }
-      if (!response.ok) throw new Error('Failed to change password');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to change password');
+      }
       toast.success('Password changed successfully');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch {
-      toast.error('Failed to change password');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to change password';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

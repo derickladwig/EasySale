@@ -6,6 +6,7 @@ import { ToastProvider } from '@common/components/organisms';
 import { ConfigProvider, ThemeProvider } from './config';
 import { FaviconManager } from './components/FaviconManager';
 import { AppLayout } from './AppLayout';
+import { FeatureGuard, FeatureUnavailablePage } from './common/components/guards/FeatureGuard';
 
 // Critical path pages - loaded eagerly for fast first-load
 import { LoginPage } from './auth/pages/LoginPage';
@@ -68,6 +69,14 @@ import {
   LazyPartsMappingPage,
   LazyOAuthCallbackPage,
   LazyCategoryLookupPage,
+  LazyAppointmentCalendarPage,
+  LazyEstimateListPage,
+  LazyEstimateDetailPage,
+  LazyEstimateCreatePage,
+  LazySyncHistoryPage,
+  LazyFailedRecordsPage,
+  LazyBackupsPage,
+  LazyTimeTrackingPage,
 } from './routes/lazyRoutes';
 
 // Create a client
@@ -99,16 +108,18 @@ function App() {
                       <Route path="/fresh-install" element={<FreshInstallWizard />} />
                       <Route path="/login" element={<LoginPage />} />
                       <Route path="/access-denied" element={<AccessDeniedPage />} />
+                      <Route path="/feature-unavailable" element={<FeatureUnavailablePage />} />
                       <Route path="/oauth/callback" element={<LazyOAuthCallbackPage />} />
                       
-                      {/* First-run setup wizard - PUBLIC during first-run, protected otherwise (lazy loaded) */}
-                      {/* This route is accessible without auth to allow creating the first admin account */}
+                      {/* First-run setup wizard - shown when tenant is not configured (lazy loaded) */}
                       <Route
                         path="/setup"
                         element={
-                          <TenantSetupProvider>
-                            <LazyFirstRunSetupPage />
-                          </TenantSetupProvider>
+                          <RequireAuth>
+                            <TenantSetupProvider>
+                              <LazyFirstRunSetupPage />
+                            </TenantSetupProvider>
+                          </RequireAuth>
                         }
                       />
 
@@ -248,13 +259,60 @@ function App() {
                           }
                         />
 
+                        {/* Appointments - lazy loaded, module flag checked in component */}
+                        <Route
+                          path="appointments"
+                          element={
+                            <RequireSetup>
+                              <RequirePermission permission="access_sell">
+                                <LazyAppointmentCalendarPage />
+                              </RequirePermission>
+                            </RequireSetup>
+                          }
+                        />
+
+                        {/* Estimates - lazy loaded, module flag checked in component */}
+                        <Route
+                          path="estimates"
+                          element={
+                            <RequireSetup>
+                              <RequirePermission permission="access_sell">
+                                <LazyEstimateListPage />
+                              </RequirePermission>
+                            </RequireSetup>
+                          }
+                        />
+                        <Route
+                          path="estimates/new"
+                          element={
+                            <RequireSetup>
+                              <RequirePermission permission="access_sell">
+                                <LazyEstimateCreatePage />
+                              </RequirePermission>
+                            </RequireSetup>
+                          }
+                        />
+                        <Route
+                          path="estimates/:id"
+                          element={
+                            <RequireSetup>
+                              <RequirePermission permission="access_sell">
+                                <LazyEstimateDetailPage />
+                              </RequirePermission>
+                            </RequireSetup>
+                          }
+                        />
+
                         {/* Reporting - only in export and full builds (lazy loaded) */}
+                        {/* Protected by FeatureGuard to check backend capabilities */}
                         {ENABLE_REPORTING && (
                           <Route
                             path="reporting"
                             element={
                               <RequirePermission permission="access_admin">
-                                <LazyReportingPage />
+                                <FeatureGuard feature="export">
+                                  <LazyReportingPage />
+                                </FeatureGuard>
                               </RequirePermission>
                             }
                           />
@@ -294,6 +352,18 @@ function App() {
                           element={<Navigate to="/preferences" replace />}
                         />
 
+                        {/* Time Tracking - lazy loaded */}
+                        <Route
+                          path="time-tracking"
+                          element={
+                            <RequireSetup>
+                              <RequirePermission permission="access_admin">
+                                <LazyTimeTrackingPage />
+                              </RequirePermission>
+                            </RequireSetup>
+                          }
+                        />
+
                         {/* Admin routes with AdminLayout sub-navigation - only in export and full builds (lazy loaded) */}
                         {ENABLE_ADMIN && (
                           <Route
@@ -321,9 +391,22 @@ function App() {
                             <Route path="data/parts-mapping" element={<LazyPartsMappingPage />} />
                             <Route path="data/import" element={<LazyProductImportPage />} />
                             <Route path="data/categories" element={<LazyCategoryLookupPage />} />
-                            {ENABLE_EXPORTS && <Route path="exports" element={<LazyExportsPage />} />}
+                            {/* Exports - protected by FeatureGuard to check backend capabilities */}
+                            {ENABLE_EXPORTS && (
+                              <Route 
+                                path="exports" 
+                                element={
+                                  <FeatureGuard feature="export">
+                                    <LazyExportsPage />
+                                  </FeatureGuard>
+                                } 
+                              />
+                            )}
                             <Route path="capabilities" element={<LazyCapabilitiesDashboardPage />} />
                             <Route path="health" element={<LazySyncDashboardPage />} />
+                            <Route path="health/sync-history" element={<LazySyncHistoryPage />} />
+                            <Route path="health/failed-records" element={<LazyFailedRecordsPage />} />
+                            <Route path="backups" element={<LazyBackupsPage />} />
                             <Route path="notifications" element={<LazyNotificationSettingsPage />} />
                             <Route path="advanced" element={<LazyFeatureFlagsPage />} />
                             {/* Hardware and Network settings under advanced */}

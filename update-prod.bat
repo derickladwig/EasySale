@@ -303,11 +303,7 @@ echo   View logs:  docker-compose -p easysale -f docker-compose.prod.yml logs -f
 echo   Stop:       stop-prod.bat
 echo.
 
-if not defined NO_PAUSE (
-    echo.
-    echo Press any key to close this window...
-    pause >nul
-)
+call :PAUSE_IF_INTERACTIVE
 exit /b 0
 
 REM ============================================

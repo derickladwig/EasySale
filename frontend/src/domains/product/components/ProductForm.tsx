@@ -7,6 +7,7 @@ import {
   UpdateProductRequest,
 } from '../types';
 import { productApi } from '../api';
+import { useCreateProductMutation, useUpdateProductMutation } from '../hooks';
 
 interface ProductFormProps {
   product?: Product;
@@ -41,7 +42,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     attributes: product?.attributes || {},
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+
+  // Use React Query mutations for better state management
+  const createMutation = useCreateProductMutation();
+  const updateMutation = useUpdateProductMutation();
+
+  const isLoading = createMutation.isPending || updateMutation.isPending;
+  const mutationError = createMutation.error || updateMutation.error;
 
   useEffect(() => {
     loadCategories();
@@ -142,10 +149,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
-    setLoading(true);
     try {
-      let savedProduct: Product;
-
       if (product) {
         // Update existing product
         const updates: UpdateProductRequest = {
@@ -162,7 +166,19 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           barcodeType: formData.barcodeType,
           attributes: formData.attributes,
         };
-        savedProduct = await productApi.updateProduct(product.id, updates);
+        
+        updateMutation.mutate(
+          { id: product.id, updates },
+          {
+            onSuccess: (savedProduct) => {
+              onSave(savedProduct);
+            },
+            onError: (err) => {
+              console.error('Failed to update product:', err);
+              setErrors({ submit: err instanceof Error ? err.message : 'Failed to update product' });
+            },
+          }
+        );
       } else {
         // Create new product
         const createRequest: CreateProductRequest = {
@@ -180,15 +196,20 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           storeId: formData.storeId,
           attributes: formData.attributes,
         };
-        savedProduct = await productApi.createProduct(createRequest);
+        
+        createMutation.mutate(createRequest, {
+          onSuccess: (savedProduct) => {
+            onSave(savedProduct);
+          },
+          onError: (err) => {
+            console.error('Failed to create product:', err);
+            setErrors({ submit: err instanceof Error ? err.message : 'Failed to create product' });
+          },
+        });
       }
-
-      onSave(savedProduct);
     } catch (err) {
-      console.error('Failed to save product:', err);
-      setErrors({ submit: err instanceof Error ? err.message : 'Failed to save product' });
-    } finally {
-      setLoading(false);
+      console.error('Unexpected error:', err);
+      setErrors({ submit: 'An unexpected error occurred' });
     }
   };
 
@@ -271,11 +292,21 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-bold">{product ? 'Edit Product' : 'Create Product'}</h2>
+      <h2 className="text-2xl font-bold text-text-primary">{product ? 'Edit Product' : 'Create Product'}</h2>
 
+      {/* Display mutation error */}
+      {mutationError && (
+        <div className="p-3 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+          <p className="text-error-700 dark:text-error-300 font-medium">
+            {mutationError instanceof Error ? mutationError.message : 'Failed to save product'}
+          </p>
+        </div>
+      )}
+
+      {/* Display form validation errors */}
       {errors.submit && (
-        <div className="p-3 bg-[var(--color-error-50)] border border-[var(--color-error-200)] rounded text-[var(--color-error-700)]">
-          {errors.submit}
+        <div className="p-3 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+          <p className="text-error-700 dark:text-error-300">{errors.submit}</p>
         </div>
       )}
 
@@ -401,16 +432,20 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 border border-border rounded-lg text-text-secondary hover:bg-surface-elevated"
+          disabled={isLoading}
+          className="px-4 py-2 border border-border rounded-lg text-text-secondary hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent-hover disabled:opacity-50"
+          disabled={isLoading}
+          className="px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
         >
-          {loading ? 'Saving...' : product ? 'Update Product' : 'Create Product'}
+          {isLoading && (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent-foreground"></div>
+          )}
+          <span>{isLoading ? 'Saving...' : product ? 'Update Product' : 'Create Product'}</span>
         </button>
       </div>
     </form>

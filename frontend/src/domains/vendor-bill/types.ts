@@ -236,31 +236,33 @@ export function getConfidenceLevel(confidence: number): MatchConfidenceLevel {
 
 /**
  * Get color class for confidence level
+ * Uses semantic tokens for theme compliance
  */
 export function getConfidenceColor(confidence: number): string {
   const level = getConfidenceLevel(confidence);
   switch (level) {
     case MatchConfidenceLevel.HIGH:
-      return 'text-green-600 dark:text-green-400';
+      return 'text-success-600 dark:text-success-400';
     case MatchConfidenceLevel.MEDIUM:
-      return 'text-yellow-600 dark:text-yellow-400';
+      return 'text-warning-600 dark:text-warning-400';
     case MatchConfidenceLevel.LOW:
-      return 'text-red-600 dark:text-red-400';
+      return 'text-error-600 dark:text-error-400';
   }
 }
 
 /**
  * Get background color class for confidence level
+ * Uses semantic tokens for theme compliance
  */
 export function getConfidenceBgColor(confidence: number): string {
   const level = getConfidenceLevel(confidence);
   switch (level) {
     case MatchConfidenceLevel.HIGH:
-      return 'bg-green-100 dark:bg-green-900/20';
+      return 'bg-success-100 dark:bg-success-900/20';
     case MatchConfidenceLevel.MEDIUM:
-      return 'bg-yellow-100 dark:bg-yellow-900/20';
+      return 'bg-warning-100 dark:bg-warning-900/20';
     case MatchConfidenceLevel.LOW:
-      return 'bg-red-100 dark:bg-red-900/20';
+      return 'bg-error-100 dark:bg-error-900/20';
   }
 }
 
@@ -281,16 +283,17 @@ export function canPostBill(bill: VendorBill, lines: VendorBillLine[]): boolean 
 
 /**
  * Get status badge color
+ * Uses semantic tokens for theme compliance
  */
 export function getStatusColor(status: BillStatus): string {
   switch (status) {
     case BillStatus.DRAFT:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      return 'bg-surface-elevated text-text-primary dark:bg-surface-elevated dark:text-text-primary';
     case BillStatus.REVIEW:
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      return 'bg-warning-100 text-warning-800 dark:bg-warning-900/20 dark:text-warning-400';
     case BillStatus.POSTED:
-      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      return 'bg-success-100 text-success-800 dark:bg-success-900/20 dark:text-success-400';
     case BillStatus.VOID:
-      return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      return 'bg-error-100 text-error-800 dark:bg-error-900/20 dark:text-error-400';
   }
 }

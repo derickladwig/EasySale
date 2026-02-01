@@ -11,6 +11,7 @@ import { ProfileMenu } from './common/components/molecules/ProfileMenu';
 import { LogoWithFallback } from './common/components/atoms/LogoWithFallback';
 import { useStations } from './admin/hooks/useStations';
 import { ENABLE_DOCUMENTS, ENABLE_REVIEW, ENABLE_ADMIN, ENABLE_REPORTING, ENABLE_VENDOR_BILLS, ENABLE_EXPORTS, ENABLE_INTEGRATIONS, ENABLE_DATA_MANAGER } from './common/utils/buildVariant';
+import { useCapabilities } from './hooks/useCapabilities';
 
 import { Permission } from './common/contexts/PermissionsContext';
 
@@ -42,12 +43,11 @@ export function AppLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [syncStatus] = useState<'online' | 'syncing' | 'offline'>('online');
   
-  // Only fetch stations if user has manage_settings permission
-  // This prevents 401/403 errors for users without admin access
-  const canManageSettings = hasPermission('manage_settings');
+  // Fetch backend capabilities to adapt UI based on build variant
+  const { data: capabilities } = useCapabilities();
   
   // Fetch stations to resolve station name from user's station_id
-  const { stations } = useStations(user?.store_id || undefined, { skip: !canManageSettings });
+  const { stations } = useStations(user?.store_id || undefined);
   
   // Get station name from user's session or default to "Station 1"
   const stationName = useMemo(() => {
@@ -59,20 +59,29 @@ export function AppLayout() {
   }, [user?.station_id, stations, brandConfig.store?.station]);
 
   // Filter navigation items by permissions AND feature flags
+  // Use backend capabilities when available, fall back to compile-time flags
   const filteredNavItems = navigation.filter((item) => {
     // Check permissions first
     if (item.permission && !hasPermission(item.permission as Permission)) {
       return false;
     }
-    // Check feature flags for build-variant-gated features
+    
+    // Check feature flags - use backend capabilities when available
+    // Fall back to compile-time flags if capabilities not loaded yet
+    const exportAvailable = capabilities?.features.export ?? ENABLE_EXPORTS;
+    
+    // Features that require export capability
+    if (item.id === 'reporting' && !exportAvailable && !ENABLE_REPORTING) return false;
+    if (item.id === 'exports' && !exportAvailable && !ENABLE_EXPORTS) return false;
+    
+    // Features that are compile-time only (no backend equivalent yet)
     if (item.id === 'documents' && !ENABLE_DOCUMENTS) return false;
     if (item.id === 'review' && !ENABLE_REVIEW) return false;
     if (item.id === 'admin' && !ENABLE_ADMIN) return false;
-    if (item.id === 'reporting' && !ENABLE_REPORTING) return false;
     if (item.id === 'vendor-bills' && !ENABLE_VENDOR_BILLS) return false;
-    if (item.id === 'exports' && !ENABLE_EXPORTS) return false;
     if (item.id === 'integrations' && !ENABLE_INTEGRATIONS) return false;
     if (item.id === 'data-manager' && !ENABLE_DATA_MANAGER) return false;
+    
     return true;
   });
 

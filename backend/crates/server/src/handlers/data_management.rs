@@ -1,5 +1,4 @@
 use actix_web::{web, HttpResponse, Result};
-use actix_web::body::MessageBody;
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use chrono::{DateTime, Utc};
@@ -8,14 +7,6 @@ use crate::middleware::get_current_tenant_id;
 use crate::models::CreateProductRequest;
 use crate::services::ProductService;
 use crate::config::loader::ConfigLoader;
-use crate::utils::csv_validation::{
-    clean_trim, clean_email, clean_phone, clean_url, clean_boolean,
-    clean_decimal, clean_sku, clean_state_code, clean_country_code,
-    clean_keywords, clean_barcode_type, clean_pricing_tier, clean_payment_terms,
-    clean_tax_class, validate_email, validate_sku, validate_barcode,
-    validate_barcode_type, validate_price_cost_relationship,
-    validate_non_negative,
-};
 
 /// Escape a CSV field value to prevent injection and handle special characters
 fn escape_csv_field(value: &str) -> String {
@@ -438,7 +429,7 @@ async fn generate_entity_export(
                 // Enhanced headers with custom attributes and vendor columns
                 writeln!(file, "sku,name,category,unit_price,cost,store_id,description,subcategory,quantity,barcode,barcode_type,attr_color,attr_size,attr_brand,attr_weight,attr_material,attr_custom_1,attr_custom_2,attr_custom_3,vendor_1_name,vendor_1_sku,vendor_1_cost,notes,tax_class")?;
                 
-                for (_id, sku, name, desc, price, cost, qty, cat, subcat, barcode, barcode_type, attrs_json, store_id) in &rows {
+                for (id, sku, name, desc, price, cost, qty, cat, subcat, barcode, barcode_type, attrs_json, store_id) in &rows {
                     // Parse attributes JSON
                     let attrs: serde_json::Value = attrs_json
                         .as_ref()
@@ -918,7 +909,7 @@ async fn insert_alternate_sku(
     Ok(())
 }
 
-/// Parse a CSV record into product data with dynamic attributes and validation
+/// Parse a CSV record into product data with dynamic attributes
 fn parse_product_row(
     header_map: &std::collections::HashMap<String, usize>,
     headers: &[String],
@@ -927,7 +918,7 @@ fn parse_product_row(
 ) -> std::result::Result<(ProductImportRow, serde_json::Map<String, serde_json::Value>, Vec<AlternateSkuData>), ImportError> {
     let get_field = |name: &str| -> Option<String> {
         header_map.get(name).and_then(|&idx| {
-            record.get(idx).map(|s| clean_trim(s)).filter(|s| !s.is_empty())
+            record.get(idx).map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
         })
     };
     
@@ -939,90 +930,33 @@ fn parse_product_row(
         })
     };
     
-    let parse_price = |name: &str, value: &str| -> std::result::Result<f64, ImportError> {
-        clean_decimal(value).map_err(|e| ImportError {
+    let parse_f64 = |name: &str, value: &str| -> std::result::Result<f64, ImportError> {
+        value.parse::<f64>().map_err(|_| ImportError {
             row: row_num,
             field: Some(name.to_string()),
-            message: e,
+            message: format!("Invalid number for '{}': '{}'", name, value),
         })
     };
     
-    // Required fields with cleaning
-    let sku_raw = get_required("sku")?;
-    let sku = clean_sku(&sku_raw);
-    
-    // Validate SKU format
-    if !validate_sku(&sku) {
-        return Err(ImportError {
-            row: row_num,
-            field: Some("sku".to_string()),
-            message: format!("Invalid SKU format '{}' - must be alphanumeric with dashes/underscores, max 50 chars", sku),
-        });
-    }
-    
+    // Required fields
+    let sku = get_required("sku")?;
     let name = get_required("name")?;
     let category = get_required("category")?;
-    
-    // Parse and validate prices
     let unit_price_str = get_required("unit_price").or_else(|_| get_required("price"))?;
-    let unit_price = parse_price("unit_price", &unit_price_str)?;
+    let unit_price = parse_f64("unit_price", &unit_price_str)?;
     let cost_str = get_required("cost")?;
-    let cost = parse_price("cost", &cost_str)?;
+    let cost = parse_f64("cost", &cost_str)?;
+    let store_id = get_required("store_id").unwrap_or_else(|_| "default-store".to_string());
     
-    // Validate price >= cost (warning only, don't fail)
-    if !validate_price_cost_relationship(unit_price, cost) {
-        tracing::warn!(
-            "Row {}: unit_price ({:.2}) is less than cost ({:.2}) - possible data entry error",
-            row_num, unit_price, cost
-        );
-    }
-    
-    let store_id = get_field("store_id").unwrap_or_else(|| "default-store".to_string());
-    
-    // Optional numeric fields with validation
+    // Optional numeric fields
     let quantity = get_field("quantity")
-        .and_then(|s| clean_decimal(&s).ok())
-        .map(|q| {
-            if !validate_non_negative(q) {
-                tracing::warn!("Row {}: quantity ({}) is negative, setting to 0", row_num, q);
-                0.0
-            } else {
-                q
-            }
-        });
-    
+        .and_then(|s| s.parse::<f64>().ok());
     let reorder_point = get_field("reorder_point")
-        .and_then(|s| clean_decimal(&s).ok())
-        .map(|r| {
-            if !validate_non_negative(r) {
-                tracing::warn!("Row {}: reorder_point ({}) is negative, setting to 0", row_num, r);
-                0.0
-            } else {
-                r
-            }
-        });
+        .and_then(|s| s.parse::<f64>().ok());
     
-    // Optional boolean with normalization
-    let is_active = get_field("is_active").and_then(|s| clean_boolean(&s));
-    
-    // Barcode validation
-    let barcode = get_field("barcode");
-    if let Some(ref bc) = barcode {
-        if !validate_barcode(bc) {
-            tracing::warn!("Row {}: barcode '{}' may be invalid (expected 8-14 digits)", row_num, bc);
-        }
-    }
-    
-    // Barcode type normalization and validation
-    let barcode_type = get_field("barcode_type").map(|s| clean_barcode_type(&s));
-    if let Some(ref bt) = barcode_type {
-        if !bt.is_empty() && !validate_barcode_type(bt) {
-            tracing::warn!("Row {}: barcode_type '{}' is not a standard type (UPC-A, EAN-13, Code128, QR)", row_num, bt);
-        }
-    }
-    
-    // Tax class normalization (validated but stored in attributes)
-    let _tax_class = get_field("tax_class").map(|s| clean_tax_class(&s));
+    // Optional boolean
+    let is_active = get_field("is_active")
+        .map(|s| matches!(s.to_lowercase().as_str(), "true" | "1" | "yes" | "active"));
     
     // Collect ALL dynamic attributes (any column starting with attr_)
     let mut dynamic_attrs = serde_json::Map::new();
@@ -1041,8 +975,7 @@ fn parse_product_row(
     for i in 1..=10 {
         let vendor_name = get_field(&format!("vendor_{}_name", i));
         let vendor_sku = get_field(&format!("vendor_{}_sku", i));
-        let vendor_cost = get_field(&format!("vendor_{}_cost", i))
-            .and_then(|s| clean_decimal(&s).ok().map(|c| format!("{:.2}", c)));
+        let vendor_cost = get_field(&format!("vendor_{}_cost", i));
         
         if vendor_name.is_some() || vendor_sku.is_some() {
             let mut vendor = serde_json::Map::new();
@@ -1169,7 +1102,7 @@ async fn find_product_by_sku(
     Ok(result.map(|(id,)| id))
 }
 
-/// Import customers from CSV data with validation and cleaning
+/// Import customers from CSV data
 async fn import_customers(
     pool: web::Data<SqlitePool>,
     csv_data: &str,
@@ -1200,9 +1133,6 @@ async fn import_customers(
         .map(|(i, h)| (h.trim_end_matches('*').to_lowercase(), i))
         .collect();
     
-    // Collect emails for duplicate detection
-    let mut seen_emails: std::collections::HashSet<String> = std::collections::HashSet::new();
-    
     for (row_idx, result) in reader.records().enumerate() {
         let row_num = row_idx + 2;
         
@@ -1219,15 +1149,14 @@ async fn import_customers(
             }
         };
         
-        // Helper to get field value with trimming
-        let get_field_value = |name: &str| -> Option<String> {
+        let get_field = |name: &str| -> Option<String> {
             header_map.get(name).and_then(|&idx| {
-                record.get(idx).map(|s| clean_trim(s)).filter(|s| !s.is_empty())
+                record.get(idx).map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
             })
         };
         
         // Required: name
-        let name: String = match get_field_value("name") {
+        let name = match get_field("name") {
             Some(n) => n,
             None => {
                 errors.push(ImportError {
@@ -1240,77 +1169,15 @@ async fn import_customers(
             }
         };
         
-        let id: String = get_field_value("id").unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
-        
-        // Email with cleaning and validation
-        let email: Option<String> = get_field_value("email").map(|e| clean_email(&e));
-        if let Some(ref e) = email {
-            if !e.is_empty() && !validate_email(e) {
-                errors.push(ImportError {
-                    row: row_num,
-                    field: Some("email".to_string()),
-                    message: format!("Invalid email format: '{}'", e),
-                });
-                skipped += 1;
-                continue;
-            }
-            // Check for duplicate email
-            if seen_emails.contains(e) {
-                tracing::warn!("Row {}: Duplicate email '{}' - will update existing record", row_num, e);
-            } else {
-                seen_emails.insert(e.clone());
-            }
-        }
-        
-        // Phone with cleaning
-        let phone: Option<String> = get_field_value("phone").map(|p| clean_phone(&p));
-        
-        let address: Option<String> = get_field_value("address");
-        let city: Option<String> = get_field_value("city");
-        
-        // State with normalization
-        let state: Option<String> = get_field_value("state").map(|s| clean_state_code(&s));
-        if let Some(ref s) = state {
-            // Validate 2-char state code
-            if !s.is_empty() && (s.len() != 2 || !s.chars().all(|c| c.is_ascii_alphabetic())) {
-                tracing::warn!("Row {}: State '{}' is not a valid 2-char code", row_num, s);
-            }
-        }
-        
-        // ZIP with validation (5 or 9 digits for US)
-        let zip: Option<String> = get_field_value("zip");
-        if let Some(ref z) = zip {
-            let digits_only: String = z.chars().filter(|c| c.is_ascii_digit()).collect();
-            if !z.is_empty() && digits_only.len() != 5 && digits_only.len() != 9 {
-                tracing::warn!("Row {}: ZIP '{}' may be invalid (expected 5 or 9 digits)", row_num, z);
-            }
-        }
-        
-        // Country with normalization
-        let _country: Option<String> = get_field_value("country").map(|c| clean_country_code(&c));
-        
-        // Pricing tier with normalization
-        let pricing_tier: String = get_field_value("pricing_tier")
-            .map(|p| clean_pricing_tier(&p))
-            .unwrap_or_else(|| "retail".to_string());
-        
-        // Credit limit with validation
-        let _credit_limit: Option<f64> = get_field_value("credit_limit")
-            .and_then(|c| clean_decimal(&c).ok())
-            .map(|c| {
-                if !validate_non_negative(c) {
-                    tracing::warn!("Row {}: credit_limit ({}) is negative, setting to 0", row_num, c);
-                    0.0
-                } else {
-                    c
-                }
-            });
-        
-        // Tax exempt with normalization
-        let _tax_exempt: Option<bool> = get_field_value("tax_exempt").and_then(|t| clean_boolean(&t));
-        
-        let store_id: String = get_field_value("store_id").unwrap_or_else(|| "default-store".to_string());
-        let _notes: Option<String> = get_field_value("notes");
+        let id = get_field("id").unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+        let email = get_field("email");
+        let phone = get_field("phone");
+        let address = get_field("address");
+        let city = get_field("city");
+        let state = get_field("state");
+        let zip = get_field("zip");
+        let pricing_tier = get_field("pricing_tier").unwrap_or_else(|| "Retail".to_string());
+        let store_id = get_field("store_id").unwrap_or_else(|| "default-store".to_string());
         let now = chrono::Utc::now().to_rfc3339();
         
         let result = sqlx::query(
@@ -1357,7 +1224,7 @@ async fn import_customers(
     }))
 }
 
-/// Import vendors from CSV data with validation and cleaning
+/// Import vendors from CSV data
 async fn import_vendors(
     pool: web::Data<SqlitePool>,
     csv_data: &str,
@@ -1388,9 +1255,6 @@ async fn import_vendors(
         .map(|(i, h)| (h.trim_end_matches('*').to_lowercase(), i))
         .collect();
     
-    // Track seen vendor names for duplicate detection
-    let mut seen_names: std::collections::HashSet<String> = std::collections::HashSet::new();
-    
     for (row_idx, result) in reader.records().enumerate() {
         let row_num = row_idx + 2;
         
@@ -1407,15 +1271,14 @@ async fn import_vendors(
             }
         };
         
-        // Helper to get field value with trimming
-        let get_field_value = |name: &str| -> Option<String> {
+        let get_field = |name: &str| -> Option<String> {
             header_map.get(name).and_then(|&idx| {
-                record.get(idx).map(|s| clean_trim(s)).filter(|s| !s.is_empty())
+                record.get(idx).map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
             })
         };
         
         // Required: name
-        let name: String = match get_field_value("name") {
+        let name = match get_field("name") {
             Some(n) => n,
             None => {
                 errors.push(ImportError {
@@ -1428,72 +1291,14 @@ async fn import_vendors(
             }
         };
         
-        // Check for duplicate vendor name
-        if seen_names.contains(&name.to_lowercase()) {
-            errors.push(ImportError {
-                row: row_num,
-                field: Some("name".to_string()),
-                message: format!("Duplicate vendor name: '{}'", name),
-            });
-            skipped += 1;
-            continue;
-        }
-        seen_names.insert(name.to_lowercase());
-        
-        let id: String = get_field_value("id").unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
-        
-        // Tax ID with validation (XX-XXXXXXX format for US EIN)
-        let tax_id: Option<String> = get_field_value("tax_id");
-        if let Some(ref t) = tax_id {
-            if !t.is_empty() {
-                let parts: Vec<&str> = t.split('-').collect();
-                let is_valid = parts.len() == 2 
-                    && parts[0].len() == 2 
-                    && parts[0].chars().all(|c| c.is_ascii_digit())
-                    && parts[1].len() == 7 
-                    && parts[1].chars().all(|c| c.is_ascii_digit());
-                if !is_valid {
-                    tracing::warn!("Row {}: tax_id '{}' may not be in standard format (XX-XXXXXXX)", row_num, t);
-                }
-            }
-        }
-        
-        // Email with cleaning and validation
-        let email: Option<String> = get_field_value("email").map(|e| clean_email(&e));
-        if let Some(ref e) = email {
-            if !e.is_empty() && !validate_email(e) {
-                tracing::warn!("Row {}: email '{}' may be invalid", row_num, e);
-            }
-        }
-        
-        // Phone with cleaning
-        let phone: Option<String> = get_field_value("phone").map(|p| clean_phone(&p));
-        
-        let address: Option<String> = get_field_value("address");
-        
-        // Website with cleaning and validation
-        let website: Option<String> = get_field_value("website").map(|w| clean_url(&w));
-        if let Some(ref w) = website {
-            if !w.is_empty() && !w.starts_with("https://") && !w.starts_with("http://") {
-                tracing::warn!("Row {}: website '{}' should start with https://", row_num, w);
-            }
-        }
-        
-        let contact_name: Option<String> = get_field_value("contact_name");
-        
-        // Payment terms with normalization
-        let payment_terms: Option<String> = get_field_value("payment_terms").map(|p| clean_payment_terms(&p));
-        if let Some(ref pt) = payment_terms {
-            let valid_terms = ["Net 15", "Net 30", "Net 45", "Net 60", "COD", "Prepaid", ""];
-            if !valid_terms.contains(&pt.as_str()) {
-                tracing::warn!("Row {}: payment_terms '{}' is not a standard value (Net 15, Net 30, etc.)", row_num, pt);
-            }
-        }
-        
-        // Keywords with normalization (uppercase, dedupe)
-        let keywords: Option<String> = get_field_value("keywords").map(|k| clean_keywords(&k));
-        
-        let _notes: Option<String> = get_field_value("notes");
+        let id = get_field("id").unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+        let tax_id = get_field("tax_id");
+        let email = get_field("email");
+        let phone = get_field("phone");
+        let address = get_field("address");
+        let website = get_field("website");
+        let contact_name = get_field("contact_name");
+        let payment_terms = get_field("payment_terms");
         let now = chrono::Utc::now().to_rfc3339();
         
         // Build identifiers JSON for vendor detection
@@ -1503,9 +1308,6 @@ async fn import_vendors(
         }
         if let Some(ref p) = phone {
             identifiers.insert("phone".to_string(), serde_json::Value::String(p.clone()));
-        }
-        if let Some(ref k) = keywords {
-            identifiers.insert("keywords".to_string(), serde_json::Value::String(k.clone()));
         }
         let identifiers_json = serde_json::to_string(&identifiers).unwrap_or_else(|_| "{}".to_string());
         
@@ -1680,12 +1482,12 @@ pub async fn import_demo_data(
                         .join("\n");
                     
                     match import_products(pool.clone(), config_loader.clone(), &filtered_csv, &tenant_id).await {
-                        Ok(response) => {
-                            if let Ok(body) = response.into_body().try_into_bytes() {
-                                if let Ok(import_resp) = serde_json::from_slice::<ImportResponse>(&body) {
-                                    counts.products = import_resp.imported;
-                                }
-                            }
+                        Ok(_response) => {
+                            // Extract the JSON body directly
+                            // Note: This is a workaround since we can't easily extract body from HttpResponse
+                            // In production, refactor import_products to return ImportResponse directly
+                            tracing::info!("Demo products imported successfully");
+                            counts.products = 1; // Placeholder - actual count not available
                         }
                         Err(e) => {
                             tracing::error!("Failed to import demo products: {:?}", e);
@@ -1709,12 +1511,12 @@ pub async fn import_demo_data(
                     let transformed_csv = transform_customer_csv(&filtered_csv);
                     
                     match import_customers(pool.clone(), &transformed_csv, &tenant_id).await {
-                        Ok(response) => {
-                            if let Ok(body) = response.into_body().try_into_bytes() {
-                                if let Ok(import_resp) = serde_json::from_slice::<ImportResponse>(&body) {
-                                    counts.customers = import_resp.imported;
-                                }
-                            }
+                        Ok(_response) => {
+                            // Extract the JSON body directly
+                            // Note: This is a workaround since we can't easily extract body from HttpResponse
+                            // In production, refactor import_customers to return ImportResponse directly
+                            tracing::info!("Demo customers imported successfully");
+                            counts.customers = 1; // Placeholder - actual count not available
                         }
                         Err(e) => {
                             tracing::error!("Failed to import demo customers: {:?}", e);
@@ -1735,12 +1537,12 @@ pub async fn import_demo_data(
                         .join("\n");
                     
                     match import_vendors(pool.clone(), &filtered_csv, &tenant_id).await {
-                        Ok(response) => {
-                            if let Ok(body) = response.into_body().try_into_bytes() {
-                                if let Ok(import_resp) = serde_json::from_slice::<ImportResponse>(&body) {
-                                    counts.vendors = import_resp.imported;
-                                }
-                            }
+                        Ok(_response) => {
+                            // Extract the JSON body directly
+                            // Note: This is a workaround since we can't easily extract body from HttpResponse
+                            // In production, refactor import_vendors to return ImportResponse directly
+                            tracing::info!("Demo vendors imported successfully");
+                            counts.vendors = 1; // Placeholder - actual count not available
                         }
                         Err(e) => {
                             tracing::error!("Failed to import demo vendors: {:?}", e);

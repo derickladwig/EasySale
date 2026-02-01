@@ -66,7 +66,6 @@ export function TransfersTab() {
         }
       } catch {
         // Use default locations if API not available
-        console.log('Using default locations - stores API not available');
       }
     };
     loadLocations();

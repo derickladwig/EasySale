@@ -1,12 +1,14 @@
 use actix_web::{cookie::{Cookie, SameSite}, get, post, web, HttpRequest, HttpResponse, Responder};
 use chrono::{Duration, Utc};
 use sqlx::SqlitePool;
+use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::auth::{generate_token, verify_password};
 use crate::config::Config;
 use crate::middleware::{get_current_tenant_id, generate_csrf_token, create_csrf_cookie, clear_csrf_cookie};
 use crate::models::{LoginRequest, LoginResponse, User, UserResponse};
+use crate::services::ThreatMonitor;
 
 /// Cookie name for auth token
 const AUTH_COOKIE_NAME: &str = "auth_token";
@@ -113,6 +115,7 @@ fn check_rate_limit(ip: &str) -> Result<(), AuthError> {
 pub async fn login(
     pool: web::Data<SqlitePool>,
     config: web::Data<Config>,
+    threat_monitor: Option<web::Data<Arc<ThreatMonitor>>>,
     req: web::Json<LoginRequest>,
     http_req: HttpRequest,
 ) -> impl Responder {
@@ -124,6 +127,23 @@ pub async fn login(
         .realip_remote_addr()
         .unwrap_or("unknown")
         .to_string();
+    
+    // Get user agent for session tracking
+    let user_agent = http_req
+        .headers()
+        .get("User-Agent")
+        .and_then(|h| h.to_str().ok())
+        .map(|s| s.to_string());
+    
+    // Check if IP is blocked by ThreatMonitor
+    if let Some(ref monitor) = threat_monitor {
+        if monitor.is_blocked(&client_ip).await {
+            tracing::warn!("Login blocked: IP {} is blocked", client_ip);
+            return HttpResponse::Forbidden().json(serde_json::json!({
+                "error": "Access denied. Your IP has been temporarily blocked due to suspicious activity."
+            }));
+        }
+    }
     
     // Check rate limit
     if let Err(e) = check_rate_limit(&client_ip) {
@@ -149,6 +169,15 @@ pub async fn login(
         Ok(Some(user)) => user,
         Ok(None) => {
             tracing::warn!("Login failed: user not found - {}", req.username);
+            
+            // Record failed login attempt in ThreatMonitor
+            if let Some(ref monitor) = threat_monitor {
+                let blocked = monitor.record_failed_login(&client_ip, Some(&req.username)).await;
+                if blocked {
+                    tracing::warn!("IP {} has been auto-blocked after too many failed login attempts", client_ip);
+                }
+            }
+            
             return HttpResponse::Unauthorized().json(serde_json::json!({
                 "error": "Invalid username or password"
             }));
@@ -166,6 +195,15 @@ pub async fn login(
         Ok(true) => {}
         Ok(false) => {
             tracing::warn!("Login failed: invalid password for user {}", req.username);
+            
+            // Record failed login attempt in ThreatMonitor
+            if let Some(ref monitor) = threat_monitor {
+                let blocked = monitor.record_failed_login(&client_ip, Some(&req.username)).await;
+                if blocked {
+                    tracing::warn!("IP {} has been auto-blocked after too many failed login attempts", client_ip);
+                }
+            }
+            
             return HttpResponse::Unauthorized().json(serde_json::json!({
                 "error": "Invalid username or password"
             }));
@@ -261,6 +299,23 @@ pub async fn login(
         // Don't fail login if this update fails - it's not critical
     }
 
+    // Register session with ThreatMonitor for tracking
+    if let Some(ref monitor) = threat_monitor {
+        // Hash the token for storage (don't store raw tokens)
+        use sha2::{Sha256, Digest};
+        let mut hasher = Sha256::new();
+        hasher.update(token.as_bytes());
+        let token_hash = format!("{:x}", hasher.finalize());
+        
+        monitor.register_session(
+            &token_hash,
+            &user.id,
+            Some(&user.username),
+            &client_ip,
+            user_agent.as_deref(),
+        ).await;
+    }
+
     tracing::info!("Login successful for user: {} ({})", user.username, user.id);
 
     // Determine if we're in production (use Secure flag)
@@ -296,7 +351,11 @@ pub async fn login(
 /// POST /auth/logout
 /// Invalidate a user's session
 #[post("/auth/logout")]
-pub async fn logout(pool: web::Data<SqlitePool>, req: HttpRequest) -> impl Responder {
+pub async fn logout(
+    pool: web::Data<SqlitePool>,
+    threat_monitor: Option<web::Data<Arc<ThreatMonitor>>>,
+    req: HttpRequest,
+) -> impl Responder {
     // Extract token from cookie first, then fall back to Authorization header
     let token = req.cookie(AUTH_COOKIE_NAME)
         .map(|c| c.value().to_string())
@@ -322,9 +381,18 @@ pub async fn logout(pool: web::Data<SqlitePool>, req: HttpRequest) -> impl Respo
         }
     };
 
+    // Remove session from ThreatMonitor
+    if let Some(ref monitor) = threat_monitor {
+        use sha2::{Sha256, Digest};
+        let mut hasher = Sha256::new();
+        hasher.update(token.as_bytes());
+        let token_hash = format!("{:x}", hasher.finalize());
+        monitor.remove_session(&token_hash).await;
+    }
+
     // Delete session by token
     let result = sqlx::query("DELETE FROM sessions WHERE token = ? AND tenant_id = ?")
-        .bind(token)
+        .bind(&token)
         .bind(get_current_tenant_id())
         .execute(pool.get_ref())
         .await;

@@ -27,7 +27,9 @@
       "@common/*": ["src/common/*"],
       "@features/*": ["src/features/*"],
       "@domains/*": ["src/domains/*"],
-      "@assets/*": ["src/assets/*"]
+      "@assets/*": ["src/assets/*"],
+      "@stores/*": ["src/stores/*"],
+      "@stores": ["src/stores"]
     }
   },
   "include": ["src"],

@@ -5,6 +5,7 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import importPlugin from 'eslint-plugin-import';
+import noTailwindBaseColors from './eslint-rules/no-tailwind-base-colors.js';
 
 export default [
   js.configs.recommended,
@@ -99,6 +100,11 @@ export default [
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       import: importPlugin,
+      'custom-rules': {
+        rules: {
+          'no-tailwind-base-colors': noTailwindBaseColors,
+        },
+      },
     },
     rules: {
       ...tseslint.configs.recommended.rules,
@@ -125,6 +131,19 @@ export default [
       'react-hooks/purity': 'warn',
       'react-hooks/immutability': 'warn',
       'react-refresh/only-export-components': 'off',
+      
+      // Theme system enforcement: no Tailwind base colors
+      // Custom ESLint rule prevents use of Tailwind base color utilities (e.g., bg-blue-500, text-red-600)
+      // Enforces use of semantic tokens from theme system (e.g., bg-primary-500, text-error-600)
+      // Rule implementation: frontend/eslint-rules/no-tailwind-base-colors.js
+      // Supports auto-fix to replace violations with semantic alternatives
+      'custom-rules/no-tailwind-base-colors': [
+        'error',
+        {
+          autoFix: true,
+          excludePatterns: [],
+        },
+      ],
       
       // Design system enforcement: disallow inline styles
       'react/forbid-component-props': [

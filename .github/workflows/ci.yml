@@ -43,6 +43,18 @@ jobs:
       - name: Run type check
         run: npx tsc --noEmit
       
+      # Theme Compliance Scanners - Enforce GLOBAL_RULES_EASYSALE.md
+      # These scanners prevent regressions in the theme system by failing the build
+      # if violations are detected. See README.md "Theme Compliance Enforcement" section.
+      - name: Check for hardcoded colors
+        run: npm run lint:colors
+      
+      - name: Check for direct DOM manipulation
+        run: npm run lint:dom
+      
+      - name: Check for circular dependencies
+        run: npm run check:circular
+      
       - name: Run tests
         run: npm run test:run
       
@@ -60,6 +72,9 @@ jobs:
       
       - name: Build production bundle
         run: npm run build
+      
+      - name: Check bundle budget
+        run: node scripts/check-bundle-budget.js
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

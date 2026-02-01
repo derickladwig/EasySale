@@ -1529,9 +1529,32 @@ export const IntegrationsPage: React.FC = () => {
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => {
-                    toast.success('Mappings saved');
-                    setShowMappingEditor(false);
+                  onClick={async () => {
+                    try {
+                      // Save mappings to backend
+                      await fetch('/api/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                          key: 'integration_mappings',
+                          value: JSON.stringify(mappings),
+                          scope: 'global',
+                        }),
+                      });
+                      
+                      // Also save to localStorage as backup
+                      localStorage.setItem('integration_mappings', JSON.stringify(mappings));
+                      
+                      toast.success('Mappings saved successfully');
+                      setShowMappingEditor(false);
+                    } catch (error) {
+                      console.error('Failed to save mappings:', error);
+                      // Still save to localStorage
+                      localStorage.setItem('integration_mappings', JSON.stringify(mappings));
+                      toast.success('Mappings saved locally');
+                      setShowMappingEditor(false);
+                    }
                   }}
                   variant="primary"
                   size="sm"

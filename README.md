@@ -17,10 +17,7 @@
   <a href="https://github.com/derickladwig/EasySale/actions/workflows/ci.yml"><img src="https://github.com/derickladwig/EasySale/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
   <a href="https://github.com/derickladwig/EasySale/actions/workflows/cd.yml"><img src="https://github.com/derickladwig/EasySale/actions/workflows/cd.yml/badge.svg" alt="CD Status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
-</p>
-
-<p align="center">
-  <a href="https://www.loom.com/share/94fcc053be2643d580f0ca8a9936425a"><strong>📺 Watch Demo Video</strong></a>
+  <img src="https://img.shields.io/badge/Theme%20Compliance-Enforced-success" alt="Theme Compliance">
 </p>
 
 <p align="center">
@@ -220,18 +217,16 @@ backend/crates/
 | Vendor Bill Workflow | — | — | ✅ |
 | Review Queue | — | — | ✅ |
 
-### Latest Features (v1.2.3)
+### Latest Features (v1.1.0)
 
 | Feature | Description |
 |---------|-------------|
-| **Demo Data Import** | One-click demo data loading for Products, Customers, Vendors |
-| **Enhanced Import Wizard** | Collapsible field docs, custom attribute support, better UX |
-| **Category Browser** | Hierarchical category management with search and product counts |
-| **Quote Actions** | Email quotes directly to customers |
-| **Inventory Management** | Delete items, bulk actions, filter modal |
-| **Receipt Branding** | Dynamic company info, logo, and tax display on receipts |
-| **Per-Item Cart Adjustments** | Override prices and apply discounts per line item |
+| **Per-Item Cart Adjustments** | Override prices and apply discounts per line item with reason tracking |
 | **Stock Validation** | Real-time stock check prevents overselling |
+| **Stock Adjustment API** | Full audit trail for inventory changes with reasons |
+| **Quotes System** | Save carts as quotes, convert to sales later |
+| **Custom Date Reporting** | Filter reports by any date range |
+| **Period Comparison** | See percentage changes vs previous period |
 
 ---
 
@@ -319,7 +314,56 @@ cd frontend && npm run test:run
 # Linting
 cargo clippy            # Backend
 npm run lint            # Frontend
+
+# Theme compliance checks
+npm run lint:colors     # Check for hardcoded colors
+npm run lint:dom        # Check for direct DOM manipulation
 ```
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+#### Automated Checks
+
+Every pull request and push to `main`/`develop` runs:
+
+1. **Frontend CI**
+   - Code formatting check (`prettier`)
+   - ESLint linting
+   - TypeScript type checking
+   - **Theme compliance scanners** (hardcoded colors, DOM manipulation)
+   - Unit tests with coverage
+   - Production build
+
+2. **Backend CI**
+   - Rust formatting check (`rustfmt`)
+   - Clippy linting
+   - Unit tests
+   - Coverage reports
+   - Release build
+
+3. **Security Audit**
+   - npm audit for frontend dependencies
+   - cargo audit for Rust dependencies
+
+#### Theme Compliance Enforcement
+
+The CI pipeline includes automated scanners that enforce theme system rules:
+
+- **Hardcoded Color Scanner** (`lint:colors`)
+  - Detects hex colors, rgb/rgba, hsl/hsla outside theme files
+  - Prevents Tailwind base color utilities (e.g., `text-blue-600`)
+  - Ensures all colors use semantic tokens (e.g., `text-primary-600`)
+  - **Build fails if violations found**
+
+- **DOM Manipulation Scanner** (`lint:dom`)
+  - Detects direct DOM manipulation outside ThemeEngine
+  - Prevents `document.documentElement.style.setProperty()` in components
+  - Ensures theme changes route through ThemeEngine API
+  - **Build fails if violations found**
+
+These scanners maintain theme system integrity and prevent regressions.
 
 ### Capabilities API
 
@@ -364,99 +408,6 @@ EasySale/
 ├── ci/                # CI scripts and property tests
 └── audit/             # Quality assurance reports
 ```
-
----
-
-## Development Story — Kiro AI Hackathon 2026
-
-EasySale was built for the **Kiro AI Hackathon 2026** using a spec-driven, AI-assisted workflow. This section documents the development process and tools used.
-
-### AI-Assisted Development Workflow
-
-| Tool | Role | Usage |
-|------|------|-------|
-| **Kiro (Claude Sonnet 4)** | Primary development | Spec phases, structured task execution, code generation |
-| **ChatGPT** | Planning & refinement | Scope consolidation, idea refinement, documentation review |
-| **Cursor** | Late-stage polish | Code review, cleanup, repository management |
-
-### The Spec-Driven Process
-
-The entire project was built using Kiro's spec-driven approach:
-
-1. **Requirements** → Define what to build in `spec/req.md`
-2. **Design** → Architecture decisions in `spec/design.md`
-3. **Tasks** → Break down into executable tasks in `.kiro/specs/*/tasks.md`
-4. **Execute** → Let Kiro implement each task systematically
-5. **Iterate** → Refine based on results
-
-This process is documented in detail in:
-- [`.kiro/DEVELOPMENT_LOG.md`](.kiro/DEVELOPMENT_LOG.md) — Comprehensive development timeline
-- [`docs/consolidated/05_KIRO_PROCESS.md`](docs/consolidated/05_KIRO_PROCESS.md) — Kiro workflow documentation
-- [`blog/`](blog/) — 72+ development blog posts
-
-### Memory Bank System
-
-The project uses a **Memory Bank** workflow (inspired by [Jordan Hindo](https://github.com/jordanhindo)) for AI context persistence:
-
-```
-memory-bank/
-├── MEMORY_SYSTEM.md      # Operating instructions for AI
-├── project_brief.md      # Static project context
-├── active-state.md       # Current session state
-├── system_patterns.md    # Patterns and gotchas
-└── adr/                  # Architecture Decision Records
-```
-
-Core principle: *"Files, not chat. Documents, not memory. Receipts, not vibes."*
-
-### Demo & Documentation Tools
-
-| Tool | Purpose |
-|------|---------|
-| **OpenAI Sora** | Video generation for demos |
-| **Loom** | Screen recording and walkthroughs |
-| **Guidde** | Interactive documentation |
-
-### Development Timeline Highlights
-
-| Phase | Dates | Focus |
-|-------|-------|-------|
-| Foundation | Jan 9-10 | React + Rust + SQLite setup |
-| Design System | Jan 10-11 | White-label theming |
-| Multi-Tenant | Jan 11-12 | Tenant isolation |
-| Documentation | Jan 13-14 | Spec alignment |
-| Data Sync | Jan 15-17 | Universal sync engine |
-| Backend Complete | Jan 18 | 150+ API endpoints |
-| Production Polish | Jan 27-29 | Build variants, cleanup |
-| Hackathon Prep | Jan 30 | Documentation, demo |
-
-### Documentation Structure
-
-```
-EasySale/
-├── .kiro/                  # Kiro AI configuration
-│   ├── steering/           # Product/tech/structure docs
-│   ├── specs/              # 26 feature specifications
-│   ├── prompts/            # Reusable AI prompts
-│   └── DEVELOPMENT_LOG.md  # Main development log
-├── blog/                   # 72+ development blog posts
-├── docs/consolidated/      # 8 canonical documentation files
-├── memory-bank/            # AI memory system with ADRs
-├── archive/                # 300+ historical status reports
-└── audit/                  # Truth-sync and quality audits
-```
-
-### Key Metrics
-
-- **23 days** of development
-- **26 feature specs** in `.kiro/specs/`
-- **72+ blog posts** documenting progress
-- **300+ status reports** in archive
-- **150+ API endpoints** implemented
-- **50+ database tables**
-- **0 TypeScript errors**, **0 Rust warnings**
-
-For the complete development story, see [`.kiro/DEVELOPMENT_LOG.md`](.kiro/DEVELOPMENT_LOG.md).
 
 ---
 

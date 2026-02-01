@@ -60,7 +60,9 @@ capabilities = { path = "../capabilities" }
 csv_export_pack = { path = "../csv_export_pack", optional = true }
 
 # Web framework
+actix = { workspace = true }
 actix-web = { workspace = true }
+actix-web-actors = { workspace = true }
 actix-cors = { workspace = true }
 actix-files = { workspace = true }
 
@@ -110,6 +112,9 @@ regex = { workspace = true }
 # CSV parsing
 csv = "1.3"
 
+# Decimal arithmetic
+rust_decimal = "1.33"
+
 # Error handling
 thiserror = { workspace = true }
 
@@ -133,6 +138,9 @@ base64 = { workspace = true }
 # Multipart form data
 actix-multipart = { workspace = true }
 futures-util = { workspace = true }
+
+# File system watching for configuration hot-reload
+notify = { workspace = true }
 
 # Image processing for OCR enhancement (optional - feature-gated)
 image = { workspace = true, optional = true }
@@ -163,6 +171,7 @@ tempfile = { workspace = true }
 proptest = { workspace = true }
 wiremock = { workspace = true }
 rust_decimal = "1.33"
+rust_decimal_macros = "1.33"
 
 [lints.rust]
 unsafe_code = "deny"

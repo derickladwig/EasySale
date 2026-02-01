@@ -139,14 +139,14 @@ export const HardwarePage: React.FC = () => {
           setPaymentTerminals([{
             id: 1,
             name: 'Payment Terminal',
-            type: 'Manual Entry',
+            type: 'Stripe Terminal',
             connection_settings: '',
             status: 'disconnected',
             is_default: true,
           }]);
         }
-      } catch (error) {
-        console.log('Hardware settings API not available, using defaults');
+      } catch {
+        // Hardware settings API not available, using defaults
       } finally {
         setIsLoading(false);
       }

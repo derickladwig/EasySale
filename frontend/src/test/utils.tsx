@@ -1,22 +1,20 @@
 import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+import { ThemeProvider } from '../config/ThemeProvider';
 
 /**
  * Custom render function that wraps components with common providers
  */
 export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
-  // TODO: Add providers here as they are created (AuthProvider, ThemeProvider, etc.)
-  // const Wrapper = ({ children }: { children: React.ReactNode }) => {
-  //   return (
-  //     <AuthProvider>
-  //       <ThemeProvider>
-  //         {children}
-  //       </ThemeProvider>
-  //     </AuthProvider>
-  //   );
-  // };
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
+    return (
+      <ThemeProvider>
+        {children}
+      </ThemeProvider>
+    );
+  };
 
-  return render(ui, { ...options });
+  return render(ui, { wrapper: Wrapper, ...options });
 }
 
 /**

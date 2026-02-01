@@ -443,7 +443,7 @@ describe('SettingsSearch Component', () => {
       await waitFor(() => {
         const badges = screen.queryAllByText('store');
         if (badges.length > 0) {
-          expect(badges[0]).toHaveClass('bg-green-100', 'text-green-700');
+          expect(badges[0]).toHaveClass('bg-success-100', 'text-success-700');
         }
       });
     });

@@ -1,0 +1,58 @@
+# Version control
+.git
+.github
+.vscode
+.husky
+.kiro
+*.code-workspace
+
+# Build artifacts (THE BIG ONE - 35.49 GB!)
+**/target
+**/*.rlib
+**/*.rmeta
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/playwright-report
+**/test-results
+**/storybook-static
+
+# Large directories
+archive
+backup
+audit
+memory-bank
+data
+installer
+examples
+blog
+docs
+
+# Logs and temp files
+*.log
+build-*.txt
+build-*.log
+prod-build.log
+*.zip
+*.pdb
+
+# Secrets
+.env
+**/.env
+**/*.pem
+**/*.key
+
+# Test files
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+**/tests
+**/__tests__
+
+# Documentation
+*.md
+!README.md
+!CHANGELOG.md

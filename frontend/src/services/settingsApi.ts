@@ -1,52 +1,4 @@
-import axios from 'axios';
-
-// Determine API base URL dynamically
-// Use relative URLs to go through Vite proxy (dev) or nginx proxy (prod)
-// This ensures cookies are sent correctly (same-origin requests)
-function getApiBaseUrl(): string {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  // Use relative URLs - works in both dev (Vite proxy) and prod (nginx proxy)
-  return '';
-}
-
-/**
- * Get CSRF token from cookie for state-changing requests
- */
-function getCsrfToken(): string | null {
-  if (typeof document === 'undefined') return null;
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'csrf_token') {
-      return decodeURIComponent(value);
-    }
-  }
-  return null;
-}
-
-const API_BASE_URL = getApiBaseUrl();
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Include httpOnly cookies for authentication
-});
-
-// Add CSRF token to state-changing requests
-api.interceptors.request.use((config) => {
-  const method = (config.method || 'get').toUpperCase();
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
-    const csrfToken = getCsrfToken();
-    if (csrfToken) {
-      config.headers['X-CSRF-Token'] = csrfToken;
-    }
-  }
-  return config;
-});
+import { apiClient } from '@common/api/client';
 
 // Types
 export interface UserPreferences {
@@ -115,95 +67,85 @@ export interface UpdateSettingRequest {
   value: string | number | boolean | Record<string, unknown>;
 }
 
-// API Functions
+// API Functions - Using centralized apiClient instead of axios
 export const settingsApi = {
   // User Preferences
   async getPreferences(): Promise<UserPreferences> {
-    const response = await api.get('/api/settings/preferences');
-    return response.data;
+    return apiClient.get<UserPreferences>('/api/settings/preferences');
   },
 
   async updatePreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
-    const response = await api.put('/api/settings/preferences', preferences);
-    return response.data;
+    return apiClient.put<UserPreferences>('/api/settings/preferences', preferences);
   },
 
   // Localization Settings
   async getLocalizationSettings(): Promise<LocalizationSettings> {
-    const response = await api.get('/api/settings/localization');
-    return response.data;
+    return apiClient.get<LocalizationSettings>('/api/settings/localization');
   },
 
   async updateLocalizationSettings(settings: Partial<LocalizationSettings>): Promise<LocalizationSettings> {
-    const response = await api.put('/api/settings/localization', settings);
-    return response.data;
+    return apiClient.put<LocalizationSettings>('/api/settings/localization', settings);
   },
 
   // Network Settings
   async getNetworkSettings(): Promise<NetworkSettings> {
-    const response = await api.get('/api/settings/network');
-    return response.data;
+    return apiClient.get<NetworkSettings>('/api/settings/network');
   },
 
   async updateNetworkSettings(settings: Partial<NetworkSettings>): Promise<NetworkSettings> {
-    const response = await api.put('/api/settings/network', settings);
-    return response.data;
+    return apiClient.put<NetworkSettings>('/api/settings/network', settings);
   },
 
   // Performance Settings
   async getPerformanceSettings(): Promise<PerformanceSettings> {
-    const response = await api.get('/api/settings/performance');
-    return response.data;
+    return apiClient.get<PerformanceSettings>('/api/settings/performance');
   },
 
   async updatePerformanceSettings(settings: Partial<PerformanceSettings>): Promise<PerformanceSettings> {
-    const response = await api.put('/api/settings/performance', settings);
-    return response.data;
+    return apiClient.put<PerformanceSettings>('/api/settings/performance', settings);
   },
 
-  // Settings Resolution (NEW - Missing API Clients)
+  // Settings Resolution
   async getSettingsResolution(scope: 'user' | 'station' | 'store' | 'global'): Promise<ResolvedSettings> {
-    const response = await api.get(`/api/settings/resolution/${scope}`);
-    return response.data;
+    return apiClient.get<ResolvedSettings>(`/api/settings/resolution/${scope}`);
   },
 
-  // Generic Settings CRUD (NEW - Missing API Clients)
+  // Generic Settings CRUD
   async getAllSettings(): Promise<Setting[]> {
-    const response = await api.get('/api/settings');
-    return response.data;
+    return apiClient.get<Setting[]>('/api/settings');
   },
 
   async createSetting(setting: CreateSettingRequest): Promise<Setting> {
-    const response = await api.post('/api/settings', setting);
-    return response.data;
+    return apiClient.post<Setting>('/api/settings', setting);
   },
 
   async getSetting(key: string): Promise<Setting> {
-    const response = await api.get(`/api/settings/${key}`);
-    return response.data;
+    return apiClient.get<Setting>(`/api/settings/${key}`);
   },
 
   async updateSetting(key: string, update: UpdateSettingRequest): Promise<Setting> {
-    const response = await api.put(`/api/settings/${key}`, update);
-    return response.data;
+    return apiClient.put<Setting>(`/api/settings/${key}`, update);
   },
 
   async deleteSetting(key: string): Promise<void> {
-    await api.delete(`/api/settings/${key}`);
+    return apiClient.delete(`/api/settings/${key}`);
   },
 
-  // Bulk Operations (NEW - Missing API Clients)
+  // Bulk Operations
   async bulkUpdateSettings(settings: CreateSettingRequest[]): Promise<Setting[]> {
-    const response = await api.post('/api/settings/bulk', { settings });
-    return response.data;
+    return apiClient.post<Setting[]>('/api/settings/bulk', { settings });
   },
 
-  // Export Settings (NEW - Missing API Clients)
+  // Export Settings - Note: For blob responses, we need special handling
   async exportSettings(): Promise<Blob> {
-    const response = await api.get('/api/settings/export', {
-      responseType: 'blob'
+    const response = await fetch('/api/settings/export', {
+      method: 'GET',
+      credentials: 'include',
     });
-    return response.data;
+    if (!response.ok) {
+      throw new Error(`Export failed: ${response.statusText}`);
+    }
+    return response.blob();
   }
 };
 

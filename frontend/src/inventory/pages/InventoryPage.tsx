@@ -110,13 +110,18 @@ function ScanModal({ isOpen, onClose, onScanComplete }: ScanModalProps) {
 import { LoadingSpinner } from '@common/components/organisms/LoadingSpinner';
 import { ReceivingTab } from '../components/ReceivingTab';
 import { TransfersTab } from '../components/TransfersTab';
+import { InventoryCountPage } from './InventoryCountPage';
+import { BinLocationManager } from '../components/BinLocationManager';
+import { ClipboardList } from 'lucide-react';
 
-type TabType = 'inventory' | 'receiving' | 'transfers' | 'vendor-bills' | 'alerts';
+type TabType = 'inventory' | 'receiving' | 'transfers' | 'counting' | 'bin-locations' | 'vendor-bills' | 'alerts';
 
 const tabs = [
   { id: 'inventory' as TabType, label: 'Inventory', icon: Package },
   { id: 'receiving' as TabType, label: 'Receiving', icon: TruckIcon },
   { id: 'transfers' as TabType, label: 'Transfers', icon: ArrowUpDown },
+  { id: 'counting' as TabType, label: 'Counting', icon: ClipboardList },
+  { id: 'bin-locations' as TabType, label: 'Bin Locations', icon: MapPin },
   { id: 'vendor-bills' as TabType, label: 'Vendor Bills', icon: FileText },
   { id: 'alerts' as TabType, label: 'Alerts', icon: AlertTriangle, badge: 0 },
 ];
@@ -395,7 +400,7 @@ export function InventoryPage() {
       for (const adj of adjustments) {
         await updateProduct.mutateAsync({
           id: adj.id,
-          updates: { quantity_on_hand: adj.newStock }
+          updates: { quantityOnHand: adj.newStock }
         });
       }
       toast.success(`Adjusted stock for ${adjustments.length} items`);
@@ -819,6 +824,10 @@ export function InventoryPage() {
         {activeTab === 'receiving' && <ReceivingTab />}
 
         {activeTab === 'transfers' && <TransfersTab />}
+
+        {activeTab === 'counting' && <InventoryCountPage />}
+
+        {activeTab === 'bin-locations' && <BinLocationManager />}
 
         {activeTab === 'vendor-bills' && (
           <div className="flex-1 flex items-center justify-center text-text-tertiary">

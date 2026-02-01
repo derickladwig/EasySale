@@ -41,8 +41,8 @@ const iconSizes: Record<IconSize, number> = {
  * <Icon icon={Plus} size="md" />
  *
  * @example
- * // Icon with color
- * <Icon icon={Check} size="lg" color="text-green-500" />
+ * // Icon with color (use semantic tokens)
+ * <Icon icon={Check} size="lg" color="text-success-500" />
  *
  * @example
  * // Icon with accessibility label

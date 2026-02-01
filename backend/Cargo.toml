@@ -20,7 +20,9 @@ license = "MIT"
 
 [workspace.dependencies]
 # Web framework
+actix = "0.13"
 actix-web = "4.4"
+actix-web-actors = "4.3"
 actix-cors = "0.7"
 actix-files = "0.6"
 
@@ -108,6 +110,9 @@ nix = { version = "0.27", features = ["fs"] }
 
 # Pin home crate to avoid edition 2024 requirement
 home = "=0.5.5"
+
+# File system watching
+notify = "6.1"
 
 # Dev dependencies
 actix-rt = "2.9"

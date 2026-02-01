@@ -12,6 +12,10 @@ E2E tests verify complete user workflows across the entire application stack, fr
 e2e/
 ├── login.spec.ts                  # Login and authentication flows
 ├── pos-workflow.spec.ts           # Complete POS transaction workflows
+├── appointment-scheduling.spec.ts # Appointment calendar and scheduling
+├── time-tracking.spec.ts          # Time tracking and clock in/out
+├── estimate-generation.spec.ts    # Estimate creation and PDF generation
+├── theme-changes.spec.ts          # Theme system and branding changes
 ├── settings-module.spec.ts        # Settings module core workflows
 ├── settings-advanced.spec.ts      # Settings module advanced scenarios
 ├── visual-regression.spec.ts      # Visual regression tests
@@ -208,6 +212,64 @@ await page.getByRole('button', { name: 'Delete' }).click();
     - Configure sync settings
     - Disable integration
     - View integration error logs
+
+11. **Appointment Scheduling**
+    - Display calendar with month/week/day views
+    - Create new appointment
+    - Edit existing appointment
+    - Switch between calendar views
+    - Navigate between dates
+    - Validate required fields
+    - Handle module flag (redirect when disabled)
+    - Display loading and error states
+
+12. **Time Tracking**
+    - Display time tracking dashboard
+    - Clock in/out functionality
+    - Create manual time entry
+    - Display today's and week's hours summary
+    - Switch between dashboard/entries/reports tabs
+    - Generate time reports
+    - Export time report to CSV
+    - Track breaks when enabled
+    - Validate required fields
+    - Handle module flag (redirect when disabled)
+
+13. **Estimate Generation**
+    - Display estimates list page
+    - Create new estimate with line items
+    - Filter estimates by status
+    - View estimate details
+    - Edit existing estimate
+    - Generate PDF export
+    - Convert estimate to invoice
+    - Convert estimate to work order
+    - Update estimate status
+    - Calculate totals correctly
+    - Add and remove line items
+    - Apply discounts
+    - Validate required fields
+    - Handle module flag (redirect when disabled)
+
+14. **Theme Changes**
+    - Display branding settings page
+    - Switch between light and dark mode
+    - Change accent color
+    - Persist theme changes across page refresh
+    - Apply theme changes to entire app
+    - Use ThemeEngine (no direct DOM manipulation)
+    - Respect theme locks
+    - Show theme preview before applying
+    - Reset theme to defaults
+    - Export/import theme configuration
+    - Validate theme configuration
+    - Show theme scope hierarchy
+    - Apply contrast adjustments
+    - Use semantic tokens throughout app
+    - Handle theme changes without page flash
+    - Apply theme to wizard screens
+    - Cache theme in localStorage
+    - Load theme before React renders
 
 ### Edge Cases
 

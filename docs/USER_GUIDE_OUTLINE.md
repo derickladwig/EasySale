@@ -283,7 +283,7 @@
 
 ### 9.2 Report Features
 - Date range selection
-- Export options (coming soon)
+- Export to CSV (Export/Full builds)
 - Print functionality
 
 ---

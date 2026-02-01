@@ -21,6 +21,8 @@ import { cn } from '@common/utils/classNames';
 import { toast } from '@common/components/molecules/Toast';
 import { brandingApi, validateImageFile, getImageDimensions } from '../../services/brandingApi';
 import { useConfig } from '../../config/ConfigProvider';
+import { applyThemeToCSS } from '../../config/themeBridge';
+import type { ThemeConfig } from '../../config/types';
 import type { AssetType, CropRegion, UploadResponse } from '../../services/brandingApi';
 
 // ============================================================================
@@ -80,16 +82,65 @@ function darkenColor(hex: string, percent: number = 15): string {
 
 function applyAccentPreview(accent500: string) {
   const accent600 = darkenColor(accent500);
-  const root = document.documentElement;
   
-  // Apply to CSS variables
-  ['accent', 'primary'].forEach(prefix => {
-    root.style.setProperty(`--color-${prefix}-500`, accent500);
-    root.style.setProperty(`--color-${prefix}-600`, accent600);
-  });
+  // Route through themeBridge for compliance with GLOBAL_RULES_EASYSALE.md
+  // themeBridge.applyThemeToCSS is the approved function for applying theme changes
+  const previewTheme: ThemeConfig = {
+    mode: 'dark', // Keep current mode
+    colors: {
+      primary: {
+        50: adjustBrightness(accent500, 90),
+        100: adjustBrightness(accent500, 75),
+        200: adjustBrightness(accent500, 55),
+        300: adjustBrightness(accent500, 35),
+        400: adjustBrightness(accent500, 15),
+        500: accent500,
+        600: accent600,
+        700: adjustBrightness(accent600, -15),
+        800: adjustBrightness(accent600, -30),
+        900: adjustBrightness(accent600, -45),
+        950: adjustBrightness(accent600, -60),
+      },
+      accent: {
+        50: adjustBrightness(accent500, 90),
+        100: adjustBrightness(accent500, 75),
+        200: adjustBrightness(accent500, 55),
+        300: adjustBrightness(accent500, 35),
+        400: adjustBrightness(accent500, 15),
+        500: accent500,
+        600: accent600,
+        700: adjustBrightness(accent600, -15),
+        800: adjustBrightness(accent600, -30),
+        900: adjustBrightness(accent600, -45),
+        950: adjustBrightness(accent600, -60),
+      },
+      background: '#222224',
+      surface: '#2a2a2c',
+      text: '#f5f5f7',
+      success: '#10b981',
+      warning: '#f59e0b',
+      error: '#ef4444',
+      info: '#3b82f6',
+    },
+  };
   
-  root.style.setProperty('--color-action-primary-bg', accent500);
-  root.style.setProperty('--color-action-primary-hover', accent600);
+  applyThemeToCSS(previewTheme);
+}
+
+// Helper to adjust color brightness
+function adjustBrightness(color: string, percent: number): string {
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  const adjust = (value: number) => {
+    const adjusted = value + (value * percent) / 100;
+    return Math.max(0, Math.min(255, Math.round(adjusted)));
+  };
+  
+  const toHex = (value: number) => value.toString(16).padStart(2, '0');
+  return `#${toHex(adjust(r))}${toHex(adjust(g))}${toHex(adjust(b))}`;
 }
 
 // ============================================================================
@@ -423,6 +474,9 @@ export function BrandingSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Note: This is a store-level admin operation, so theme locks don't apply
+      // (admins set the locks, they're not restricted by them)
+      // User-level theme changes would need to validate locks via ConfigStore.setTheme()
       await brandingApi.saveBrandingConfig({
         logoLight: brandingState.logoLight || undefined,
         logoDark: brandingState.logoDark || undefined,

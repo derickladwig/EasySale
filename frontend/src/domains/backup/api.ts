@@ -18,7 +18,7 @@ import type {
  * Get backup overview with summary statistics
  */
 export async function getBackupOverview(storeId: string = 'store-1'): Promise<BackupOverview> {
-  return apiClient.get<BackupOverview>(`/backups/overview?store_id=${storeId}`);
+  return apiClient.get<BackupOverview>(`/api/backups/overview?store_id=${storeId}`);
 }
 
 /**
@@ -43,49 +43,49 @@ export async function listBackups(
     params.append('end_date', filters.end_date);
   }
 
-  return apiClient.get<BackupJob[]>(`/backups/list?${params.toString()}`);
+  return apiClient.get<BackupJob[]>(`/api/backups/list?${params.toString()}`);
 }
 
 /**
  * Get backup by ID
  */
 export async function getBackup(backupId: string, storeId: string = 'store-1'): Promise<BackupJob> {
-  return apiClient.get<BackupJob>(`/backups/${backupId}?store_id=${storeId}`);
+  return apiClient.get<BackupJob>(`/api/backups/${backupId}?store_id=${storeId}`);
 }
 
 /**
  * Create a new backup
  */
 export async function createBackup(request: CreateBackupRequest): Promise<BackupJob> {
-  return apiClient.post<BackupJob>('/backups/run', request);
+  return apiClient.post<BackupJob>('/api/backups/run', request);
 }
 
 /**
  * Delete a backup
  */
 export async function deleteBackup(backupId: string, storeId: string = 'store-1'): Promise<void> {
-  await apiClient.delete(`/backups/${backupId}?store_id=${storeId}`);
+  await apiClient.delete(`/api/backups/${backupId}?store_id=${storeId}`);
 }
 
 /**
  * Get backup settings
  */
 export async function getBackupSettings(): Promise<BackupSettings> {
-  return apiClient.get<BackupSettings>('/backups/settings');
+  return apiClient.get<BackupSettings>('/api/backups/settings');
 }
 
 /**
  * Update backup settings
  */
 export async function updateBackupSettings(settings: BackupSettings): Promise<void> {
-  await apiClient.put('/backups/settings', settings);
+  await apiClient.put('/api/backups/settings', settings);
 }
 
 /**
  * Manually enforce retention policies
  */
 export async function enforceRetention(): Promise<RetentionEnforcementResult> {
-  return apiClient.post<RetentionEnforcementResult>('/backups/retention/enforce');
+  return apiClient.post<RetentionEnforcementResult>('/api/backups/retention/enforce');
 }
 
 /**
@@ -109,21 +109,21 @@ export async function restoreBackup(
   request: RestoreBackupRequest,
   storeId: string = 'store-1'
 ): Promise<RestoreJob> {
-  return apiClient.post<RestoreJob>(`/backups/${backupId}/restore?store_id=${storeId}`, request);
+  return apiClient.post<RestoreJob>(`/api/backups/${backupId}/restore?store_id=${storeId}`, request);
 }
 
 /**
  * Get restore job by ID
  */
 export async function getRestoreJob(jobId: string): Promise<RestoreJob> {
-  return apiClient.get<RestoreJob>(`/backups/restore-jobs/${jobId}`);
+  return apiClient.get<RestoreJob>(`/api/backups/restore-jobs/${jobId}`);
 }
 
 /**
  * List all restore jobs
  */
 export async function listRestoreJobs(): Promise<RestoreJob[]> {
-  return apiClient.get<RestoreJob[]>('/backups/restore-jobs');
+  return apiClient.get<RestoreJob[]>('/api/backups/restore-jobs');
 }
 
 /**
@@ -131,7 +131,7 @@ export async function listRestoreJobs(): Promise<RestoreJob[]> {
  */
 export async function getRollbackInstructions(jobId: string): Promise<RollbackInstructions> {
   return apiClient.get<RollbackInstructions>(
-    `/backups/restore-jobs/${jobId}/rollback-instructions`
+    `/api/backups/restore-jobs/${jobId}/rollback-instructions`
   );
 }
 
@@ -151,7 +151,7 @@ import type {
  * Get Google Drive OAuth authorization URL
  */
 export async function getGoogleDriveAuthUrl(): Promise<GoogleDriveAuthUrl> {
-  return apiClient.get<GoogleDriveAuthUrl>('/backups/destinations/gdrive/auth-url');
+  return apiClient.get<GoogleDriveAuthUrl>('/api/backups/destinations/gdrive/auth-url');
 }
 
 /**
@@ -160,14 +160,14 @@ export async function getGoogleDriveAuthUrl(): Promise<GoogleDriveAuthUrl> {
 export async function connectGoogleDrive(
   request: GoogleDriveConnectRequest
 ): Promise<BackupDestination> {
-  return apiClient.post<BackupDestination>('/backups/destinations/gdrive/connect', request);
+  return apiClient.post<BackupDestination>('/api/backups/destinations/gdrive/connect', request);
 }
 
 /**
  * Get Google Drive connection status
  */
 export async function getGoogleDriveStatus(): Promise<GoogleDriveConnectionStatus> {
-  return apiClient.get<GoogleDriveConnectionStatus>('/backups/destinations/gdrive/status');
+  return apiClient.get<GoogleDriveConnectionStatus>('/api/backups/destinations/gdrive/status');
 }
 
 /**
@@ -176,20 +176,20 @@ export async function getGoogleDriveStatus(): Promise<GoogleDriveConnectionStatu
 export async function updateGoogleDriveConfig(
   request: GoogleDriveConfigRequest
 ): Promise<BackupDestination> {
-  return apiClient.put<BackupDestination>('/backups/destinations/gdrive/config', request);
+  return apiClient.put<BackupDestination>('/api/backups/destinations/gdrive/config', request);
 }
 
 /**
  * Disconnect Google Drive
  */
 export async function disconnectGoogleDrive(): Promise<void> {
-  await apiClient.delete('/backups/destinations/gdrive/disconnect');
+  await apiClient.delete('/api/backups/destinations/gdrive/disconnect');
 }
 
 /**
  * List all backup destinations
  */
 export async function listDestinations(): Promise<BackupDestination[]> {
-  return apiClient.get<BackupDestination[]>('/backups/destinations');
+  return apiClient.get<BackupDestination[]>('/api/backups/destinations');
 }
 

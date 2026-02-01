@@ -38,6 +38,7 @@ interface Quote {
   customer: {
     id: string;
     name: string;
+    email?: string;
   } | null;
   subtotal: number;
   discount: number;
@@ -46,6 +47,7 @@ interface Quote {
   createdAt: string;
   expiresAt: string;
   status: 'pending' | 'converted' | 'expired';
+  storeName?: string;
 }
 
 export function QuotesPage() {
@@ -389,8 +391,23 @@ export function QuotesPage() {
                 </button>
                 <button
                   onClick={() => {
-                    if (selectedQuote.customer) {
-                      toast.info(`Email quote to ${selectedQuote.customer.name} - Feature coming soon`);
+                    if (selectedQuote.customer?.email) {
+                      // Generate email with quote details
+                      const subject = encodeURIComponent(`Quote #${selectedQuote.id} from ${selectedQuote.storeName || 'Our Store'}`);
+                      const body = encodeURIComponent(
+                        `Dear ${selectedQuote.customer.name},\n\n` +
+                        `Please find below your quote details:\n\n` +
+                        `Quote #: ${selectedQuote.id}\n` +
+                        `Date: ${new Date(selectedQuote.createdAt).toLocaleDateString()}\n` +
+                        `Items: ${selectedQuote.items.length}\n` +
+                        `Total: $${selectedQuote.total.toFixed(2)}\n\n` +
+                        `This quote is valid for 30 days.\n\n` +
+                        `Thank you for your business!`
+                      );
+                      window.open(`mailto:${selectedQuote.customer.email}?subject=${subject}&body=${body}`, '_blank');
+                      toast.success(`Opening email to ${selectedQuote.customer.name}`);
+                    } else if (selectedQuote.customer) {
+                      toast.warning('Customer has no email address on file');
                     } else {
                       toast.warning('No customer associated with this quote');
                     }

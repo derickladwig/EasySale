@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE tax_rules\n            SET name = ?, rate = ?, is_default = ?, updated_at = datetime('now')\n            WHERE id = ?\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "5d63b6fa3dac33a66e8936059d82a9a846b8249f7fa6c7fa462b473633b88ac8"
+}

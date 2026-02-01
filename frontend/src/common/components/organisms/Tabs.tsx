@@ -173,7 +173,7 @@ export const Tabs: React.FC<TabsProps> = ({
           isHorizontal
             ? {
                 scrollbarWidth: 'thin',
-                scrollbarColor: '#475569 #1e293b',
+                scrollbarColor: 'var(--color-border) var(--color-background)',
                 WebkitOverflowScrolling: 'touch',
                 scrollBehavior: 'smooth',
               }

@@ -130,7 +130,7 @@ export function SettingsSearch() {
       case 'store':
         return 'bg-success-100 text-success-700';
       case 'station':
-        return 'bg-purple-500/20 text-purple-400';
+        return 'bg-primary-100 text-primary-700';
       case 'user':
         return 'bg-warning-100 text-warning-700';
     }

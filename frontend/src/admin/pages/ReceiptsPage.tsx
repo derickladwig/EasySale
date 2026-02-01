@@ -259,7 +259,7 @@ export function ReceiptsPage() {
           >
             {/* Logo Placeholder */}
             {selectedTemplate.showLogo && (
-              <div className="text-center mb-2 pb-2 border-b border-gray-300">
+              <div className="text-center mb-2 pb-2 border-b border-border">
                 <div className="text-lg font-bold">{storeName || companyName}</div>
                 <div className="text-xs">Store Address</div>
                 <div className="text-xs">City, Province/State</div>
@@ -270,7 +270,7 @@ export function ReceiptsPage() {
             <div className="text-center font-bold mb-2">{selectedTemplate.headerText}</div>
 
             {/* Sample Items */}
-            <div className="border-t border-b border-gray-300 py-2 my-2">
+            <div className="border-t border-b border-border py-2 my-2">
               <div className="flex justify-between">
                 <span>Sample Item 1</span>
                 <span>$19.99</span>
@@ -295,7 +295,7 @@ export function ReceiptsPage() {
                 <span>Tax (8%):</span>
                 <span>$4.80</span>
               </div>
-              <div className="flex justify-between font-bold border-t border-gray-300 pt-1 mt-1">
+              <div className="flex justify-between font-bold border-t border-border pt-1 mt-1">
                 <span>TOTAL:</span>
                 <span>$64.77</span>
               </div>
@@ -321,7 +321,7 @@ export function ReceiptsPage() {
             )}
 
             {/* Footer */}
-            <div className="text-center text-xs mt-2 pt-2 border-t border-gray-300">
+            <div className="text-center text-xs mt-2 pt-2 border-t border-border">
               {selectedTemplate.footerText}
             </div>
 

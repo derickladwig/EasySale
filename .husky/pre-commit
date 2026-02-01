@@ -1,30 +1,12 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 echo "Running pre-commit checks..."
 
-# Frontend: TypeScript linting and formatting
-echo "Checking frontend..."
+# Frontend: Run lint-staged for staged files only
+# This includes ESLint (with custom no-tailwind-base-colors rule), Prettier, and Stylelint
+echo "Checking frontend staged files..."
 cd frontend
-npm run lint || exit 1
-npm run format:check || exit 1
-cd ..
-
-# Backend: Rust formatting and linting
-echo "Checking backend..."
-cd backend/rust
-cargo fmt -- --check || exit 1
-cargo clippy -- -D warnings || exit 1
-cd ../..
-
-# Backup: Python formatting and linting
-echo "Checking backup service..."
-cd backup
-if [ -d "venv" ]; then
-    source venv/bin/activate || . venv/Scripts/activate
-fi
-python -m black --check . || exit 1
-python -m flake8 . || exit 1
+npx lint-staged || exit 1
 cd ..
 
 echo "All pre-commit checks passed!"

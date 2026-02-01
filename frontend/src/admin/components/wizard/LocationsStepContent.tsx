@@ -134,6 +134,56 @@ export function LocationsStepContent({
 
     setIsSubmitting(true);
     try {
+      // Save locations and stations to backend
+      for (const location of locations) {
+        try {
+          // Create store/location
+          const storeResponse = await fetch('/api/stores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              name: location.name,
+              address: location.address || null,
+              is_active: true,
+            }),
+          });
+
+          if (storeResponse.ok) {
+            const store = await storeResponse.json();
+            
+            // Create stations/registers for this store
+            for (const register of location.registers) {
+              try {
+                await fetch('/api/stations', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    name: register.name,
+                    store_id: store.id,
+                    is_active: true,
+                  }),
+                });
+              } catch {
+                // Station creation may fail - continue with others
+                console.warn(`Failed to create station ${register.name}`);
+              }
+            }
+          }
+        } catch {
+          // Store creation may require auth - store locally for now
+          console.warn(`Failed to create store ${location.name}, storing locally`);
+        }
+      }
+
+      // Also store in localStorage as backup
+      localStorage.setItem('easysale_locations', JSON.stringify(locations));
+
+      onComplete({ locations });
+    } catch (error) {
+      console.error('Failed to save locations:', error);
+      // Still complete the step - data is stored locally
       onComplete({ locations });
     } finally {
       setIsSubmitting(false);

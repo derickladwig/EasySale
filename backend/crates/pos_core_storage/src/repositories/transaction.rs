@@ -268,17 +268,36 @@ impl TransactionRepository {
             .transpose()
             .map_err(|e| StorageError::SerializationError(e.to_string()))?;
 
+        // Extract tenant_id and store_id for loading tax rates
+        // These fields may not exist in all transaction tables (e.g., test tables)
+        let tenant_id: Option<String> = row.try_get("tenant_id").ok();
+        let store_id: Option<String> = row.try_get("store_id").ok();
+
         // Load line items
         let items = self.load_line_items(id).await?;
 
         // Load payments
         let payments = self.load_payments(id).await?;
 
+        // Load tax rates if tenant_id is available
+        let tax_rates = if let Some(tenant_id) = tenant_id.as_deref() {
+            self.load_tax_rates(tenant_id, store_id.as_deref()).await?
+        } else {
+            Vec::new()
+        };
+
+        // Load discounts if tenant_id is available
+        let discounts = if let Some(tenant_id) = tenant_id.as_deref() {
+            self.load_discounts(tenant_id, store_id.as_deref()).await?
+        } else {
+            Vec::new()
+        };
+
         Ok(Transaction {
             id,
             items,
-            tax_rates: Vec::new(), // TODO: Load tax rates when implemented
-            discounts: Vec::new(), // TODO: Load discounts when implemented
+            tax_rates,
+            discounts,
             payments,
             subtotal: subtotal_str.parse()
                 .map_err(|e| StorageError::SerializationError(format!("Invalid decimal: {e}")))?,
@@ -292,6 +311,123 @@ impl TransactionRepository {
             created_at,
             finalized_at,
         })
+    }
+
+    /// Load tax rates for a transaction
+    /// 
+    /// # Arguments
+    /// * `tenant_id` - The tenant ID
+    /// * `store_id` - Optional store ID (defaults to "default")
+    /// 
+    /// # Returns
+    /// A vector of tax rates applicable to the tenant and store
+    /// 
+    /// # Errors
+    /// Returns `StorageError::QueryError` for database errors
+    /// Returns `StorageError::SerializationError` for invalid tax rate data
+    async fn load_tax_rates(
+        &self,
+        tenant_id: &str,
+        store_id: Option<&str>,
+    ) -> StorageResult<Vec<pos_core_models::TaxRate>> {
+        use pos_core_models::TaxRate;
+        use rust_decimal::Decimal;
+
+        let store_id = store_id.unwrap_or("default");
+
+        let rows = sqlx::query!(
+            r#"
+            SELECT name, rate, id
+            FROM tax_rules
+            WHERE tenant_id = ? AND store_id = ? AND is_default = 1
+            ORDER BY created_at
+            "#,
+            tenant_id,
+            store_id
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| StorageError::QueryError(format!("Failed to load tax rates: {}", e)))?;
+
+        let mut tax_rates = Vec::new();
+        for row in rows {
+            let rate_percent = Decimal::try_from(row.rate)
+                .map_err(|e| StorageError::SerializationError(format!("Invalid tax rate: {}", e)))?;
+
+            let tax_rate = TaxRate::new(row.id, rate_percent, row.name)
+                .map_err(|e| StorageError::SerializationError(format!("Invalid tax rate: {}", e)))?;
+            
+            tax_rates.push(tax_rate);
+        }
+
+        Ok(tax_rates)
+    }
+
+    /// Load discounts for a transaction
+    /// 
+    /// # Arguments
+    /// * `tenant_id` - The tenant ID
+    /// * `store_id` - Optional store ID (defaults to "default")
+    /// 
+    /// # Returns
+    /// A vector of discounts applicable to the tenant and store
+    /// 
+    /// # Errors
+    /// Returns `StorageError::QueryError` for database errors
+    /// Returns `StorageError::SerializationError` for invalid discount data
+    async fn load_discounts(
+        &self,
+        tenant_id: &str,
+        store_id: Option<&str>,
+    ) -> StorageResult<Vec<pos_core_models::Discount>> {
+        use pos_core_models::{Discount, DiscountType};
+        use rust_decimal::Decimal;
+
+        let store_id = store_id.unwrap_or("default");
+
+        let rows = sqlx::query!(
+            r#"
+            SELECT id, code, name, discount_type, amount, description
+            FROM discounts
+            WHERE tenant_id = ? AND store_id = ? AND is_active = 1
+            AND (start_date IS NULL OR start_date <= datetime('now'))
+            AND (end_date IS NULL OR end_date >= datetime('now'))
+            ORDER BY created_at
+            "#,
+            tenant_id,
+            store_id
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| StorageError::QueryError(format!("Failed to load discounts: {}", e)))?;
+
+        let mut discounts = Vec::new();
+        for row in rows {
+            let discount_type = match row.discount_type.as_str() {
+                "percent" => DiscountType::Percent,
+                "fixed" => DiscountType::Fixed,
+                "fixed_cart" => DiscountType::FixedCart,
+                _ => {
+                    return Err(StorageError::SerializationError(
+                        format!("Invalid discount type: {}", row.discount_type)
+                    ));
+                }
+            };
+
+            let amount = Decimal::try_from(row.amount)
+                .map_err(|e| StorageError::SerializationError(format!("Invalid discount amount: {}", e)))?;
+
+            let mut discount = Discount::new(row.code, discount_type, amount)
+                .map_err(|e| StorageError::SerializationError(format!("Invalid discount: {}", e)))?;
+
+            if let Some(desc) = row.description {
+                discount = discount.with_description(desc);
+            }
+
+            discounts.push(discount);
+        }
+
+        Ok(discounts)
     }
 
     async fn save_line_items(&self, transaction_id: Uuid, items: &[LineItem]) -> StorageResult<()> {
@@ -592,4 +728,119 @@ mod tests {
             .expect("Failed to count");
         assert_eq!(count, 3);
     }
+
+    #[tokio::test]
+    async fn test_load_tax_rates() {
+        let pool = create_test_pool().await;
+        
+        // Create tax_rules table
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS tax_rules (
+                id TEXT PRIMARY KEY,
+                tenant_id TEXT NOT NULL,
+                store_id TEXT NOT NULL DEFAULT 'default',
+                name TEXT NOT NULL,
+                rate REAL NOT NULL,
+                is_default INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )"
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to create tax_rules table");
+
+        // Insert test tax rates
+        sqlx::query(
+            "INSERT INTO tax_rules (id, tenant_id, store_id, name, rate, is_default)
+             VALUES ('tax1', 'test-tenant', 'default', 'Sales Tax', 8.5, 1)"
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert tax rate 1");
+
+        sqlx::query(
+            "INSERT INTO tax_rules (id, tenant_id, store_id, name, rate, is_default)
+             VALUES ('tax2', 'test-tenant', 'default', 'City Tax', 2.5, 1)"
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert tax rate 2");
+
+        let repo = TransactionRepository::new(pool);
+
+        // Load tax rates
+        let tax_rates = repo.load_tax_rates("test-tenant", Some("default"))
+            .await
+            .expect("Failed to load tax rates");
+
+        assert_eq!(tax_rates.len(), 2);
+        assert_eq!(tax_rates[0].rate_code, "tax1");
+        assert_eq!(tax_rates[0].label, "Sales Tax");
+        assert_eq!(tax_rates[0].rate_percent, dec!(8.5));
+        assert_eq!(tax_rates[1].rate_code, "tax2");
+        assert_eq!(tax_rates[1].label, "City Tax");
+        assert_eq!(tax_rates[1].rate_percent, dec!(2.5));
+    }
+
+    #[tokio::test]
+    async fn test_load_discounts() {
+        let pool = create_test_pool().await;
+        
+        // Create discounts table
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS discounts (
+                id TEXT PRIMARY KEY,
+                tenant_id TEXT NOT NULL,
+                store_id TEXT NOT NULL DEFAULT 'default',
+                code TEXT NOT NULL,
+                name TEXT NOT NULL,
+                discount_type TEXT NOT NULL,
+                amount REAL NOT NULL,
+                description TEXT,
+                start_date TEXT,
+                end_date TEXT,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )"
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to create discounts table");
+
+        // Insert test discounts
+        sqlx::query(
+            "INSERT INTO discounts (id, tenant_id, store_id, code, name, discount_type, amount, description)
+             VALUES ('disc1', 'test-tenant', 'default', 'SAVE10', '10% Off', 'percent', 10.0, 'Save 10%')"
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert discount 1");
+
+        sqlx::query(
+            "INSERT INTO discounts (id, tenant_id, store_id, code, name, discount_type, amount, description)
+             VALUES ('disc2', 'test-tenant', 'default', 'SAVE5', '$5 Off', 'fixed_cart', 5.0, 'Save $5')"
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert discount 2");
+
+        let repo = TransactionRepository::new(pool);
+
+        // Load discounts
+        let discounts = repo.load_discounts("test-tenant", Some("default"))
+            .await
+            .expect("Failed to load discounts");
+
+        assert_eq!(discounts.len(), 2);
+        assert_eq!(discounts[0].code, "SAVE10");
+        assert_eq!(discounts[0].amount, dec!(10.0));
+        assert_eq!(discounts[0].discount_type, pos_core_models::DiscountType::Percent);
+        assert_eq!(discounts[0].description, Some("Save 10%".to_string()));
+        
+        assert_eq!(discounts[1].code, "SAVE5");
+        assert_eq!(discounts[1].amount, dec!(5.0));
+        assert_eq!(discounts[1].discount_type, pos_core_models::DiscountType::FixedCart);
+        assert_eq!(discounts[1].description, Some("Save $5".to_string()));
+    }
 }
+

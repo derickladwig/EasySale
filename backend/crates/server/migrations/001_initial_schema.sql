@@ -93,44 +93,11 @@ CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
 
--- Insert default admin user
--- Password: admin123 (hashed with bcrypt cost 12)
-INSERT OR IGNORE INTO users (id, username, email, password_hash, role, first_name, last_name, is_active)
-VALUES (
-    'user-admin-001',
-    'admin',
-    'admin@EasySale.local',
-    '$2b$12$2UrDfkRjiqBvTeTP0BZkJOPW3mApbAA10eZuCU40kgJ9lbTEt7eE2',
-    'admin',
-    'System',
-    'Administrator',
-    1
-);
-
--- Insert test cashier user
--- Password: cashier123 (hashed with bcrypt cost 12)
-INSERT OR IGNORE INTO users (id, username, email, password_hash, role, first_name, last_name, is_active)
-VALUES (
-    'user-cashier-001',
-    'cashier',
-    'cashier@EasySale.local',
-    '$2b$12$6P8ou8yPu.DohNBhRyhQz.Xhl0RP6OHm32XBQNNrjvsFXcS.WrcdW',
-    'cashier',
-    'Jane',
-    'Cashier',
-    1
-);
-
--- Insert test manager user
--- Password: manager123 (hashed with bcrypt cost 12)
-INSERT OR IGNORE INTO users (id, username, email, password_hash, role, first_name, last_name, is_active)
-VALUES (
-    'user-manager-001',
-    'manager',
-    'manager@EasySale.local',
-    '$2b$12$wv97c3pGP1cy7ugkeyUkVeOY7ooTR0qk/abW6wcrOmo3FabNN8KxW',
-    'manager',
-    'John',
-    'Manager',
-    1
-);
+-- NOTE: Default admin user is seeded in migration 007_seed_default_admin.sql
+-- This ensures proper tenant_id assignment and avoids duplicate admin accounts
+-- 
+-- Default credentials (for development/testing):
+--   Username: admin
+--   Password: admin123
+--   
+-- IMPORTANT: Change the default password immediately after first login!

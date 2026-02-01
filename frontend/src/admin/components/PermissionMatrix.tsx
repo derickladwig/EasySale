@@ -74,7 +74,7 @@ export function PermissionMatrix({ roles, permissions }: PermissionMatrixProps) 
     const colors: Record<string, string> = {
       sales: 'bg-info-100 text-info-dark',
       inventory: 'bg-success-100 text-success-700',
-      customers: 'bg-purple-500/20 text-purple-400',
+      customers: 'bg-info-100 text-info-700',
       reports: 'bg-warning-100 text-warning-700',
       settings: 'bg-error-100 text-error-700',
       users: 'bg-primary-100 text-primary-700',

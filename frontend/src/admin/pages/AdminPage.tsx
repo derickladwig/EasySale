@@ -48,6 +48,7 @@ import { MyPreferencesPage } from '../../settings/pages/MyPreferencesPage';
 import { CompanyStoresPage } from '../../settings/pages/CompanyStoresPage';
 import { NetworkPage } from '../../settings/pages/NetworkPage';
 import { LocalizationPage } from '../../settings/pages/LocalizationPage';
+import { SecurityDashboardPage } from './SecurityDashboardPage';
 import { ProductConfigPage } from '../../settings/pages/ProductConfigPage';
 import { DataManagementPage } from '../../settings/pages/DataManagementPage';
 import { TaxRulesPage } from '../../settings/pages/TaxRulesPage';
@@ -730,6 +731,8 @@ export function AdminPage() {
           {activeSection === 'performance' && <PerformancePage />}
           {activeSection === 'hardware' && <HardwarePage />}
 
+          {activeSection === 'security' && <SecurityDashboardPage />}
+          
           {![
             'general',
             'display',
@@ -751,14 +754,12 @@ export function AdminPage() {
             'feature-flags',
             'performance',
             'hardware',
+            'security',
           ].includes(activeSection) && (
             <div className="flex items-center justify-center h-64 text-text-tertiary">
               <div className="text-center">
                 {activeSection === 'payment' && (
                   <CreditCard size={48} className="mx-auto mb-4 opacity-50" />
-                )}
-                {activeSection === 'security' && (
-                  <Shield size={48} className="mx-auto mb-4 opacity-50" />
                 )}
                 {activeSection === 'notifications' && (
                   <Bell size={48} className="mx-auto mb-4 opacity-50" />

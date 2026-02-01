@@ -727,3 +727,323 @@ pub struct VerifyOfflineRequest {
 pub struct PendingVerificationsQuery {
     pub account_id: Option<String>,
 }
+
+// ============================================================================
+// ENHANCED CREDIT LIMIT ENFORCEMENT (Ported from POS)
+// ============================================================================
+
+/// Credit limit check result with detailed status
+#[derive(serde::Serialize)]
+pub struct CreditLimitCheckResult {
+    pub allowed: bool,
+    pub account_id: String,
+    pub customer_id: String,
+    pub credit_limit: f64,
+    pub current_balance: f64,
+    pub available_credit: f64,
+    pub requested_amount: f64,
+    pub new_balance_if_approved: f64,
+    pub utilization_percent: f64,
+    pub warning_level: Option<String>,
+    pub message: String,
+}
+
+/// Warning thresholds for credit utilization
+const CREDIT_WARNING_THRESHOLD: f64 = 0.80; // 80%
+const CREDIT_CRITICAL_THRESHOLD: f64 = 0.95; // 95%
+
+/// POST /api/credit/check-limit
+/// Comprehensive credit limit check with warnings
+#[post("/api/credit/check-limit")]
+pub async fn check_credit_limit(
+    pool: web::Data<SqlitePool>,
+    req: web::Json<CreditLimitCheckRequest>,
+) -> impl Responder {
+    tracing::info!("Checking credit limit for customer: {}", req.customer_id);
+
+    // Validate amount
+    if req.amount <= 0.0 {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Amount must be greater than zero"
+        }));
+    }
+
+    // Get credit account for customer
+    let account = match sqlx::query_as::<_, CreditAccount>(
+        "SELECT id, customer_id, credit_limit, current_balance, available_credit, 
+         payment_terms_days, service_charge_rate, is_active, last_statement_date, 
+         created_at, updated_at 
+         FROM credit_accounts 
+         WHERE customer_id = ? AND is_active = 1",
+    )
+    .bind(&req.customer_id)
+    .fetch_optional(pool.get_ref())
+    .await
+    {
+        Ok(Some(account)) => account,
+        Ok(None) => {
+            // No credit account - check if customer has credit limit on customer record
+            let customer_limit = sqlx::query_scalar::<_, Option<f64>>(
+                "SELECT credit_limit FROM customers WHERE id = ?"
+            )
+            .bind(&req.customer_id)
+            .fetch_optional(pool.get_ref())
+            .await
+            .ok()
+            .flatten()
+            .flatten();
+
+            if let Some(limit) = customer_limit {
+                if limit > 0.0 {
+                    // Customer has a limit but no credit account - allow but warn
+                    return HttpResponse::Ok().json(CreditLimitCheckResult {
+                        allowed: req.amount <= limit,
+                        account_id: String::new(),
+                        customer_id: req.customer_id.clone(),
+                        credit_limit: limit,
+                        current_balance: 0.0,
+                        available_credit: limit,
+                        requested_amount: req.amount,
+                        new_balance_if_approved: req.amount,
+                        utilization_percent: (req.amount / limit) * 100.0,
+                        warning_level: if req.amount > limit { Some("exceeded".to_string()) } else { None },
+                        message: if req.amount <= limit {
+                            "Credit available (no formal account)".to_string()
+                        } else {
+                            format!("Exceeds credit limit of ${:.2}", limit)
+                        },
+                    });
+                }
+            }
+
+            return HttpResponse::NotFound().json(serde_json::json!({
+                "error": "No credit account found for customer",
+                "customer_id": req.customer_id
+            }));
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch credit account: {:?}", e);
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to fetch credit account"
+            }));
+        }
+    };
+
+    // Calculate new balance and utilization
+    let new_balance = account.current_balance + req.amount;
+    let utilization = new_balance / account.credit_limit;
+    let utilization_percent = utilization * 100.0;
+
+    // Determine if allowed and warning level
+    let allowed = new_balance <= account.credit_limit;
+    let warning_level = if !allowed {
+        Some("exceeded".to_string())
+    } else if utilization >= CREDIT_CRITICAL_THRESHOLD {
+        Some("critical".to_string())
+    } else if utilization >= CREDIT_WARNING_THRESHOLD {
+        Some("warning".to_string())
+    } else {
+        None
+    };
+
+    // Generate message
+    let message = if !allowed {
+        format!(
+            "Credit limit exceeded. Limit: ${:.2}, Current: ${:.2}, Requested: ${:.2}",
+            account.credit_limit, account.current_balance, req.amount
+        )
+    } else if warning_level.as_deref() == Some("critical") {
+        format!(
+            "Credit utilization at {:.1}% - approaching limit",
+            utilization_percent
+        )
+    } else if warning_level.as_deref() == Some("warning") {
+        format!(
+            "Credit utilization at {:.1}% - consider payment",
+            utilization_percent
+        )
+    } else {
+        "Credit available".to_string()
+    };
+
+    HttpResponse::Ok().json(CreditLimitCheckResult {
+        allowed,
+        account_id: account.id,
+        customer_id: account.customer_id,
+        credit_limit: account.credit_limit,
+        current_balance: account.current_balance,
+        available_credit: account.available_credit,
+        requested_amount: req.amount,
+        new_balance_if_approved: new_balance,
+        utilization_percent,
+        warning_level,
+        message,
+    })
+}
+
+#[derive(serde::Deserialize)]
+pub struct CreditLimitCheckRequest {
+    pub customer_id: String,
+    pub amount: f64,
+}
+
+/// GET /api/credit/utilization-warnings
+/// Get all customers approaching or exceeding credit limits
+#[get("/api/credit/utilization-warnings")]
+pub async fn get_credit_utilization_warnings(
+    pool: web::Data<SqlitePool>,
+) -> impl Responder {
+    tracing::info!("Getting credit utilization warnings");
+
+    let result = sqlx::query_as::<_, (String, String, f64, f64, f64)>(
+        "SELECT ca.id, ca.customer_id, ca.credit_limit, ca.current_balance, ca.available_credit
+         FROM credit_accounts ca
+         WHERE ca.is_active = 1 
+         AND ca.credit_limit > 0
+         AND (ca.current_balance / ca.credit_limit) >= ?
+         ORDER BY (ca.current_balance / ca.credit_limit) DESC"
+    )
+    .bind(CREDIT_WARNING_THRESHOLD)
+    .fetch_all(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(accounts) => {
+            let warnings: Vec<serde_json::Value> = accounts
+                .iter()
+                .map(|(id, customer_id, credit_limit, current_balance, available_credit)| {
+                    let utilization = current_balance / credit_limit;
+                    let level = if utilization >= 1.0 {
+                        "exceeded"
+                    } else if utilization >= CREDIT_CRITICAL_THRESHOLD {
+                        "critical"
+                    } else {
+                        "warning"
+                    };
+
+                    serde_json::json!({
+                        "account_id": id,
+                        "customer_id": customer_id,
+                        "credit_limit": credit_limit,
+                        "current_balance": current_balance,
+                        "available_credit": available_credit,
+                        "utilization_percent": utilization * 100.0,
+                        "warning_level": level
+                    })
+                })
+                .collect();
+
+            HttpResponse::Ok().json(serde_json::json!({
+                "warnings": warnings,
+                "total_count": warnings.len(),
+                "thresholds": {
+                    "warning": CREDIT_WARNING_THRESHOLD * 100.0,
+                    "critical": CREDIT_CRITICAL_THRESHOLD * 100.0
+                }
+            }))
+        }
+        Err(e) => {
+            tracing::error!("Failed to get credit utilization warnings: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to get credit utilization warnings"
+            }))
+        }
+    }
+}
+
+/// PUT /api/credit-accounts/:id/limit
+/// Update credit limit for an account
+#[post("/api/credit-accounts/{id}/update-limit")]
+pub async fn update_credit_limit(
+    pool: web::Data<SqlitePool>,
+    path: web::Path<String>,
+    req: web::Json<UpdateCreditLimitRequest>,
+) -> impl Responder {
+    let account_id = path.into_inner();
+    tracing::info!("Updating credit limit for account: {}", account_id);
+
+    // Validate new limit
+    if req.new_limit < 0.0 {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Credit limit cannot be negative"
+        }));
+    }
+
+    // Get current account
+    let account = match sqlx::query_as::<_, CreditAccount>(
+        "SELECT id, customer_id, credit_limit, current_balance, available_credit, 
+         payment_terms_days, service_charge_rate, is_active, last_statement_date, 
+         created_at, updated_at 
+         FROM credit_accounts 
+         WHERE id = ?",
+    )
+    .bind(&account_id)
+    .fetch_optional(pool.get_ref())
+    .await
+    {
+        Ok(Some(account)) => account,
+        Ok(None) => {
+            return HttpResponse::NotFound().json(serde_json::json!({
+                "error": "Credit account not found"
+            }));
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch credit account: {:?}", e);
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to fetch credit account"
+            }));
+        }
+    };
+
+    // Check if new limit would be below current balance
+    if req.new_limit < account.current_balance {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "New credit limit cannot be less than current balance",
+            "current_balance": account.current_balance,
+            "requested_limit": req.new_limit
+        }));
+    }
+
+    let now = Utc::now().to_rfc3339();
+    let new_available = req.new_limit - account.current_balance;
+
+    let result = sqlx::query(
+        "UPDATE credit_accounts 
+         SET credit_limit = ?, available_credit = ?, updated_at = ? 
+         WHERE id = ?"
+    )
+    .bind(req.new_limit)
+    .bind(new_available)
+    .bind(&now)
+    .bind(&account_id)
+    .execute(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(_) => {
+            tracing::info!(
+                "Credit limit updated for account {} from {} to {}",
+                account_id, account.credit_limit, req.new_limit
+            );
+            HttpResponse::Ok().json(serde_json::json!({
+                "message": "Credit limit updated",
+                "account_id": account_id,
+                "old_limit": account.credit_limit,
+                "new_limit": req.new_limit,
+                "available_credit": new_available
+            }))
+        }
+        Err(e) => {
+            tracing::error!("Failed to update credit limit: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to update credit limit"
+            }))
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
+pub struct UpdateCreditLimitRequest {
+    pub new_limit: f64,
+    pub reason: Option<String>,
+}

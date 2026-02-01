@@ -35,14 +35,14 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="p-8 text-center">
-      <h1 className="text-2xl font-bold text-red-500 mb-4">
+      <h1 className="text-2xl font-bold text-error-500 mb-4">
         ⚠️ Deprecated Component
       </h1>
-      <p className="text-gray-600 mb-4">
+      <p className="text-text-secondary mb-4">
         This settings page has been deprecated and quarantined.
       </p>
-      <p className="text-gray-600">
-        Please use <code className="bg-gray-100 px-2 py-1 rounded">/admin</code> instead.
+      <p className="text-text-secondary">
+        Please use <code className="bg-surface-elevated px-2 py-1 rounded">/admin</code> instead.
       </p>
     </div>
   );

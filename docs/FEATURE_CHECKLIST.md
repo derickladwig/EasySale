@@ -107,7 +107,7 @@
 | Feature | Route | Status | Notes |
 |---------|-------|--------|-------|
 | Reports Page | `/reporting` | ✅ Ready | Report generation |
-| Report Export | `/reporting` | ⚠️ Stub | "Coming soon" message |
+| Report Export | `/reporting` | ✅ Ready | CSV export with tenant isolation |
 
 ### ✅ Admin & Settings
 | Feature | Route | Status | Notes |
@@ -329,9 +329,9 @@ Admin → Backup (if needed)
 ### Backend Stubs (Not Fully Implemented)
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Report Export | Stub | Returns "coming soon" message |
-| Data Export | Stub | Returns mock data |
-| QuickBooks OAuth | Hardcoded | Localhost redirect URI |
+| Report Export | ✅ Complete | CSV export with security measures |
+| Data Export | ✅ Complete | Full CSV export with validation |
+| QuickBooks OAuth | ✅ Complete | Configurable via environment variable |
 
 ### UI Placeholders
 | Feature | Status | Notes |

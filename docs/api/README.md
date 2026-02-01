@@ -133,6 +133,64 @@ Check API health status.
 
 ---
 
+### Capabilities
+
+#### GET /api/capabilities
+Get backend build capabilities and available features.
+
+**No authentication required**
+
+**Purpose**: Allows frontend to detect which features are available in the current backend build variant (Lite, Export, or Full). Frontend should query this endpoint on startup to adapt UI based on backend capabilities.
+
+**Response** (200 OK):
+```json
+{
+  "accounting_mode": "export_only",
+  "features": {
+    "export": true,
+    "sync": false
+  },
+  "version": "0.1.0",
+  "build_hash": "abc123def456"
+}
+```
+
+**Response Fields**:
+- `accounting_mode`: Current accounting integration mode
+  - `"disabled"`: No accounting features (Lite build)
+  - `"export_only"`: CSV export available (Export build)
+  - `"sync"`: Full sync with QuickBooks/Xero (Full build with sync sidecar)
+- `features`: Object with boolean flags for optional features
+  - `export`: CSV export functionality available
+  - `sync`: Real-time sync with accounting systems available
+- `version`: Backend version string
+- `build_hash`: Git commit hash of the build
+
+**Build Variants**:
+- **Lite**: `accounting_mode: "disabled"`, `export: false`, `sync: false`
+- **Export** (default): `accounting_mode: "export_only"`, `export: true`, `sync: false`
+- **Full**: `accounting_mode: "export_only"`, `export: true`, `sync: false` (sync becomes true when sidecar is running)
+
+**Usage Example**:
+```typescript
+// Frontend capability detection
+const response = await fetch('/api/capabilities');
+const capabilities = await response.json();
+
+if (capabilities.features.export) {
+  // Show export buttons
+} else {
+  // Hide export features
+}
+```
+
+**Notes**:
+- Capabilities are determined at compile time (except sync which is runtime-detected)
+- Frontend should cache this response (capabilities don't change at runtime)
+- Use this to conditionally render features based on backend build
+
+---
+
 ### Products
 
 > **Full documentation**: [products.md](./products.md)
@@ -576,7 +634,7 @@ curl -X GET http://localhost:8923/health
 
 ### Using Postman
 
-1. Import the Postman collection (coming soon)
+1. Use the API documentation below or explore endpoints via the health check
 2. Set environment variable `base_url` to `http://localhost:8923/api`
 3. Login with credentials you created during setup
 4. Token is automatically used in subsequent requests
@@ -626,3 +684,458 @@ ws.onmessage = (event) => {
 - [Data Flow](../architecture/data-flow.md)
 - [Database Schema](../architecture/database.md)
 - [Security Documentation](../architecture/security.md)
+
+
+## Feature Modules
+
+### Work Orders
+
+See [Work Orders API Documentation](./work-orders-api.md) for detailed endpoint information.
+
+**Quick Reference**:
+- `GET /api/work-orders` - List work orders
+- `POST /api/work-orders` - Create work order
+- `GET /api/work-orders/{id}` - Get work order details
+- `PUT /api/work-orders/{id}` - Update work order
+- `POST /api/work-orders/{id}/complete` - Complete work order (auto-generates invoice)
+- `POST /api/work-orders/{id}/invoice` - Manually create invoice
+- `POST /api/work-orders/{id}/cancel` - Cancel work order
+
+### Appointments
+
+**Endpoints**:
+- `GET /api/appointments` - List appointments
+- `POST /api/appointments` - Create appointment
+- `GET /api/appointments/{id}` - Get appointment details
+- `PUT /api/appointments/{id}` - Update appointment
+- `DELETE /api/appointments/{id}` - Delete appointment
+- `POST /api/appointments/{id}/confirm` - Confirm appointment
+- `POST /api/appointments/{id}/complete` - Complete appointment
+- `POST /api/appointments/{id}/cancel` - Cancel appointment
+
+**Query Parameters** (List):
+- `status`: Filter by status (scheduled, confirmed, completed, cancelled, no_show)
+- `staff_id`: Filter by assigned staff member
+- `from_date`: Start date filter (ISO 8601)
+- `to_date`: End date filter (ISO 8601)
+- `service_type`: Filter by service type
+
+### Time Tracking
+
+**Endpoints**:
+- `GET /api/time-entries` - List time entries
+- `POST /api/time-entries/clock-in` - Clock in
+- `POST /api/time-entries/{id}/clock-out` - Clock out
+- `POST /api/time-entries` - Create manual time entry
+- `PUT /api/time-entries/{id}` - Update time entry
+- `DELETE /api/time-entries/{id}` - Delete time entry
+- `POST /api/time-entries/{id}/approve` - Approve time entry
+- `POST /api/time-entries/{id}/reject` - Reject time entry
+- `GET /api/time-entries/current` - Get current clock-in status
+
+**Query Parameters** (List):
+- `employee_id`: Filter by employee
+- `project_id`: Filter by project
+- `from_date`: Start date filter (ISO 8601)
+- `to_date`: End date filter (ISO 8601)
+- `billable`: Filter by billable status (true/false)
+- `approval_status`: Filter by approval status (pending, approved, rejected)
+
+### Estimates
+
+**Endpoints**:
+- `GET /api/estimates` - List estimates
+- `POST /api/estimates` - Create estimate
+- `GET /api/estimates/{id}` - Get estimate details
+- `PUT /api/estimates/{id}` - Update estimate
+- `DELETE /api/estimates/{id}` - Delete estimate
+- `POST /api/estimates/{id}/send` - Send estimate to customer
+- `POST /api/estimates/{id}/accept` - Accept estimate (customer action)
+- `POST /api/estimates/{id}/reject` - Reject estimate (customer action)
+- `POST /api/estimates/{id}/convert-to-invoice` - Convert to invoice
+- `POST /api/estimates/{id}/convert-to-work-order` - Convert to work order
+- `GET /api/estimates/{id}/pdf` - Download estimate PDF
+
+**Query Parameters** (List):
+- `status`: Filter by status (draft, sent, viewed, accepted, rejected, expired, converted)
+- `customer_id`: Filter by customer
+- `sales_rep_id`: Filter by sales representative
+- `from_date`: Start date filter (ISO 8601)
+- `to_date`: End date filter (ISO 8601)
+
+### Invoices
+
+**Endpoints**:
+- `GET /api/invoices` - List invoices
+- `POST /api/invoices` - Create invoice manually
+- `GET /api/invoices/{id}` - Get invoice details
+- `PUT /api/invoices/{id}` - Update invoice
+- `POST /api/invoices/{id}/void` - Void invoice
+- `POST /api/invoices/{id}/send` - Send invoice to customer
+- `POST /api/invoices/{id}/payments` - Record payment
+- `GET /api/invoices/{id}/pdf` - Download invoice PDF
+
+**Query Parameters** (List):
+- `status`: Filter by status (draft, sent, paid, partially_paid, overdue, void)
+- `customer_id`: Filter by customer
+- `work_order_id`: Filter by work order
+- `from_date`: Start date filter (ISO 8601)
+- `to_date`: End date filter (ISO 8601)
+
+## Tax and Discount Endpoints
+
+### Tax Rates
+
+**Endpoints**:
+- `GET /api/tax-rates` - List tax rates
+- `POST /api/tax-rates` - Create tax rate
+- `GET /api/tax-rates/{id}` - Get tax rate details
+- `PUT /api/tax-rates/{id}` - Update tax rate
+- `DELETE /api/tax-rates/{id}` - Delete tax rate
+- `POST /api/tax-rates/calculate` - Calculate tax for transaction
+
+**Tax Rate Object**:
+```json
+{
+  "id": 1,
+  "tenant_id": "tenant_default",
+  "name": "State Sales Tax",
+  "rate": 0.0825,
+  "is_compound": false,
+  "applies_to_category": null,
+  "applies_to_location": "TX",
+  "active": true
+}
+```
+
+### Discounts
+
+**Endpoints**:
+- `GET /api/discounts` - List discounts
+- `POST /api/discounts` - Create discount
+- `GET /api/discounts/{id}` - Get discount details
+- `PUT /api/discounts/{id}` - Update discount
+- `DELETE /api/discounts/{id}` - Delete discount
+- `POST /api/discounts/calculate` - Calculate discount for transaction
+
+**Discount Object**:
+```json
+{
+  "id": 1,
+  "tenant_id": "tenant_default",
+  "name": "VIP Customer Discount",
+  "type": "percentage",
+  "value": 10.0,
+  "applies_to": "transaction",
+  "category_filter": null,
+  "customer_tier_filter": "vip",
+  "start_date": "2026-01-01",
+  "end_date": "2026-12-31",
+  "active": true
+}
+```
+
+## Email Notifications
+
+### Send Notification
+
+```http
+POST /api/notifications/send
+```
+
+Send email notification manually.
+
+**Request Body**:
+```json
+{
+  "type": "appointment_reminder",
+  "recipient": "customer@example.com",
+  "data": {
+    "appointment_id": 123,
+    "customer_name": "John Doe",
+    "appointment_date": "2026-02-01T10:00:00Z"
+  }
+}
+```
+
+**Response** (200 OK):
+```json
+{
+  "message_id": "msg_abc123",
+  "status": "sent",
+  "sent_at": "2026-01-30T16:00:00Z"
+}
+```
+
+### Notification Types
+
+- `appointment_confirmation`: Sent when appointment created
+- `appointment_reminder`: Sent before appointment
+- `appointment_rescheduled`: Sent when appointment rescheduled
+- `invoice_notification`: Sent when invoice created
+- `estimate_notification`: Sent when estimate created
+- `work_order_status`: Sent when work order status changes
+- `low_stock_alert`: Sent when inventory low
+- `sync_failure`: Sent when sync fails
+
+## Module Configuration
+
+### Check Module Status
+
+```http
+GET /api/modules/{module_name}/status
+```
+
+Check if a module is enabled.
+
+**Path Parameters**:
+- `module_name`: Module name (workOrders, appointments, timeTracking, estimates)
+
+**Response** (200 OK):
+```json
+{
+  "module": "workOrders",
+  "enabled": true,
+  "settings": {
+    "autoInvoiceOnComplete": true,
+    "defaultLaborRate": 75.00
+  }
+}
+```
+
+### Get Module Settings
+
+```http
+GET /api/modules/{module_name}/settings
+```
+
+Get module configuration settings.
+
+**Response** (200 OK):
+```json
+{
+  "module": "appointments",
+  "settings": {
+    "slotDuration": 30,
+    "advanceBookingDays": 30,
+    "allowOnlineBooking": true,
+    "sendReminders": true,
+    "reminderTiming": [1440, 60]
+  }
+}
+```
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+### 400 Bad Request
+```json
+{
+  "error": "Bad Request",
+  "message": "Invalid request data",
+  "details": {
+    "field": "customer_id",
+    "issue": "Customer ID is required"
+  }
+}
+```
+
+### 401 Unauthorized
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid or expired token"
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "error": "Forbidden",
+  "message": "Insufficient permissions",
+  "required_permission": "create_work_order"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "error": "Not Found",
+  "message": "Work order not found",
+  "resource_id": 123
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+  "error": "Internal Server Error",
+  "message": "An unexpected error occurred",
+  "request_id": "req_abc123"
+}
+```
+
+## Rate Limiting
+
+API requests are rate-limited to prevent abuse:
+
+- **Default**: 100 requests per minute per IP
+- **Authenticated**: 1000 requests per minute per user
+- **Burst**: Up to 20 requests in 1 second
+
+**Rate Limit Headers**:
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 995
+X-RateLimit-Reset: 1643673600
+```
+
+## Pagination
+
+List endpoints support pagination:
+
+**Query Parameters**:
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 50, max: 100)
+
+**Response Headers**:
+```
+X-Total-Count: 250
+X-Page: 1
+X-Per-Page: 50
+X-Total-Pages: 5
+```
+
+**Response Body**:
+```json
+{
+  "items": [...],
+  "pagination": {
+    "total": 250,
+    "page": 1,
+    "limit": 50,
+    "total_pages": 5
+  }
+}
+```
+
+## Filtering and Sorting
+
+### Filtering
+
+Most list endpoints support filtering via query parameters:
+
+```http
+GET /api/work-orders?status=in_progress&assigned_to=5&from_date=2026-01-01
+```
+
+### Sorting
+
+Use `sort` and `order` query parameters:
+
+```http
+GET /api/work-orders?sort=due_date&order=asc
+```
+
+**Sort Options**:
+- `asc`: Ascending order
+- `desc`: Descending order (default)
+
+## Webhooks
+
+Configure webhooks to receive real-time notifications:
+
+### Register Webhook
+
+```http
+POST /api/webhooks
+```
+
+**Request Body**:
+```json
+{
+  "url": "https://your-app.com/webhooks/easysale",
+  "events": [
+    "work_order.completed",
+    "invoice.created",
+    "appointment.confirmed"
+  ],
+  "secret": "your_webhook_secret"
+}
+```
+
+### Webhook Events
+
+- `work_order.created`
+- `work_order.updated`
+- `work_order.completed`
+- `work_order.cancelled`
+- `invoice.created`
+- `invoice.paid`
+- `appointment.created`
+- `appointment.confirmed`
+- `appointment.completed`
+- `appointment.cancelled`
+- `estimate.sent`
+- `estimate.accepted`
+- `estimate.rejected`
+- `time_entry.created`
+- `time_entry.approved`
+
+### Webhook Payload
+
+```json
+{
+  "event": "work_order.completed",
+  "timestamp": "2026-01-30T16:00:00Z",
+  "data": {
+    "work_order_id": 123,
+    "invoice_id": 456,
+    "customer_id": 789
+  }
+}
+```
+
+## SDK and Client Libraries
+
+Official client libraries:
+
+- **JavaScript/TypeScript**: `npm install @easysale/api-client`
+- **Python**: `pip install easysale-api`
+- **PHP**: `composer require easysale/api-client`
+- **Ruby**: `gem install easysale-api`
+
+**Example (JavaScript)**:
+```javascript
+import { EasySaleClient } from '@easysale/api-client';
+
+const client = new EasySaleClient({
+  baseUrl: 'http://localhost:7945',
+  token: 'your_jwt_token'
+});
+
+// Create work order
+const workOrder = await client.workOrders.create({
+  customer_id: 123,
+  description: 'Oil change',
+  line_items: [...]
+});
+
+// Complete work order (auto-generates invoice)
+const result = await client.workOrders.complete(workOrder.id);
+console.log(`Invoice created: ${result.invoice_number}`);
+```
+
+## Additional Resources
+
+- [OpenAPI Specification](./openapi.yaml) - Complete API specification
+- [Postman Collection](./easysale-api.postman_collection.json) - Import into Postman
+- [Authentication Guide](../guides/authentication.md) - Detailed auth documentation
+- [Integration Examples](../guides/integration-examples.md) - Code examples
+- [Troubleshooting](../user-guides/troubleshooting.md) - Common API issues
+
+---
+
+*Last updated: 2026-01-30*
+*Version: 1.0*

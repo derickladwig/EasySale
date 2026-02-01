@@ -19,6 +19,8 @@ ENV OPENSSL_LIB_DIR=/usr/lib
 ENV OPENSSL_INCLUDE_DIR=/usr/include
 # Set BUILD_HASH for compile-time inclusion via option_env!
 ENV BUILD_HASH=${BUILD_HASH}
+# Enable SQLx offline mode (use cached query metadata instead of connecting to DB)
+ENV SQLX_OFFLINE=true
 
 WORKDIR /app
 

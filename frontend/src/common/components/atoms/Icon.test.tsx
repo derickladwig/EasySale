@@ -62,9 +62,9 @@ describe('Icon', () => {
 
   describe('Colors', () => {
     it('should apply custom color class', () => {
-      const { container } = render(<Icon icon={Plus} color="text-red-500" aria-label="Add" />);
+      const { container } = render(<Icon icon={Plus} color="text-error-500" aria-label="Add" />);
       const svg = container.querySelector('svg');
-      expect(svg).toHaveClass('text-red-500');
+      expect(svg).toHaveClass('text-error-500');
     });
 
     it('should apply text-current by default', () => {
@@ -75,15 +75,15 @@ describe('Icon', () => {
 
     it('should support multiple color variants', () => {
       const { rerender, container } = render(
-        <Icon icon={Check} color="text-green-500" aria-label="Success" />
+        <Icon icon={Check} color="text-success-500" aria-label="Success" />
       );
-      expect(container.querySelector('svg')).toHaveClass('text-green-500');
+      expect(container.querySelector('svg')).toHaveClass('text-success-500');
 
-      rerender(<Icon icon={AlertCircle} color="text-yellow-500" aria-label="Warning" />);
-      expect(container.querySelector('svg')).toHaveClass('text-yellow-500');
+      rerender(<Icon icon={AlertCircle} color="text-warning-500" aria-label="Warning" />);
+      expect(container.querySelector('svg')).toHaveClass('text-warning-500');
 
-      rerender(<Icon icon={X} color="text-red-500" aria-label="Error" />);
-      expect(container.querySelector('svg')).toHaveClass('text-red-500');
+      rerender(<Icon icon={X} color="text-error-500" aria-label="Error" />);
+      expect(container.querySelector('svg')).toHaveClass('text-error-500');
     });
   });
 

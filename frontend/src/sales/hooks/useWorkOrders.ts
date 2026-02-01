@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@common/components/molecules/Toast';
-import { workOrderApi, WorkOrder, CreateWorkOrderRequest, WorkOrderLine } from '../api';
+import { workOrderApi, WorkOrder, CreateWorkOrderRequest, WorkOrderLine, Invoice } from '../api';
 
 export const useWorkOrders = (params?: { status?: string; customerId?: string }) => {
   return useQuery({
@@ -77,6 +77,23 @@ export const useCompleteWorkOrder = () => {
     },
     onError: () => {
       toast.error('Failed to complete work order');
+    },
+  });
+};
+
+export const useCreateInvoiceFromWorkOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (workOrderId: string) => workOrderApi.createInvoice(workOrderId),
+    onSuccess: (invoice: Invoice, workOrderId: string) => {
+      queryClient.invalidateQueries({ queryKey: ['work-order', workOrderId] });
+      queryClient.invalidateQueries({ queryKey: ['work-orders'] });
+      toast.success(`Invoice ${invoice.invoiceNumber} created successfully`);
+    },
+    onError: (error: any) => {
+      const message = error?.message || 'Failed to create invoice';
+      toast.error(message);
     },
   });
 };

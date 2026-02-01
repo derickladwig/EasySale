@@ -139,6 +139,18 @@ export const LazySyncHistoryPage = lazyWithFallback(
   () => import('../settings/pages/SyncHistoryPage').then(m => ({ default: m.SyncHistoryPage }))
 );
 
+export const LazyFailedRecordsPage = lazyWithFallback(
+  () => import('../settings/pages/FailedRecordsPage').then(m => ({ default: m.FailedRecordsPage }))
+);
+
+export const LazyBackupsPage = lazyWithFallback(
+  () => import('../admin/pages/BackupsPage').then(m => ({ default: m.BackupsPage }))
+);
+
+export const LazyTimeTrackingPage = lazyWithFallback(
+  () => import('../domains/time-tracking/pages/TimeTrackingPage').then(m => ({ default: m.TimeTrackingPage }))
+);
+
 // ============================================================================
 // Reporting & Analytics
 // ============================================================================
@@ -237,4 +249,28 @@ export const LazyCategoryLookupPage = lazyWithFallback(
 
 export const LazyPartsMappingPage = lazyWithFallback(
   () => import('../inventory/pages/PartsMappingPage').then(m => ({ default: m.PartsMappingPage }))
+);
+
+// ============================================================================
+// Appointments
+// ============================================================================
+
+export const LazyAppointmentCalendarPage = lazyWithFallback(
+  () => import('../domains/appointment/pages/AppointmentCalendarPage').then(m => ({ default: m.AppointmentCalendarPage }))
+);
+
+// ============================================================================
+// Estimate Pages
+// ============================================================================
+
+export const LazyEstimateListPage = lazyWithFallback(
+  () => import('../domains/estimate/pages/EstimateListPage').then(m => ({ default: m.EstimateListPage }))
+);
+
+export const LazyEstimateDetailPage = lazyWithFallback(
+  () => import('../domains/estimate/pages/EstimateDetailPage').then(m => ({ default: m.EstimateDetailPage }))
+);
+
+export const LazyEstimateCreatePage = lazyWithFallback(
+  () => import('../domains/estimate/pages/EstimateCreatePage').then(m => ({ default: m.EstimateCreatePage }))
 );

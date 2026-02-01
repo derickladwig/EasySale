@@ -328,22 +328,22 @@ export function ReportingPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-surface-elevated rounded-lg p-4 text-center">
                     <DollarSign className="w-8 h-8 mx-auto mb-2 text-primary-500" />
-                    <p className="text-2xl font-bold text-white">${salesSummary.total_revenue.toFixed(0)}</p>
+                    <p className="text-2xl font-bold text-white">${(salesSummary.total_revenue ?? 0).toFixed(0)}</p>
                     <p className="text-xs text-text-tertiary">Total Revenue</p>
                   </div>
                   <div className="bg-surface-elevated rounded-lg p-4 text-center">
                     <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-success-500" />
-                    <p className="text-2xl font-bold text-white">{salesSummary.total_transactions}</p>
+                    <p className="text-2xl font-bold text-white">{salesSummary.total_transactions ?? 0}</p>
                     <p className="text-xs text-text-tertiary">Transactions</p>
                   </div>
                   <div className="bg-surface-elevated rounded-lg p-4 text-center">
                     <TrendingUp className="w-8 h-8 mx-auto mb-2 text-warning-500" />
-                    <p className="text-2xl font-bold text-white">${salesSummary.average_transaction.toFixed(0)}</p>
+                    <p className="text-2xl font-bold text-white">${(salesSummary.average_transaction ?? 0).toFixed(0)}</p>
                     <p className="text-xs text-text-tertiary">Avg Transaction</p>
                   </div>
                   <div className="bg-surface-elevated rounded-lg p-4 text-center">
                     <Package className="w-8 h-8 mx-auto mb-2 text-info-500" />
-                    <p className="text-2xl font-bold text-white">{salesSummary.total_items_sold}</p>
+                    <p className="text-2xl font-bold text-white">{salesSummary.total_items_sold ?? 0}</p>
                     <p className="text-xs text-text-tertiary">Items Sold</p>
                   </div>
                 </div>

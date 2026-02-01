@@ -10,6 +10,8 @@ import { CheckCircle2, Upload, Image, Palette } from 'lucide-react';
 import { Button } from '@common/components/atoms/Button';
 import { cn } from '@common/utils/classNames';
 import { toast } from '@common/components/molecules/Toast';
+import { applyThemeToCSS } from '../../../config/themeBridge';
+import type { ThemeConfig } from '../../../config/types';
 import type { StepContentProps, BrandingStepData } from './types';
 
 // Determine API base URL dynamically
@@ -116,28 +118,29 @@ export function BrandingStepContent({
   };
 
   // Apply accent colors to CSS variables for real-time preview
+  // Routes through themeBridge for compliance with GLOBAL_RULES_EASYSALE.md
   const applyAccentPreview = (accent500: string, accent600: string) => {
-    const root = document.documentElement;
-    
     // Generate color scale
     const scale = generateColorScale(accent500, accent600);
     
-    // Apply to both accent and primary CSS variables
-    ['accent', 'primary'].forEach(prefix => {
-      Object.entries(scale).forEach(([shade, color]) => {
-        root.style.setProperty(`--color-${prefix}-${shade}`, color);
-      });
-    });
+    // Build theme config with full color scale
+    const previewTheme: ThemeConfig = {
+      mode: 'dark', // Keep current mode
+      colors: {
+        primary: scale,
+        accent: scale,
+        background: '#222224',
+        surface: '#2a2a2c',
+        text: '#f5f5f7',
+        success: '#10b981',
+        warning: '#f59e0b',
+        error: '#ef4444',
+        info: '#3b82f6',
+      },
+    };
     
-    // Also set action colors for buttons
-    root.style.setProperty('--color-action-primary-bg', accent500);
-    root.style.setProperty('--color-action-primary-hover', accent600);
-    // Use CSS variable for inverse text color (white on dark backgrounds)
-    root.style.setProperty('--color-action-primary-fg', 'var(--color-text-inverse, #ffffff)');
-    
-    // Update theme accent variable used by wizard
-    root.style.setProperty('--theme-accent', accent500);
-    root.style.setProperty('--theme-accent-hover', accent600);
+    // Route through themeBridge instead of direct DOM manipulation
+    applyThemeToCSS(previewTheme);
   };
   
   // Generate full color scale from accent colors
@@ -213,6 +216,10 @@ export function BrandingStepContent({
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      // Note: This is a store-level setup wizard operation, so theme locks don't apply
+      // (this is the initial setup, locks are configured later by admins)
+      // User-level theme changes would need to validate locks via ConfigStore.setTheme()
+      
       // Determine accent colors
       let accent500 = formData.accentColor || DEFAULT_ACCENT_COLOR;
       let accent600 = darkenColor(accent500);

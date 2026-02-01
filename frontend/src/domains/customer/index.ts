@@ -27,6 +27,7 @@ export {
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
   useDeleteCustomerMutation,
+  useCustomerOrdersQuery,
   transformCustomer,
 } from './hooks';
 

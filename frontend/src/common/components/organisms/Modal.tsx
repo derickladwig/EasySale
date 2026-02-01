@@ -282,11 +282,11 @@ export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 
     return (
       <>
-        {/* Backdrop - Requirement 10.1: Semi-transparent backdrop (rgba(0,0,0,0.5)) */}
+        {/* Backdrop - Requirement 10.1: Semi-transparent backdrop (50% opacity black) */}
         <div
           className={cn(
             'fixed inset-0 z-modal-backdrop',
-            'bg-black/50', // rgba(0,0,0,0.5)
+            'bg-black/50', // 50% opacity black
             // Smooth fade in/out animations (Requirement 10.9)
             isClosing ? 'animate-fade-out' : 'animate-fade-in',
             backdropClassName

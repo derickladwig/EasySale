@@ -15,8 +15,8 @@ pub mod security;
 pub mod services;
 pub mod test_utils;
 pub mod test_constants;
-pub mod utils;
 pub mod validators;
+pub mod websocket;
 
 #[cfg(test)]
 mod tests;

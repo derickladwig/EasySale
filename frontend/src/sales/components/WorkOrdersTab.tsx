@@ -10,9 +10,10 @@ import {
   AlertCircle,
   Play,
   X,
-  DollarSign
+  DollarSign,
+  FileText
 } from 'lucide-react';
-import { useWorkOrders, useCompleteWorkOrder, useCreateWorkOrder, useAddWorkOrderLine } from '../hooks';
+import { useWorkOrders, useCompleteWorkOrder, useCreateWorkOrder, useAddWorkOrderLine, useCreateInvoiceFromWorkOrder } from '../hooks';
 
 // Helper to get default estimated completion (7 days from now)
 const getDefaultEstimatedCompletion = () => {
@@ -44,6 +45,7 @@ const WorkOrdersTab: React.FC = () => {
   const completeMutation = useCompleteWorkOrder();
   const createMutation = useCreateWorkOrder();
   const addLineMutation = useAddWorkOrderLine();
+  const createInvoiceMutation = useCreateInvoiceFromWorkOrder();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -276,6 +278,20 @@ const WorkOrdersTab: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Invoice Information */}
+                    {order.status === 'completed' && order.invoiceNumber && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <div className="flex items-center gap-2 text-sm">
+                          <FileText className="w-4 h-4 text-success" />
+                          <span className="text-text-tertiary">Invoice:</span>
+                          <span className="font-medium text-text-primary">{order.invoiceNumber}</span>
+                          <span className="text-xs text-text-disabled">
+                            (Created {new Date(order.invoicedAt!).toLocaleDateString()})
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     {order.status !== 'completed' && order.status !== 'cancelled' && (
                       <div className="mt-3 pt-3 border-t border-border flex justify-end gap-2">
                         <Button 
@@ -291,6 +307,22 @@ const WorkOrdersTab: React.FC = () => {
                           onClick={() => completeMutation.mutate(order.id)}
                         >
                           Complete
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Create Invoice Button - Show only if completed and not yet invoiced */}
+                    {order.status === 'completed' && !order.invoiceNumber && (
+                      <div className="mt-3 pt-3 border-t border-border flex justify-end gap-2">
+                        <Button 
+                          variant="primary" 
+                          size="sm"
+                          onClick={() => createInvoiceMutation.mutate(order.id)}
+                          disabled={createInvoiceMutation.isPending}
+                          className="flex items-center gap-2"
+                        >
+                          <FileText className="w-4 h-4" />
+                          {createInvoiceMutation.isPending ? 'Creating Invoice...' : 'Create Invoice'}
                         </Button>
                       </div>
                     )}

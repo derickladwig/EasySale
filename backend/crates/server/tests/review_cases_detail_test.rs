@@ -1,15 +1,15 @@
-//! Review Cases Detail Endpoint Integration Test
-//!
-//! This test verifies that the GET /api/cases/{id} endpoint:
-//! 1. Returns full case data including extracted_data, validation_result, decisions
-//! 2. Includes source file path for document viewer
-//! 3. Joins with review_case_decisions table for decision history
-//! 4. Returns 404 for non-existent cases
-//!
-//! **Validates: Requirements 5.12**
-//!
-//! Only compiled when ocr feature is enabled
-#![cfg(feature = "ocr")]
+/// Review Cases Detail Endpoint Integration Test
+///
+/// This test verifies that the GET /api/cases/{id} endpoint:
+/// 1. Returns full case data including extracted_data, validation_result, decisions
+/// 2. Includes source file path for document viewer
+/// 3. Joins with review_case_decisions table for decision history
+/// 4. Returns 404 for non-existent cases
+///
+/// **Validates: Requirements 5.12**
+///
+#[cfg(feature = "ocr")]
+/// Only compiled when ocr feature is enabled
 
 use sqlx::{SqlitePool, Row};
 use std::fs;

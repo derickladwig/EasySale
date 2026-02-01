@@ -107,11 +107,106 @@ pub async fn get_setup_status_handler(
     }
 }
 
+/// Setup data received from frontend wizard
+#[derive(Debug, serde::Deserialize)]
+pub struct SetupCompleteRequest {
+    pub admin: Option<serde_json::Value>,
+    pub store: Option<StoreSetupData>,
+    pub theme: Option<serde_json::Value>,
+    pub integrations: Option<serde_json::Value>,
+    pub hardware: Option<serde_json::Value>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct StoreSetupData {
+    #[serde(rename = "storeName")]
+    pub store_name: Option<String>,
+    pub currency: Option<String>,
+    pub locale: Option<String>,
+    pub timezone: Option<String>,
+    #[serde(rename = "taxRegion")]
+    pub tax_region: Option<String>,
+    #[serde(rename = "taxRates")]
+    pub tax_rates: Option<Vec<TaxRateData>>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct TaxRateData {
+    pub name: String,
+    pub rate: f64,
+    #[serde(rename = "isDefault")]
+    pub is_default: Option<bool>,
+}
+
 /// POST /api/tenant/setup-complete
-/// Mark the initial setup as complete
+/// Mark the initial setup as complete and save setup data
 pub async fn mark_setup_complete_handler(
     pool: web::Data<SqlitePool>,
+    body: Option<web::Json<SetupCompleteRequest>>,
 ) -> HttpResponse {
+    // Save store settings if provided
+    if let Some(ref setup_data) = body {
+        if let Some(ref store) = setup_data.store {
+            // Save store name
+            if let Some(ref name) = store.store_name {
+                let _ = sqlx::query(
+                    "INSERT INTO settings (key, value, scope, data_type) VALUES ('store_name', ?, 'global', 'string') ON CONFLICT(key, scope, scope_id) DO UPDATE SET value = ?, updated_at = datetime('now')"
+                )
+                .bind(name)
+                .bind(name)
+                .execute(pool.get_ref())
+                .await;
+            }
+            
+            // Save currency
+            if let Some(ref currency) = store.currency {
+                let _ = sqlx::query(
+                    "INSERT INTO settings (key, value, scope, data_type) VALUES ('currency', ?, 'global', 'string') ON CONFLICT(key, scope, scope_id) DO UPDATE SET value = ?, updated_at = datetime('now')"
+                )
+                .bind(currency)
+                .bind(currency)
+                .execute(pool.get_ref())
+                .await;
+            }
+            
+            // Save locale
+            if let Some(ref locale) = store.locale {
+                let _ = sqlx::query(
+                    "INSERT INTO settings (key, value, scope, data_type) VALUES ('locale', ?, 'global', 'string') ON CONFLICT(key, scope, scope_id) DO UPDATE SET value = ?, updated_at = datetime('now')"
+                )
+                .bind(locale)
+                .bind(locale)
+                .execute(pool.get_ref())
+                .await;
+            }
+            
+            // Save timezone
+            if let Some(ref timezone) = store.timezone {
+                let _ = sqlx::query(
+                    "INSERT INTO settings (key, value, scope, data_type) VALUES ('timezone', ?, 'global', 'string') ON CONFLICT(key, scope, scope_id) DO UPDATE SET value = ?, updated_at = datetime('now')"
+                )
+                .bind(timezone)
+                .bind(timezone)
+                .execute(pool.get_ref())
+                .await;
+            }
+            
+            // Save tax rates as JSON
+            if let Some(ref tax_rates) = store.tax_rates {
+                let tax_json = serde_json::to_string(tax_rates).unwrap_or_default();
+                let _ = sqlx::query(
+                    "INSERT INTO settings (key, value, scope, data_type) VALUES ('tax_rates', ?, 'global', 'json') ON CONFLICT(key, scope, scope_id) DO UPDATE SET value = ?, updated_at = datetime('now')"
+                )
+                .bind(&tax_json)
+                .bind(&tax_json)
+                .execute(pool.get_ref())
+                .await;
+            }
+            
+            tracing::info!("Saved store settings from setup wizard");
+        }
+    }
+
     // Insert or update the setup_completed setting
     let result = sqlx::query(
         r#"

@@ -1,7 +1,7 @@
 # Theming, Branding, and CSS Audit Report
 
 **Date:** January 30, 2026  
-**Status:** P0 Complete, P1 Mostly Complete - P2/P3 Pending  
+**Status:** P0 Complete, P1 Complete, P2 Complete  
 **Priority:** High (Affects white-label capability and UX consistency)
 
 ---
@@ -22,6 +22,43 @@ This audit identified **200+ issues** across the codebase related to:
 | Hardcoded "EasySale" brand | Multiple wizard files | ✅ Fixed - Uses `brandConfig` |
 | BrandingSettingsPage TODO | `BrandingSettingsPage.tsx` | ✅ Fixed - Uses `useConfig()` |
 | ErrorBoundary no dark mode | `ErrorBoundary.tsx` | ✅ Fixed - Uses semantic tokens |
+
+### P1 Fixes Applied (2026-01-30)
+
+| Issue | File | Status |
+|-------|------|--------|
+| SetupWizard.module.css rgba | `SetupWizard.module.css` | ✅ Fixed - Uses CSS variables |
+| ThemeToggle missing | `LoginPage.tsx` | ✅ Fixed - Added ThemeToggle component |
+| Status color tokens | `tokens.css` | ✅ Fixed - Added full 50-900 scales |
+
+### P2 Fixes Applied (2026-01-30)
+
+| Issue | File | Status |
+|-------|------|--------|
+| NetworkStepContent colors | `NetworkStepContent.tsx` | ✅ Fixed - Uses semantic tokens |
+| BackupsPage colors | `BackupsPage.tsx` | ✅ Fixed - Uses semantic tokens |
+| ScopeBadge colors | `ScopeBadge.tsx` | ✅ Fixed - Uses semantic tokens |
+| ThemeEngine getCurrentTheme | `ThemeEngine.ts` | ✅ Fixed - Reads CSS variables |
+| DataManagerPage colors | `DataManagerPage.tsx` | ✅ Fixed - Uses semantic tokens |
+| IntegrationLogsDrawer colors | `IntegrationLogsDrawer.tsx` | ✅ Fixed - Uses semantic tokens |
+| ReviewPage colors | `ReviewPage.tsx` | ✅ Fixed - Uses semantic tokens |
+| FlagChips colors | `FlagChips.tsx` | ✅ Fixed - Uses semantic tokens |
+| NavItem StatusBadge colors | `NavItem.tsx` | ✅ Fixed - Uses semantic tokens |
+| NavGroup colors | `NavGroup.tsx` | ✅ Fixed - Uses semantic tokens |
+| ComingSoonModal colors | `ComingSoonModal.tsx` | ✅ Fixed - Uses semantic tokens |
+| PageTabs colors | `PageTabs.tsx` | ✅ Fixed - Uses semantic tokens |
+| nav/NavItem colors | `nav/components/NavItem.tsx` | ✅ Fixed - Uses semantic tokens |
+| RouteGuard colors | `RouteGuard.tsx` | ✅ Fixed - Uses semantic tokens |
+| StatsCards colors | `StatsCards.tsx` | ✅ Fixed - Uses semantic tokens |
+| VariantManager colors | `VariantManager.tsx` | ✅ Fixed - Uses semantic tokens |
+| BillUpload colors | `BillUpload.tsx` | ✅ Fixed - Uses semantic tokens |
+| TemplateEditor colors | `TemplateEditor.tsx` | ✅ Fixed - Uses semantic tokens |
+| VendorMappings colors | `VendorMappings.tsx` | ✅ Fixed - Uses semantic tokens |
+| BillHistory colors | `BillHistory.tsx` | ✅ Fixed - Uses semantic tokens |
+| DocumentTable colors | `DocumentTable.tsx` | ✅ Fixed - Uses semantic tokens |
+| ProductForm colors | `ProductForm.tsx` | ✅ Fixed - Uses semantic tokens |
+| ProductGrid colors | `ProductGrid.tsx` | ✅ Fixed - Uses semantic tokens |
+| LoyaltyTab colors | `LoyaltyTab.tsx` | ✅ Fixed - Uses semantic tokens |
 
 ---
 
@@ -294,7 +331,7 @@ getCurrentTheme(): ThemeConfig {
 |---|-------|------|-------|--------|
 | 4 | ErrorBoundary no dark mode | `ErrorBoundary.tsx` | 76-103 | ✅ Fixed |
 | 5 | SetupWizard hardcoded colors | `SetupWizard.module.css` | 6 | ✅ Fixed |
-| 6 | Missing theme toggle on login | `LoginPage.tsx` | - | Pending |
+| 6 | Missing theme toggle on login | `LoginPage.tsx` | - | ✅ Fixed |
 
 ### P2 - Medium (Inconsistent)
 

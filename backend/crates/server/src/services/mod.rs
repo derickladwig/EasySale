@@ -48,6 +48,19 @@ pub mod tenant_resolver;
 pub mod unit_conversion_service;
 pub mod variant_service;
 pub mod branding_asset_service;
+pub mod invoice_service;
+pub mod tax_service;
+pub mod discount_service;
+pub mod estimate_service;
+pub mod pdf_service;
+pub mod transaction_service;
+pub mod email_service;
+pub mod notification_trigger_service;
+pub mod email_queue_processor;
+pub mod threat_monitor;
+pub mod encryption_service;
+pub mod rate_limit_service;
+
 #[cfg(feature = "document-processing")]
 pub mod vendor_service;
 
@@ -172,6 +185,27 @@ pub use unit_conversion_service::UnitConversionService;
 pub use variant_service::VariantService;
 #[allow(unused_imports)]
 pub use branding_asset_service::{BrandingAssetService, AssetType, CropRegion, BrandingAsset, UploadResult, BrandingAssetError};
+pub use tax_service::TaxService;
+pub use discount_service::DiscountService;
+pub use transaction_service::TransactionService;
+pub use email_service::{EmailService, EmailProvider, EmailMessage, EmailTemplate, NotificationPreferences, NotificationPreferencesUpdate};
+pub use notification_trigger_service::NotificationTriggerService;
+pub use email_queue_processor::{EmailQueueProcessor, QueueStats};
+pub use threat_monitor::{
+    ThreatMonitor, ThreatMonitorConfig, ThreatEvent, ThreatEventType, 
+    Severity, BlockInfo, SessionInfo, SecurityAlert, DashboardStats, EventFilters,
+    create_threat_monitor, create_threat_monitor_with_config,
+};
+pub use encryption_service::{
+    EncryptionService, EncryptionError, 
+    create_encryption_service, create_encryption_service_with_key, try_create_encryption_service,
+    SENSITIVE_SETTINGS_FIELDS, SENSITIVE_INTEGRATION_FIELDS,
+};
+pub use rate_limit_service::{
+    RateLimitTracker, RateLimitConfig, RateLimitResult, RateLimitStats, ViolationInfo, LimitType,
+    create_rate_limit_tracker, create_rate_limit_tracker_with_config,
+    classify_endpoint, is_exempt_endpoint,
+};
 #[cfg(feature = "document-processing")]
 pub use vendor_service::VendorService;
 

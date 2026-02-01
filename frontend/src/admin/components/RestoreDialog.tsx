@@ -122,7 +122,7 @@ export function RestoreDialog({ backup, isOpen, onClose, onSuccess }: RestoreDia
             )}
             {restoreJob.status === 'completed' && (
               <>
-                <CheckCircle className="w-6 h-6 text-green-400" />
+                <CheckCircle className="w-6 h-6 text-success-400" />
                 <div>
                   <h3 className="text-lg font-semibold text-text-primary">Restore Completed</h3>
                   <p className="text-sm text-text-tertiary">The backup has been successfully restored</p>
@@ -131,7 +131,7 @@ export function RestoreDialog({ backup, isOpen, onClose, onSuccess }: RestoreDia
             )}
             {restoreJob.status === 'failed' && (
               <>
-                <XCircle className="w-6 h-6 text-red-400" />
+                <XCircle className="w-6 h-6 text-error-400" />
                 <div>
                   <h3 className="text-lg font-semibold text-text-primary">Restore Failed</h3>
                   <p className="text-sm text-text-tertiary">

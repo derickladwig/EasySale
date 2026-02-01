@@ -38,7 +38,7 @@ impl DefaultCapabilityProvider {
     /// - OR plugin file present + signature check
     /// - OR config points to sync service + ping succeeds
     #[cfg(feature = "runtime_detection")]
-    pub async fn detect_sync_runtime() -> bool {
+    async fn detect_sync_runtime() -> bool {
         // Placeholder: will be implemented in Phase 8
         // For now, sync is never available
         false

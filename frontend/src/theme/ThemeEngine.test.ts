@@ -227,8 +227,8 @@ describe('ThemeEngine', () => {
       const engine = new ThemeEngine(store);
       await engine.initialize('store-1');
 
-      // Should use default theme
-      expect(document.documentElement.dataset.theme).toBe('light');
+      // Should use default theme (DEFAULT_THEME has mode: 'dark')
+      expect(document.documentElement.dataset.theme).toBe('dark');
     });
   });
 
@@ -555,8 +555,8 @@ describe('bootTheme', () => {
   it('should apply default theme when no cache exists', () => {
     bootTheme();
 
-    // DEFAULT_THEME has mode: 'light'
-    expect(document.documentElement.dataset.theme).toBe('light');
+    // DEFAULT_THEME has mode: 'dark'
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('should apply custom default theme', () => {

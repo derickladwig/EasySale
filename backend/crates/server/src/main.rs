@@ -11,8 +11,9 @@ mod mappers;
 mod middleware;
 mod models;
 mod services;
-mod utils;
+// mod utils; // TODO: Create utils module if needed
 mod validators;
+mod websocket;
 
 #[cfg(test)]
 mod test_utils;
@@ -180,13 +181,58 @@ async fn main() -> std::io::Result<()> {
     let health_check_service = std::sync::Arc::new(services::HealthCheckService::new());
     tracing::info!("Health check service initialized");
 
+    // Initialize ThreatMonitor for security event tracking
+    let threat_monitor = std::sync::Arc::new(services::ThreatMonitor::new(None));
+    tracing::info!("Threat monitor initialized");
+
+    // Initialize RateLimitTracker with ThreatMonitor integration
+    let rate_limit_tracker = std::sync::Arc::new(
+        services::RateLimitTracker::new(None)
+            .with_threat_monitor(threat_monitor.clone())
+    );
+    tracing::info!("Rate limit tracker initialized");
+
     // Initialize configuration loader for tenant configs
     let config_dir = std::env::var("CONFIG_DIR").unwrap_or_else(|_| "configs".to_string());
-    let config_loader = config::loader::ConfigLoader::new(&config_dir, 300, cfg!(debug_assertions));
+    let config_loader = std::sync::Arc::new(config::loader::ConfigLoader::new(&config_dir, 300, cfg!(debug_assertions)));
     tracing::info!("Configuration loader initialized from: {}", config_dir);
+    
+    // Initialize WebSocket server for real-time notifications
+    let ws_server = websocket::WsServer::new().start();
+    tracing::info!("WebSocket server initialized");
+    
+    // Initialize and start configuration file watcher for hot-reload
+    let config_loader_clone = config_loader.clone();
+    let config_dir_clone = config_dir.clone();
+    match config::file_watcher::ConfigFileWatcher::new(config_loader_clone.clone(), &config_dir_clone) {
+        Ok((_watcher, reload_rx, ws_rx)) => {
+            tracing::info!("Configuration file watcher started");
+            
+            // Spawn background task to process configuration reload events
+            let config_loader_for_reload = config_loader_clone.clone();
+            tokio::spawn(async move {
+                config::file_watcher::ConfigFileWatcher::process_events(config_loader_for_reload, reload_rx).await;
+            });
+            
+            // Create configuration notifier and spawn background task for WebSocket broadcasts
+            let config_notifier = std::sync::Arc::new(websocket::ConfigNotifier::new(ws_server.clone()));
+            tokio::spawn(async move {
+                config_notifier.process_events(ws_rx).await;
+            });
+            
+            tracing::info!("Configuration change notifications enabled via WebSocket");
+        }
+        Err(e) => {
+            tracing::warn!("Failed to start configuration file watcher: {}. Hot-reload disabled.", e);
+            tracing::warn!("Configuration changes will require server restart.");
+        }
+    }
 
     let host = config.api_host.clone();
     let port = config.api_port;
+    
+    // Clone WebSocket server for use in HTTP server closure
+    let ws_server_for_app = ws_server.clone();
 
     // Start HTTP server
     HttpServer::new(move || {
@@ -211,9 +257,14 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(sync_scheduler.clone()))
             .app_data(web::Data::new(tenant_resolver.clone()))
             .app_data(web::Data::new(health_check_service.clone()))
+            .app_data(web::Data::new(ws_server_for_app.clone()))
+            .app_data(web::Data::new(threat_monitor.clone()))
+            .app_data(web::Data::new(rate_limit_tracker.clone()))
             // Health check endpoint (public - no auth required, registered before ContextExtractor)
             .route("/health", web::get().to(handlers::health::health_check))
             .route("/health", web::head().to(handlers::health::health_check))
+            // WebSocket endpoint for real-time notifications (public - tenant_id required in query)
+            .route("/ws", web::get().to(handlers::websocket::ws_index))
             // Capabilities endpoints (public - no auth required, registered before ContextExtractor)
             .route("/api/capabilities", web::get().to(handlers::capabilities::get_capabilities))
             .service(handlers::capabilities::get_config_capabilities)
@@ -321,6 +372,12 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/api/users/password")
                     .route(web::put().to(handlers::user_handlers::change_password))
             )
+            // Admin password reset endpoint
+            .service(
+                web::resource("/api/users/{id}/reset-password")
+                    .route(web::post().to(handlers::user_handlers::reset_user_password))
+                    .wrap(require_permission("manage_settings"))
+            )
             // Customer management endpoints
             .service(handlers::customer::create_customer)
             .service(handlers::customer::get_customer)
@@ -334,6 +391,54 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::zones::get_zone)
             .service(handlers::zones::update_zone)
             .service(handlers::zones::delete_zone)
+            // Time tracking endpoints
+            .service(
+                web::resource("/api/time-entries")
+                    .route(web::get().to(handlers::time_tracking::list_time_entries))
+                    .route(web::post().to(handlers::time_tracking::create_time_entry))
+            )
+            .service(
+                web::resource("/api/time-entries/summary/{employee_id}")
+                    .route(web::get().to(handlers::time_tracking::get_time_summary))
+            )
+            .service(
+                web::resource("/api/time-entries/clock-in")
+                    .route(web::post().to(handlers::time_tracking::clock_in))
+            )
+            .service(
+                web::resource("/api/time-entries/{id}")
+                    .route(web::get().to(handlers::time_tracking::get_time_entry))
+                    .route(web::put().to(handlers::time_tracking::update_time_entry))
+                    .route(web::delete().to(handlers::time_tracking::delete_time_entry))
+            )
+            .service(
+                web::resource("/api/time-entries/{id}/clock-out")
+                    .route(web::post().to(handlers::time_tracking::clock_out))
+            )
+            .service(
+                web::resource("/api/time-entries/reports/employee")
+                    .route(web::get().to(handlers::time_tracking::get_employee_time_report))
+            )
+            .service(
+                web::resource("/api/time-entries/reports/project")
+                    .route(web::get().to(handlers::time_tracking::get_project_time_report))
+            )
+            .service(
+                web::resource("/api/time-entries/export")
+                    .route(web::get().to(handlers::time_tracking::export_time_report))
+            )
+            // Appointment endpoints
+            .service(
+                web::resource("/api/appointments")
+                    .route(web::get().to(handlers::appointments::list_appointments))
+                    .route(web::post().to(handlers::appointments::create_appointment))
+            )
+            .service(
+                web::resource("/api/appointments/{id}")
+                    .route(web::get().to(handlers::appointments::get_appointment))
+                    .route(web::put().to(handlers::appointments::update_appointment))
+                    .route(web::delete().to(handlers::appointments::delete_appointment))
+            )
             // Product catalog endpoints
             .service(handlers::product::list_products)
             .service(handlers::product::get_product)
@@ -381,6 +486,20 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::work_order::list_work_orders)
             .service(handlers::work_order::add_work_order_line)
             .service(handlers::work_order::complete_work_order)
+            // Invoice endpoints
+            .service(handlers::invoices::create_invoice_from_work_order)
+            .service(handlers::invoices::get_invoice)
+            .service(handlers::invoices::get_invoice_line_items)
+            // Estimate endpoints
+            .service(handlers::estimates::create_estimate)
+            .service(handlers::estimates::list_estimates)
+            .service(handlers::estimates::get_estimate)
+            .service(handlers::estimates::get_estimate_line_items)
+            .service(handlers::estimates::update_estimate)
+            .service(handlers::estimates::delete_estimate)
+            .service(handlers::estimates::generate_estimate_pdf)
+            .service(handlers::estimates::convert_estimate_to_invoice)
+            .service(handlers::estimates::convert_estimate_to_work_order)
             // Commission endpoints
             .service(handlers::commission::list_commission_rules)
             .service(handlers::commission::create_commission_rule)
@@ -888,6 +1007,62 @@ async fn main() -> std::io::Result<()> {
             .configure(handlers::file_operations::configure)
             // Receiving operations (inventory receiving)
             .configure(handlers::receiving_operations::configure)
+            // Inventory counting operations (cycle counts, adjustments)
+            .service(
+                web::scope("/api/inventory/counts")
+                    .route("", web::post().to(handlers::inventory_count::create_count_session))
+                    .route("", web::get().to(handlers::inventory_count::list_count_sessions))
+                    .route("/{id}", web::get().to(handlers::inventory_count::get_count_session))
+                    .route("/{id}/start", web::post().to(handlers::inventory_count::start_count_session))
+                    .route("/{id}/items", web::get().to(handlers::inventory_count::list_count_items))
+                    .route("/{id}/items", web::post().to(handlers::inventory_count::record_count))
+                    .route("/{id}/items/bulk", web::post().to(handlers::inventory_count::record_counts_bulk))
+                    .route("/{id}/submit", web::post().to(handlers::inventory_count::submit_count_session))
+                    .route("/{id}/approve", web::post().to(handlers::inventory_count::approve_count_session))
+                    .route("/{id}/discrepancies", web::get().to(handlers::inventory_count::get_discrepancies))
+            )
+            // Inventory adjustments
+            .service(
+                web::scope("/api/inventory/adjustments")
+                    .route("", web::post().to(handlers::inventory_count::create_adjustment))
+                    .route("/{id}/approve", web::post().to(handlers::inventory_count::approve_adjustment))
+                    .route("/{id}/reject", web::post().to(handlers::inventory_count::reject_adjustment))
+            )
+            // Bin location management
+            .service(
+                web::scope("/api/inventory/bins")
+                    .route("", web::post().to(handlers::bin_locations::create_bin_location))
+                    .route("", web::get().to(handlers::bin_locations::list_bin_locations))
+                    .route("/zones", web::post().to(handlers::bin_locations::create_zone))
+                    .route("/zones", web::get().to(handlers::bin_locations::list_zones))
+                    .route("/assign", web::post().to(handlers::bin_locations::assign_product_to_bin))
+                    .route("/bulk-assign", web::post().to(handlers::bin_locations::bulk_assign_products))
+                    .route("/{id}", web::get().to(handlers::bin_locations::get_bin_location))
+                    .route("/{id}", web::put().to(handlers::bin_locations::update_bin_location))
+                    .route("/{id}", web::delete().to(handlers::bin_locations::delete_bin_location))
+                    .route("/{code}/products", web::get().to(handlers::bin_locations::get_products_in_bin))
+                    .route("/history/{product_id}", web::get().to(handlers::bin_locations::get_bin_history))
+            )
+            // Security dashboard endpoints (admin only)
+            .service(
+                web::scope("/api/security")
+                    .route("/dashboard", web::get().to(handlers::security::get_dashboard))
+                    .route("/events", web::get().to(handlers::security::get_events))
+                    .route("/blocked-ips", web::get().to(handlers::security::get_blocked_ips))
+                    .route("/blocked-ips", web::post().to(handlers::security::block_ip))
+                    .route("/blocked-ips/unblock", web::post().to(handlers::security::unblock_ip))
+                    .route("/sessions", web::get().to(handlers::security::get_sessions))
+                    .route("/sessions/{user_id}/force-logout", web::post().to(handlers::security::force_logout))
+                    .route("/alerts", web::get().to(handlers::security::get_alerts))
+                    .route("/alerts/{id}/acknowledge", web::post().to(handlers::security::acknowledge_alert))
+                    .route("/rate-limits/stats", web::get().to(handlers::security::get_rate_limit_stats))
+                    .route("/rate-limits/violations/{identifier}", web::delete().to(handlers::security::clear_rate_limit_violations))
+                    .wrap(require_permission("manage_settings"))
+            )
+            // Credit limit check endpoints
+            .service(handlers::credit::check_credit_limit)
+            .service(handlers::credit::get_credit_utilization_warnings)
+            .service(handlers::credit::update_credit_limit)
             // Sales operations (POS checkout)
             .configure(handlers::sales::configure)
             // Tenant operations (multi-tenant context and configuration)

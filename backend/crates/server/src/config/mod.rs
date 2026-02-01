@@ -11,6 +11,7 @@ pub mod tenant;
 pub mod schema;
 pub mod error;
 pub mod validator;
+pub mod file_watcher;
 
 // Re-export commonly used types
 pub use app_config::Config;
@@ -22,3 +23,4 @@ pub use loader::ConfigLoader;
 pub use models::*;
 pub use profile::{ProfileManager, RuntimeProfile};
 pub use error::ConfigError;
+pub use file_watcher::{ConfigFileWatcher, ConfigChangeEvent, ConfigChangeKind};

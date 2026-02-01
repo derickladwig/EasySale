@@ -85,7 +85,7 @@ EasySale is a **white-label, multi-tenant point-of-sale system** designed to:
 - Sales reports (daily, weekly, monthly)
 - Inventory reports
 - Customer analytics
-- Export functionality (stub - coming soon)
+- Export functionality (CSV export available in Export/Full builds)
 
 #### FR-008: Settings & Configuration
 - Company and store setup

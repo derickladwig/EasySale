@@ -77,11 +77,14 @@ pub mod unit_conversion;
 pub mod user_handlers;
 pub mod users;
 pub mod webhooks;
+pub mod websocket;
 pub mod woocommerce;
 pub mod woocommerce_bulk;
 pub mod woocommerce_variations;
 pub mod woocommerce_write;
 pub mod work_order;
+pub mod invoices;
+pub mod estimates;
 pub mod sync_direction;
 pub mod credentials;
 pub mod audit_operations;
@@ -101,6 +104,11 @@ pub mod network;
 pub mod oauth_management;
 pub mod branding_assets;
 pub mod zones;
+pub mod time_tracking;
+pub mod appointments;
+pub mod inventory_count;
+pub mod bin_locations;
+pub mod security;
 
 // ============================================================================
 // NOTIFICATION HANDLERS (feature-gated: notifications)

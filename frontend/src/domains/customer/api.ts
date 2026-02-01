@@ -4,7 +4,7 @@
  * Provides functions for interacting with customer endpoints
  */
 
-import { apiClient } from '../../common/utils/apiClient';
+import { apiClient } from '@common/api/client';
 
 export interface CustomerResponse {
   id: string;

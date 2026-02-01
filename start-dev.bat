@@ -182,11 +182,7 @@ echo   Stop:           stop-dev.bat
 echo   Rebuild:        docker-compose -p easysale up --build -d
 echo.
 
-if not defined NO_PAUSE (
-    echo.
-    echo Press any key to close this window...
-    pause >nul
-)
+call :PAUSE_IF_INTERACTIVE
 exit /b 0
 
 REM ============================================

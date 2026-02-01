@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO tax_rules (id, tenant_id, store_id, name, rate, is_default)\n            VALUES (?, ?, ?, ?, ?, ?)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "5f3f5265ec4aedfd166d374ef20773257176b4ae8b18b3913d00f04c16b3c001"
+}

@@ -126,6 +126,9 @@ export interface WorkOrder {
   completedAt?: string;
   createdAt: string;
   assignedTo?: string;
+  invoicedAt?: string;
+  invoiceId?: number;
+  invoiceNumber?: string;
 }
 
 export interface CreateWorkOrderRequest {
@@ -134,6 +137,23 @@ export interface CreateWorkOrderRequest {
   priority?: 'low' | 'normal' | 'high' | 'urgent';
   estimatedCompletion?: string;
   assignedTo?: string;
+}
+
+export interface Invoice {
+  id: number;
+  invoiceNumber: string;
+  workOrderId?: number;
+  customerId: number;
+  invoiceDate: string;
+  dueDate?: string;
+  subtotal: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const workOrderApi = {
@@ -160,6 +180,10 @@ export const workOrderApi = {
 
   complete: async (id: string): Promise<WorkOrder> => {
     return apiClient.post(`/api/work-orders/${id}/complete`);
+  },
+
+  createInvoice: async (id: string): Promise<Invoice> => {
+    return apiClient.post(`/api/work-orders/${id}/invoice`);
   },
 };
 

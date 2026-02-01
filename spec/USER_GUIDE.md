@@ -424,7 +424,7 @@ Create vendor templates to improve OCR accuracy:
 - Date range selection
 - Filter by category, location, etc.
 - Print functionality
-- Export (coming soon)
+- Export to CSV (available in Export/Full builds)
 
 ---
 

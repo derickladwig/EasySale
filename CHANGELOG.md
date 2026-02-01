@@ -5,6 +5,61 @@ All notable changes to EasySale will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.5] - 2026-01-30
+
+### Added
+- **Enterprise Security & Operations Features**:
+  
+  **Security Services**
+  - `ThreatMonitor` service for real-time threat detection, failed login tracking, and IP blocking
+  - `EncryptionService` for AES-256-GCM encryption of sensitive data
+  - `RateLimitTracker` service for sliding window API rate limiting with violation tracking
+  
+  **Inventory Counting System**
+  - New database tables for count sessions, items, and adjustments
+  - Full inventory count workflow: create → start → record counts → submit → approve
+  - Support for cycle counts, full counts, and spot checks
+  - Discrepancy reporting and variance tracking
+  
+  **Bin Location Management**
+  - Warehouse bin location system with zones, aisles, shelves, and bins
+  - Product-to-bin assignment with location history tracking
+  - Zone management for warehouse organization
+  
+  **Enhanced RBAC Middleware**
+  - `require_tier()` - Role tier-based access control
+  - `require_any_permission()` - OR-based permission checking
+  - `require_all_permissions()` - AND-based permission checking
+  - `require_store_assignment()` - Store-specific access enforcement
+  
+  **Multi-Store Inventory**
+  - Per-store inventory levels tracking
+  - Inventory transfer system between stores
+  - Aggregate inventory views and reorder suggestions
+  
+  **Credit Limit Enforcement**
+  - Active credit limit checking before charges
+  - Credit utilization warnings (80% and 95% thresholds)
+  - Credit limit update endpoint
+  
+  **Security Dashboard**
+  - Admin dashboard for security monitoring
+  - Real-time event viewing with filters
+  - Blocked IP management
+  - Active session monitoring with force logout
+  - Security alerts with acknowledgment
+  
+  **Frontend UI Components**
+  - `InventoryCountPage` - Complete inventory counting interface with session management
+  - `BinLocationManager` - Warehouse bin location management with zone views
+  - `SecurityDashboardPage` - Admin security monitoring dashboard
+  
+  **Integration**
+  - ThreatMonitor integrated into authentication for login security
+  - All new API routes registered with appropriate permissions
+
+---
+
 ## [1.2.4] - 2026-01-30
 
 ### Changed
